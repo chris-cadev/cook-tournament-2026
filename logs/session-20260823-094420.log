@@ -1,0 +1,38 @@
+[09:44:20] Reusing server on port 4096
+[09:44:20] WARN No criteria file found, skipping acceptance review
+[09:44:20] === Session started ===
+[09:44:20] PID: 31515
+[09:44:20] Project: /home/chris/projects/net.chrislabs/cook-tournament-2026.orchestrator-task-8-milestone-7-judge-scoring-interface
+[09:44:20] Task: Judges access rubric, score sandwiches, view submitted scores.
+
+### Implement GET /api/judges/rubric
+
+Return `scoring_categories` from EventConfig. Judge auth required.
+
+### Implement POST /api/judges/scores
+
+Validate team_id exists, category is in rubric, value is 1–10. Enforce unique constraint (team_id + judge_anonymous_id + category). Return 409 if already scored. Judge auth required.
+
+### Implement GET /api/judges/scores/:teamId
+
+Return scores for a team. Admin sees all judge scores with anonymous_id; judge sees only own scores. Auth required.
+
+### Build judge access gate page
+
+`frontend/src/pages/JudgeAccess.tsx` — password input, submit, store JWT, redirect to scoring panel. Skip gate if already authenticated.
+
+### Build judge scoring UI
+
+`frontend/src/pages/JudgePanel.tsx` — rubric display card, score entry table (teams as rows, categories as columns, 1–10 input per cell), optional notes textarea, submit button. "Already scored" alert on duplicate attempt.
+
+### Build judge score history view
+
+Extend JudgePanel with read-only view of scores already submitted by this judge. Shows per-team, per-category breakdown with notes.
+
+**Deliverable:** Judges can enter, submit, and view their scores. Duplicate submissions are prevented.
+
+---
+[09:44:20] Criteria: ACCEPTANCE.md (found)0
+[09:44:20] Model: opencode-go/mimo-v2.5
+[09:44:20] Max iterations: 25
+[09:44:20] === Iteration 1/25 ===
