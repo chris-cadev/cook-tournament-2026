@@ -1,0 +1,37 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import { createServer } from 'http';
+import { initSocket } from './socket.js';
+import { initDb } from './db.js';
+import { runMigrations } from './migrate.js';
+import { seedAdmin } from './seed.js';
+import authRoutes from './routes/auth.js';
+import configRoutes from './routes/config.js';
+import teamsRoutes from './routes/teams.js';
+import judgesRoutes from './routes/judges.js';
+import scoresRoutes from './routes/scores.js';
+const app = express();
+const server = createServer(app);
+app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'], credentials: true }));
+app.use(express.json());
+initSocket(server);
+app.use('/api/auth', authRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/teams', teamsRoutes);
+app.use('/api/judges', judgesRoutes);
+app.use('/api/scores', scoresRoutes);
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
+async function start() {
+    await initDb();
+    runMigrations();
+    seedAdmin();
+    const PORT = process.env.PORT || 3001;
+    server.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
+start().catch((err) => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+});
