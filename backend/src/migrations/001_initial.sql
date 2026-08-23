@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS scores (
 CREATE TABLE IF NOT EXISTS chat_messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   channel TEXT NOT NULL,
+  sender_id INTEGER,
   sender_name TEXT NOT NULL,
   sender_role TEXT NOT NULL,
   content TEXT NOT NULL,
@@ -48,6 +49,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   attachment_type TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_channel ON chat_messages (channel, created_at);
 
 CREATE TABLE IF NOT EXISTS event_config (
   id INTEGER PRIMARY KEY CHECK(id = 1),

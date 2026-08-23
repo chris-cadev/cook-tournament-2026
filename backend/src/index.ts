@@ -17,6 +17,7 @@ import configRoutes from './routes/config.js'
 import teamsRoutes from './routes/teams.js'
 import judgesRoutes from './routes/judges.js'
 import scoresRoutes from './routes/scores.js'
+import chatRoutes from './routes/chat.js'
 
 const app = express()
 const server = createServer(app)
@@ -32,6 +33,7 @@ app.use('/api/config', configRoutes)
 app.use('/api/teams', teamsRoutes)
 app.use('/api/judges', judgesRoutes)
 app.use('/api/scores', scoresRoutes)
+app.use('/api/chat', chatRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
