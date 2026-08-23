@@ -1,4 +1,8 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -11,9 +15,11 @@ import configRoutes from './routes/config.js';
 import teamsRoutes from './routes/teams.js';
 import judgesRoutes from './routes/judges.js';
 import scoresRoutes from './routes/scores.js';
+import chatRoutes from './routes/chat.js';
 const app = express();
 const server = createServer(app);
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'], credentials: true }));
+const frontendPort = process.env.PORT || 3000;
+app.use(cors({ origin: [`http://localhost:${frontendPort}`, 'http://localhost:5173'], credentials: true }));
 app.use(express.json());
 initSocket(server);
 app.use('/api/auth', authRoutes);
@@ -21,12 +27,13 @@ app.use('/api/config', configRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/judges', judgesRoutes);
 app.use('/api/scores', scoresRoutes);
+app.use('/api/chat', chatRoutes);
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 async function start() {
     await initDb();
     runMigrations();
     seedAdmin();
-    const PORT = process.env.PORT || 3001;
+    const PORT = process.env.BACKEND_PORT || 3001;
     server.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });
