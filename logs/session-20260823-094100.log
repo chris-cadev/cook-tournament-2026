@@ -1,0 +1,38 @@
+[09:41:00] Reusing server on port 4096
+[09:41:00] WARN No criteria file found, skipping acceptance review
+[09:41:00] === Session started ===
+[09:41:00] PID: 20302
+[09:41:00] Project: /home/chris/projects/net.chrislabs/cook-tournament-2026.orchestrator-task-4-milestone-3-event-configuration-landing-page
+[09:41:00] Task: Host configures the event; public sees the landing page with countdown, rules, and registration link.
+
+### Implement GET /api/config (public)
+
+Returns non-sensitive fields: event_date, event_title, event_description, rules, scoring_categories, landing_page_content. No auth required.
+
+### Implement PUT /api/config (admin)
+
+Update all EventConfig fields. Hash judge_password and team_password on save. Admin auth required.
+
+### Build admin event config editor
+
+`frontend/src/pages/admin/EventSettings.tsx` — form to edit event_date, title, description (markdown textarea), rules (markdown textarea), scoring_categories (list editor), landing_page_content. Calls `PUT /api/config`.
+
+### Build landing page hero with countdown
+
+`frontend/src/pages/LandingPage.tsx` — Navbar with site title and nav links, Hero section with event title and live countdown timer to `event_date` from config. Fetch config from `GET /api/config`.
+
+### Build landing page content sections
+
+Extend LandingPage with Card for rules summary, "Register Your Team" CTA button, "Join Global Chat" button, Footer with host info and event date.
+
+### Create shared UI components
+
+`frontend/src/components/ui/` — Navbar (site title, nav links), Footer (host info, event date), Toast (global notifications via Zustand), Spinner (loading state). Apply design tokens.
+
+**Deliverable:** Host can configure event details. Public landing page displays event info with live countdown. Shared UI foundation in place.
+
+---
+[09:41:00] Criteria: ACCEPTANCE.md (found)0
+[09:41:00] Model: opencode-go/mimo-v2.5
+[09:41:00] Max iterations: 25
+[09:41:00] === Iteration 1/25 ===
