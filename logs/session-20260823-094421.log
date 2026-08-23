@@ -1,0 +1,34 @@
+[09:44:21] Reusing server on port 4096
+[09:44:21] WARN No criteria file found, skipping acceptance review
+[09:44:21] === Session started ===
+[09:44:21] PID: 31680
+[09:44:21] Project: /home/chris/projects/net.chrislabs/cook-tournament-2026.orchestrator-task-9-milestone-8-score-reveal-leaderboard
+[09:44:21] Task: The ceremony mechanic — host reveals scores one category at a time via WebSocket push.
+
+### Implement GET /api/scores/leaderboard
+
+Compute per-team total_score (sum of category averages across all judges), per-category averages. Include `revealed` map. Public, no auth.
+
+### Implement POST /api/scores/reveal
+
+Mark a category as revealed in EventConfig (store revealed categories as JSON). Broadcast `score:reveal { category, scores }` via Socket.io. Admin auth required.
+
+### Build score reveal control panel
+
+`frontend/src/pages/admin/ScoreReveal.tsx` — list of categories with reveal status, "Reveal [Category]" button per unrevealed category, progress bar showing percentage revealed.
+
+### Build public leaderboard/results page
+
+`frontend/src/pages/Results.tsx` — table with team names, sandwich names, total score, category scores (only shown if revealed). Winner spotlight card for 1st place. Socket.io listener for real-time updates.
+
+### Add score reveal Socket.io broadcast
+
+`backend/src/scores.ts` — on reveal, emit `score:reveal` event to all connected sockets. Frontend leaderboard listens and updates UI in real-time. Fallback: REST poll on reconnect.
+
+**Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
+
+---
+[09:44:21] Criteria: ACCEPTANCE.md (found)0
+[09:44:21] Model: opencode-go/mimo-v2.5
+[09:44:21] Max iterations: 25
+[09:44:21] === Iteration 1/25 ===
