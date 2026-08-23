@@ -1,0 +1,46 @@
+[09:41:00] Reusing server on port 4096
+[09:41:00] WARN No criteria file found, skipping acceptance review
+[09:41:00] === Session started ===
+[09:41:00] PID: 20457
+[09:41:00] Project: /home/chris/projects/net.chrislabs/cook-tournament-2026.orchestrator-task-5-milestone-4-team-registration
+[09:41:00] Task: Teams register through the public form; host manages registrations in dashboard.
+
+### Implement POST /api/teams/register
+
+Validate required fields, check unique team name (409 on conflict), hash team password with bcrypt, insert Team row with `status: "pending"`. Return `{ id, name, status }`.
+
+### Build team registration form
+
+`frontend/src/pages/Registration.tsx` — fields: team name, sandwich name, captain email, password, member name inputs (2–3), equipment needs textarea. Client-side validation. Success toast + redirect on submit.
+
+### Implement GET /api/teams (admin list)
+
+Return all teams with id, name, sandwich_name, captain_email, members, station, status, registered_at. Admin auth required.
+
+### Implement GET /api/teams/:id (admin/self)
+
+Return single team detail. Admin can access any team; team role can only access own team (validate JWT team_id).
+
+### Implement PUT /api/teams/:id (admin)
+
+Update team fields (status, station, etc.). Admin auth required.
+
+### Implement DELETE /api/teams/:id (admin)
+
+Delete team row. Admin auth required.
+
+### Build admin team management table
+
+`frontend/src/pages/admin/Teams.tsx` — table with columns: name, sandwich, captain, members, status badge, station, actions dropdown (confirm, edit, delete).
+
+### Build admin team edit modal
+
+`frontend/src/components/admin/TeamEditModal.tsx` — modal for editing team details, changing status, assigning station. Calls `PUT /api/teams/:id`.
+
+**Deliverable:** Teams can register. Host sees all teams in dashboard and can confirm, edit, or delete them.
+
+---
+[09:41:00] Criteria: ACCEPTANCE.md (found)0
+[09:41:00] Model: opencode-go/mimo-v2.5
+[09:41:00] Max iterations: 25
+[09:41:00] === Iteration 1/25 ===
