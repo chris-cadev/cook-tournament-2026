@@ -1,0 +1,12 @@
+[09:39:10] Reusing server on port 4096
+[09:39:10] WARN No criteria file found, skipping acceptance review
+[09:39:10] === Session started ===
+[09:39:10] PID: 15289
+[09:39:10] Project: /home/chris/projects/net.chrislabs/cook-tournament-2026.orchestrator-task-1-plan-md-sandwich-championship-birthday-platform
+[09:39:10] Task: Implementation plan for the Sandwich Championship & Birthday Platform. Greenfield build — monorepo with React+Vite frontend and Node.js+Express backend, SQLite, Socket.io, MinIO, Docker Compose.
+
+---
+[09:39:10] Criteria: ACCEPTANCE.md (found)0
+[09:39:10] Model: opencode-go/mimo-v2.5
+[09:39:10] Max iterations: 25
+[09:39:10] === Iteration 1/25 ===
