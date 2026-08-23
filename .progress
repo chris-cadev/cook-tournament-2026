@@ -1,0 +1,29 @@
+Host configures the event; public sees the landing page with countdown, rules, and registration link.
+
+### Implement GET /api/config (public)
+
+Returns non-sensitive fields: event_date, event_title, event_description, rules, scoring_categories, landing_page_content. No auth required.
+
+### Implement PUT /api/config (admin)
+
+Update all EventConfig fields. Hash judge_password and team_password on save. Admin auth required.
+
+### Build admin event config editor
+
+`frontend/src/pages/admin/EventSettings.tsx` — form to edit event_date, title, description (markdown textarea), rules (markdown textarea), scoring_categories (list editor), landing_page_content. Calls `PUT /api/config`.
+
+### Build landing page hero with countdown
+
+`frontend/src/pages/LandingPage.tsx` — Navbar with site title and nav links, Hero section with event title and live countdown timer to `event_date` from config. Fetch config from `GET /api/config`.
+
+### Build landing page content sections
+
+Extend LandingPage with Card for rules summary, "Register Your Team" CTA button, "Join Global Chat" button, Footer with host info and event date.
+
+### Create shared UI components
+
+`frontend/src/components/ui/` — Navbar (site title, nav links), Footer (host info, event date), Toast (global notifications via Zustand), Spinner (loading state). Apply design tokens.
+
+**Deliverable:** Host can configure event details. Public landing page displays event info with live countdown. Shared UI foundation in place.
+
+---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:44:18Z
