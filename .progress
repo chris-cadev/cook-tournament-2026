@@ -1,0 +1,25 @@
+Real-time public chat channel with no auth required.
+
+### Implement GET /api/chat/global/messages
+
+Return paginated message history for global channel. No auth required. Support `?limit` and `?before` query params.
+
+### Implement POST /api/chat/global/messages
+
+Create new chat message in global channel. Accept sender_name, content. No auth required.
+
+### Implement DELETE /api/chat/global/messages/:messageId
+
+Delete a message by ID. Admin auth required. Used for moderation.
+
+### Implement Socket.io chat room events
+
+`backend/src/chat.ts` — handle `chat:join { channel }`, `chat:message { channel, content }`. Validate channel access. Broadcast `chat:new` to room. Emit `chat:history` on join.
+
+### Build global chat UI
+
+`frontend/src/pages/Chat.tsx` — message list (auto-scroll, sender name + role badge), text input, send button. Socket.io connection for real-time. Fetch history on mount.
+
+**Deliverable:** Anyone can open global chat, send messages, and see real-time updates. Admin can delete messages.
+
+---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:42:48Z
