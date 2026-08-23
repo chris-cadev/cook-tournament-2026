@@ -97,7 +97,7 @@ export default function Landing() {
             <Link to="/team/login" className="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">
               Equipo
             </Link>
-            <Link to="/team/login" className="text-sm text-gray-500 hover:text-tertiary font-medium px-3 py-3 transition-colors">
+            <Link to="/register" className="text-sm text-gray-500 hover:text-tertiary font-medium px-3 py-3 transition-colors">
               Registrar
             </Link>
             <Link to="/jueces/login" className="bg-primary/10 hover:bg-primary/20 text-primary-dark font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">

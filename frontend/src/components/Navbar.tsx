@@ -10,8 +10,10 @@ interface NavLink {
 const roleLinks: Record<string, NavLink[]> = {
   admin: [
     { label: 'Dashboard', to: '/admin' },
+    { label: 'Equipos', to: '/admin/teams' },
     { label: 'Revelar', to: '/admin/score-reveal' },
     { label: 'Chat', to: '/admin/chat' },
+    { label: 'Config', to: '/admin/settings' },
   ],
   team: [
     { label: 'Mi Equipo', to: '/equipo' },
@@ -23,12 +25,18 @@ const roleLinks: Record<string, NavLink[]> = {
   ],
 }
 
+const publicLinks: NavLink[] = [
+  { label: 'Registro', to: '/register' },
+  { label: 'Chat', to: '/chat' },
+  { label: 'Resultados', to: '/results' },
+]
+
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
 
-  const links = user ? roleLinks[user.role] || [] : []
+  const links = user ? roleLinks[user.role] || [] : publicLinks
 
   const handleLogout = () => {
     logout()
