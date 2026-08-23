@@ -1,29 +1,15 @@
 {
-  "name": "sandwich-championship-chat",
-  "version": "0.1.0",
+  "name": "cook-tournament-2026",
   "private": true,
-  "type": "module",
+  "workspaces": ["backend", "frontend"],
   "scripts": {
-    "build:backend": "tsc -p tsconfig.backend.json",
-    "build:frontend": "tsc -p tsconfig.frontend.json --noEmit",
-    "build": "npm run build:backend && npm run build:frontend",
-    "lint": "tsc --noEmit -p tsconfig.backend.json && tsc --noEmit -p tsconfig.frontend.json",
-    "test": "echo \"No tests yet\" && exit 0",
-    "audit": "npm audit --omit=dev || true"
-  },
-  "dependencies": {
-    "sql.js": "^1.11.0",
-    "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "jsonwebtoken": "^9.0.2",
-    "socket.io": "^4.8.0"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^22.0.0",
-    "@types/react": "^18.3.0",
-    "typescript": "^5.6.0"
+    "concurrently": "^9.1.0"
   }
 }

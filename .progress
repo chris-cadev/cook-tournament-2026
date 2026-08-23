@@ -235,3 +235,29 @@ Extend JudgePanel with read-only view of scores already submitted by this judge.
 **Deliverable:** Judges can enter, submit, and view their scores. Duplicate submissions are prevented.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:46:16Z
+
+The ceremony mechanic — host reveals scores one category at a time via WebSocket push.
+
+### Implement GET /api/scores/leaderboard
+
+Compute per-team total_score (sum of category averages across all judges), per-category averages. Include `revealed` map. Public, no auth.
+
+### Implement POST /api/scores/reveal
+
+Mark a category as revealed in EventConfig (store revealed categories as JSON). Broadcast `score:reveal { category, scores }` via Socket.io. Admin auth required.
+
+### Build score reveal control panel
+
+`frontend/src/pages/admin/ScoreReveal.tsx` — list of categories with reveal status, "Reveal [Category]" button per unrevealed category, progress bar showing percentage revealed.
+
+### Build public leaderboard/results page
+
+`frontend/src/pages/Results.tsx` — table with team names, sandwich names, total score, category scores (only shown if revealed). Winner spotlight card for 1st place. Socket.io listener for real-time updates.
+
+### Add score reveal Socket.io broadcast
+
+`backend/src/scores.ts` — on reveal, emit `score:reveal` event to all connected sockets. Frontend leaderboard listens and updates UI in real-time. Fallback: REST poll on reconnect.
+
+**Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
+
+---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:56:44Z
