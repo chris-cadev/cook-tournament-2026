@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import Navbar from '../components/Navbar'
 
-const EVENT_DATE = import.meta.env.VITE_EVENT_DATETIME || '2026-10-10T14:00:00'
+interface EventConfig {
+  event_date: string | null
+  event_title: string
+}
+
+const FALLBACK_DATE = '2026-10-10T14:00:00'
+const FALLBACK_TITLE = 'El Campeonato de Sándwiches'
 
 function useCountdown(target: string) {
   const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
@@ -42,16 +49,27 @@ const scoring = [
 ]
 
 export default function Landing() {
-  const { days, hours, minutes, seconds } = useCountdown(EVENT_DATE)
+  const [config, setConfig] = useState<EventConfig>({ event_date: null, event_title: FALLBACK_TITLE })
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then((r) => r.json())
+      .then((data: EventConfig) => setConfig(data))
+      .catch(() => {})
+  }, [])
+
+  const eventDate = config.event_date || FALLBACK_DATE
+  const { days, hours, minutes, seconds } = useCountdown(eventDate)
 
   return (
     <div className="min-h-screen bg-surface">
+      <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
 
         {/* Hero */}
         <section className="text-center space-y-4">
           <h1 className="font-headline text-5xl md:text-7xl font-black text-secondary leading-tight">
-            El Campeonato de Sándwiches
+            {config.event_title || FALLBACK_TITLE}
           </h1>
           <p className="text-xl text-gray-600">Competencia de cocina en vivo + Celebración de cumpleaños</p>
 
@@ -69,12 +87,21 @@ export default function Landing() {
             ))}
           </div>
 
-          <div className="flex justify-center gap-3 pt-4">
+          <div className="flex justify-center gap-3 pt-4 flex-wrap">
             <Link to="/results" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors">
               Ver Resultados
             </Link>
-            <Link to="/admin/score-reveal" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
+            <Link to="/admin/login" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">
               Admin
+            </Link>
+            <Link to="/team/login" className="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">
+              Equipo
+            </Link>
+            <Link to="/team/login" className="text-sm text-gray-500 hover:text-tertiary font-medium px-3 py-3 transition-colors">
+              Registrar
+            </Link>
+            <Link to="/jueces/login" className="bg-primary/10 hover:bg-primary/20 text-primary-dark font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">
+              Jueces
             </Link>
           </div>
         </section>
