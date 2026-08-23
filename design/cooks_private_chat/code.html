@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SNDWCH CHAMP - Cooks Private Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-secondary-fixed-variant": "#76330d",
+                      "on-primary-container": "#613b00",
+                      "background": "#fdf9e9",
+                      "tertiary-container": "#30c88f",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#855300",
+                      "surface-container-high": "#ece8d9",
+                      "surface": "#fdf9e9",
+                      "outline-variant": "#d8c3ad",
+                      "outline": "#867461",
+                      "on-surface": "#1c1c13",
+                      "inverse-on-surface": "#f5f1e1",
+                      "secondary-fixed": "#ffdbcc",
+                      "on-secondary-fixed": "#351000",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#323126",
+                      "on-secondary-container": "#76340e",
+                      "inverse-primary": "#ffb95f",
+                      "on-tertiary-container": "#004e34",
+                      "on-primary": "#ffffff",
+                      "tertiary": "#006c49",
+                      "surface-container-low": "#f8f4e4",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#002113",
+                      "primary-container": "#f59e0b",
+                      "surface-container-highest": "#e6e3d3",
+                      "secondary-fixed-dim": "#ffb693",
+                      "secondary": "#944a23",
+                      "on-surface-variant": "#534434",
+                      "primary-fixed": "#ffddb8",
+                      "on-primary-fixed-variant": "#653e00",
+                      "on-background": "#1c1c13",
+                      "primary-fixed-dim": "#ffb95f",
+                      "secondary-container": "#fd9e70",
+                      "surface-container": "#f2eede",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#2a1700",
+                      "surface-variant": "#e6e3d3",
+                      "surface-dim": "#dedacb",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-tint": "#855300",
+                      "surface-bright": "#fdf9e9",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "xs": "4px",
+                      "gutter": "16px",
+                      "lg": "40px",
+                      "xl": "64px",
+                      "sm": "12px",
+                      "margin-desktop": "32px",
+                      "md": "24px"
+              },
+              "fontFamily": {
+                      "stats-number": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "stats-number": [
+                              "40px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "52px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- Header: Private Team Channel Variant -->
+<header class="fixed top-0 w-full z-50 bg-surface border-b-2 border-outline-variant shadow-sm flex justify-between items-center px-margin-mobile h-16 md:hidden">
+<div class="flex items-center gap-2">
+<button aria-label="Back to Team Dashboard" class="p-2 hover:bg-primary-container/20 rounded-full transition-colors active:translate-y-0.5">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-black text-primary tracking-tighter leading-none">TEAM CRUST</span>
+<span class="text-xs text-on-surface-variant font-label-bold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary-container inline-block"></span> Private Chat
+                </span>
+</div>
+</div>
+<button class="p-2 hover:bg-primary-container/20 rounded-full transition-colors active:translate-y-0.5">
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="Close up of a professional chef avatar in a high energy culinary setting, brightly lit, vibrant orange and brown tones, high resolution, modern UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbC7KmXXTKDf5ExwQDan-H_G4xM-4Ys1RPdVhf_x3kiNk2u0XKexTBZ0tMlM2XrPsqmwRUE2OeuYwBnvvllU8pI19eEcutvB3uf3wBxdXl3MraGpOVY4pnbLETsW76wSoJn06oKHZ-m6FIrxyU9nUwAqP6yKrCQ-LMY1Nk067jiJgCbeVADij-JEESmsfEU6e10qgltjVoriBYCZwUTTg6daR2Qwv0U-dxQBXOMM0aEp-mvIivQ921"/>
+</button>
+</header>
+<!-- Desktop Top App Bar -->
+<header class="hidden md:flex fixed top-0 w-full z-50 bg-surface border-b-2 border-outline-variant shadow-sm justify-between items-center px-margin-desktop h-16">
+<div class="flex items-center gap-gutter">
+<button class="p-2 hover:bg-primary-container/20 rounded-full transition-colors active:translate-y-0.5 flex items-center gap-2 font-label-bold text-label-bold text-primary">
+<span class="material-symbols-outlined">arrow_back</span> Dashboard
+            </button>
+<h1 class="font-headline-md text-headline-md font-black text-primary tracking-tighter">SNDWCH CHAMP</h1>
+<span class="text-xs text-on-surface-variant font-label-bold px-2 py-1 bg-surface-container rounded-md flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary-container inline-block"></span> Team Crust Private
+            </span>
+</div>
+<div class="flex gap-4">
+<nav class="flex items-center gap-4">
+<a class="text-on-surface-variant hover:bg-primary-container/20 px-3 py-2 rounded-lg transition-colors font-label-bold flex items-center gap-2" href="#">
+<span class="material-symbols-outlined">restaurant</span> Feed
+                </a>
+<a class="text-on-surface-variant hover:bg-primary-container/20 px-3 py-2 rounded-lg transition-colors font-label-bold flex items-center gap-2" href="#">
+<span class="material-symbols-outlined">emoji_events</span> Bracket
+                </a>
+<a class="text-primary bg-primary-container/10 px-3 py-2 rounded-lg transition-colors font-label-bold flex items-center gap-2 active:translate-y-0.5" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forum</span> Chat
+                </a>
+<a class="text-on-surface-variant hover:bg-primary-container/20 px-3 py-2 rounded-lg transition-colors font-label-bold flex items-center gap-2" href="#">
+<span class="material-symbols-outlined">analytics</span> Scoring
+                </a>
+<a class="text-on-surface-variant hover:bg-primary-container/20 px-3 py-2 rounded-lg transition-colors font-label-bold flex items-center gap-2" href="#">
+<span class="material-symbols-outlined">settings_suggest</span> Admin
+                </a>
+</nav>
+<img alt="User Profile" class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="Close up of a professional chef avatar in a high energy culinary setting, brightly lit, vibrant orange and brown tones, high resolution, modern UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNvtCOjaiKO9TEEMEAJIQ6FZ98X21e8wxiU9CpsPCJseQMyX37ucfNAvK2-pXEqkk1J-nMBZXxTQXoEBzCVQ2H4vOFWKKn6WuHSKhomDxwUsZYzDK4lTpKTZ9a4vYCOig8sHThmSnG61i0547R6DsiOXlSxnH4LJUR5704_nwKrfWIMXr2Rhve86vJ7wsLX65ngdIrvwstT9ur6yA5Bp3gbSIfVxZghO6ghBUOonnGmj2tcFpr87ft"/>
+</div>
+</header>
+<!-- Main Chat Canvas -->
+<main class="flex-1 pt-16 pb-24 md:pb-16 flex flex-col max-w-4xl mx-auto w-full px-margin-mobile md:px-margin-desktop gap-base relative bg-surface-bright">
+<!-- Chat Date Divider -->
+<div class="flex items-center justify-center py-sm mt-4">
+<span class="bg-surface-container-high text-on-surface-variant font-label-bold text-xs px-3 py-1 rounded-full shadow-sm border border-outline-variant/30">Today, 10:45 AM</span>
+</div>
+<!-- Message from other team member -->
+<div class="flex gap-sm items-end mb-sm">
+<img class="w-8 h-8 rounded-full shadow-sm border border-outline-variant object-cover mb-6" data-alt="A small circular avatar of a female sous chef smiling in a kitchen, warm lighting, high contrast bold colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3w45E3KPAOKs_BeYl63pSgBuuI2wuyHNr1K-i9yCcNUncXpGunMYYk8TcB1_0XvHg4P_WgV3fCYc_120IDi6nZiFmvkCPexRIKRjnbd1sxNJvoCz3nNoeBr1AB-aLfFOsv7sjTIDkq5CyfERgU0uCXdOaEYfNN0e4wAZgR5opkNjpbQPoCfOVWU6NqbJZVoYoQfsz180tZodQuwqOIZx3H2qeG2f-lDOaKNyae24-xPsCywTxUZg0"/>
+<div class="flex flex-col gap-1 max-w-[80%]">
+<span class="text-xs font-label-bold text-on-surface-variant ml-2">Chef Maria</span>
+<div class="bg-surface-container text-on-surface font-body-md p-3 rounded-xl rounded-bl-none shadow-sm border border-outline-variant/50">
+                    Did we secure the brioche buns? The supplier was being difficult yesterday.
+                </div>
+</div>
+</div>
+<!-- Message from user -->
+<div class="flex gap-sm items-end justify-end mb-sm">
+<div class="flex flex-col gap-1 items-end max-w-[80%]">
+<div class="bg-primary text-on-primary font-body-md p-3 rounded-xl rounded-br-none shadow-sm relative group">
+                    Secured! 50 dozen arriving at 5 AM tomorrow. 🍞🔥
+                    <div class="absolute -bottom-5 right-0 flex items-center gap-1 opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[14px] text-tertiary-container">done_all</span>
+<span class="text-[10px] text-on-surface-variant font-label-bold">Read by all</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Image Message from other team member -->
+<div class="flex gap-sm items-end mb-sm mt-4">
+<img class="w-8 h-8 rounded-full shadow-sm border border-outline-variant object-cover mb-2" data-alt="A small circular avatar of a male prep cook in a busy deli setting, bright festive colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1ntK8_4wh6utzLaiAXWTV1tNDcxLbcBvkD2Hx5mi4216tBcmpYpiA2lMD_dGjGwrAeOyDiCOMKpE_AKi-CfKyyiBkoiWt8co1jChBN27CCpGNONRBJ-3LrAkRuq9a0D5xt0raSXddjk1REUfdEFGPIjFFwo11WuhcMd8Icf4xF0IZhcydU-jGynEHE4WVrL-SgE9eK2HvNzWe2KZOG5umZxzbWjdd118dKAMaJVOJrK6gENgVYpeM"/>
+<div class="flex flex-col gap-1 max-w-[80%]">
+<span class="text-xs font-label-bold text-on-surface-variant ml-2">Prep Cook Dan</span>
+<div class="bg-surface-container p-2 rounded-xl rounded-bl-none shadow-sm border border-outline-variant/50">
+<img class="rounded-lg w-full max-w-[240px] h-auto object-cover mb-2" data-alt="A high quality food photograph of perfectly sliced pastrami on a cutting board, rich crust brown and vibrant meat colors, well lit, culinary competition vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGaRFlatWz57HPLTpaIUq42jRZp-hvSk0it6-qtHEDNctwnxuV5hIpXfJU-KBCSBnAvo91sAhR-FFBSC-CSxfKlJhP26wjN4rJhvRQpfD11vEpUxIc_g7b1myboSBXx2_pSMT1j2uu3IHQEzMLmsi7pRV2aG5Gi2aPoLKvcHRPVEDxIvrWNNKUv65o2OE2e9MXuU-sS37wrYqNFDzL7HLgZ-d8WJa2aCAjkbA3weFh6QPXRXn9N-el"/>
+<span class="font-body-md text-on-surface px-1 block pb-1">Sample slice for the Reuben entry. Thoughts on thickness?</span>
+</div>
+</div>
+</div>
+<!-- System Message / Alert -->
+<div class="flex items-center justify-center py-2">
+<div class="bg-secondary-container/20 border border-secondary text-secondary font-label-bold text-xs px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">campaign</span> Team Registration closes in 2 hours
+            </div>
+</div>
+<!-- Audio Message from user -->
+<div class="flex gap-sm items-end justify-end mb-sm">
+<div class="flex flex-col gap-1 items-end max-w-[80%]">
+<div class="bg-primary text-on-primary p-2 pr-4 rounded-xl rounded-br-none shadow-sm flex items-center gap-3">
+<button class="bg-on-primary text-primary rounded-full p-2 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<div class="flex flex-col">
+<!-- Simulated Waveform -->
+<div class="flex items-center gap-[2px] h-6 w-32">
+<div class="w-1 bg-on-primary/60 h-2 rounded-full"></div>
+<div class="w-1 bg-on-primary/80 h-4 rounded-full"></div>
+<div class="w-1 bg-on-primary h-6 rounded-full"></div>
+<div class="w-1 bg-on-primary/40 h-3 rounded-full"></div>
+<div class="w-1 bg-on-primary/60 h-5 rounded-full"></div>
+<div class="w-1 bg-on-primary/90 h-6 rounded-full"></div>
+<div class="w-1 bg-on-primary/50 h-2 rounded-full"></div>
+<div class="w-1 bg-on-primary/30 h-1 rounded-full"></div>
+<div class="w-1 bg-on-primary/30 h-1 rounded-full"></div>
+</div>
+<span class="text-[10px] font-label-bold mt-1">0:12</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Chat Input Area (Fixed Bottom for Canvas) -->
+<div class="fixed bottom-0 md:bottom-0 w-full bg-surface-container shadow-[0_-4px_10px_rgba(133,83,0,0.1)] border-t border-outline-variant/30 pb-safe md:pb-0 z-40 mb-[72px] md:mb-0">
+<div class="max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop py-sm flex items-end gap-2">
+<button class="p-3 text-primary bg-surface rounded-xl border border-outline-variant hover:bg-surface-variant transition-colors flex-shrink-0">
+<span class="material-symbols-outlined">add_photo_alternate</span>
+</button>
+<button class="p-3 text-primary bg-surface rounded-xl border border-outline-variant hover:bg-surface-variant transition-colors flex-shrink-0">
+<span class="material-symbols-outlined">mic</span>
+</button>
+<div class="flex-1 relative">
+<textarea class="w-full bg-surface border-2 border-outline rounded-xl py-3 px-4 text-on-surface font-body-md focus:border-primary focus:ring-2 focus:ring-primary-container/50 outline-none resize-none transition-shadow" placeholder="Message Team Crust..." rows="1"></textarea>
+</div>
+<button class="p-3 bg-primary text-on-primary rounded-xl hover:translate-y-[2px] transition-transform shadow-md flex-shrink-0 active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<!-- Mobile Bottom Nav Bar (Hidden on Desktop) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface-container border-t-2 border-outline-variant shadow-[0_-4px_10px_rgba(133,83,0,0.1)] rounded-t-xl pb-safe h-[72px]">
+<div class="flex justify-around items-center h-full px-2">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-bold text-[10px] mt-1">Feed</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">emoji_events</span>
+<span class="font-label-bold text-[10px] mt-1">Bracket</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 active:scale-95 transition-all duration-150 shadow-sm relative" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-label-bold text-[10px] mt-1">Chat</span>
+<span class="absolute top-1 right-2 w-2 h-2 bg-error rounded-full"></span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-bold text-[10px] mt-1">Scoring</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-label-bold text-[10px] mt-1">Admin</span>
+</a>
+</div>
+</nav>
+<!-- Support for safe area on mobile devices -->
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</body></html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Judge Panel &amp; Rubrics - Sandwich Championship</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Montserrat:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffddb8",
+                      "surface-container": "#f2eede",
+                      "primary-fixed-dim": "#ffb95f",
+                      "on-background": "#1c1c13",
+                      "on-secondary": "#ffffff",
+                      "surface-dim": "#dedacb",
+                      "on-secondary-fixed": "#351000",
+                      "inverse-on-surface": "#f5f1e1",
+                      "primary": "#855300",
+                      "on-surface": "#1c1c13",
+                      "on-secondary-container": "#76340e",
+                      "on-primary-container": "#613b00",
+                      "inverse-surface": "#323126",
+                      "inverse-primary": "#ffb95f",
+                      "primary-container": "#f59e0b",
+                      "outline": "#867461",
+                      "on-primary-fixed-variant": "#653e00",
+                      "surface-bright": "#fdf9e9",
+                      "tertiary": "#006c49",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#534434",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#004e34",
+                      "surface-container-high": "#ece8d9",
+                      "on-primary-fixed": "#2a1700",
+                      "surface-container-low": "#f8f4e4",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#30c88f",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface-tint": "#855300",
+                      "surface-variant": "#e6e3d3",
+                      "on-primary": "#ffffff",
+                      "secondary": "#944a23",
+                      "on-secondary-fixed-variant": "#76330d",
+                      "outline-variant": "#d8c3ad",
+                      "secondary-fixed-dim": "#ffb693",
+                      "tertiary-fixed": "#6ffbbe",
+                      "secondary-container": "#fd9e70",
+                      "surface": "#fdf9e9",
+                      "on-tertiary-fixed": "#002113",
+                      "background": "#fdf9e9",
+                      "secondary-fixed": "#ffdbcc",
+                      "surface-container-highest": "#e6e3d3",
+                      "on-tertiary-fixed-variant": "#005236"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "margin-mobile": "16px",
+                      "gutter": "16px",
+                      "lg": "40px",
+                      "xl": "64px",
+                      "margin-desktop": "32px",
+                      "base": "8px",
+                      "md": "24px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "stats-number": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Montserrat"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "stats-number": [
+                              "40px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "52px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        .tactile-button:active {
+            transform: translateY(2px);
+        }
+        .crust-border {
+            border: 2px solid #867461;
+        }
+        .glow-focus:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3);
+        }
+        
+        /* Custom scrollbar for data heavy views */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f2eede;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #867461;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #653e00;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="bg-surface w-full h-16 border-b-2 border-outline-variant shadow-sm flex-shrink-0 z-10">
+<div class="flex justify-between items-center px-margin-desktop w-full max-w-7xl mx-auto h-full">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Sandwich Championship</span>
+<nav class="hidden md:flex gap-sm h-full items-center ml-lg">
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary-container/10 rounded-lg px-sm py-xs font-label-bold text-label-bold" href="#">Bracket</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary-container/10 rounded-lg px-sm py-xs font-label-bold text-label-bold" href="#">Teams</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary-container/10 rounded-lg px-sm py-xs font-label-bold text-label-bold" href="#">Live Stream</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary-container/10 rounded-lg px-sm py-xs font-label-bold text-label-bold" href="#">History</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="font-label-bold text-label-bold text-primary bg-surface-container-lowest crust-border px-md py-xs rounded-xl tactile-button transition-transform duration-150">Login</button>
+<button class="font-label-bold text-label-bold text-on-primary-container bg-primary-container px-md py-xs rounded-xl tactile-button transition-transform duration-150 shadow-sm">Register Team</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Side Navigation Bar -->
+<aside class="bg-surface-container h-full w-64 border-r-2 border-outline-variant flex flex-col py-md flex-shrink-0 hidden lg:flex">
+<div class="px-md mb-lg">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<div>
+<h2 class="font-headline-md text-headline-md font-black text-secondary">Host Panel</h2>
+<p class="font-label-bold text-label-bold text-on-surface-variant">Season 2024</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-xs overflow-y-auto">
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 px-sm py-sm flex items-center gap-sm font-label-bold text-label-bold transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 px-sm py-sm flex items-center gap-sm font-label-bold text-label-bold transition-colors" href="#">
+<span class="material-symbols-outlined">chat</span>
+                    Global Chat
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 px-sm py-sm flex items-center gap-sm font-label-bold text-label-bold transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+                    Team Hub
+                </a>
+<a class="bg-secondary-container text-on-secondary-container rounded-xl mx-2 my-1 px-sm py-sm flex items-center gap-sm font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star_rate</span>
+                    Scoring
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 px-sm py-sm flex items-center gap-sm font-label-bold text-label-bold transition-colors" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+                    Analytics
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 px-sm py-sm flex items-center gap-sm font-label-bold text-label-bold transition-colors" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+                    Management
+                </a>
+</nav>
+<div class="px-md mt-auto pt-md">
+<button class="w-full bg-primary text-on-primary font-label-bold text-label-bold py-sm rounded-xl tactile-button flex justify-center items-center gap-xs">
+<span class="material-symbols-outlined text-sm">circle</span>
+                    Live Status
+                </button>
+<div class="flex justify-around mt-md pt-sm border-t border-outline-variant">
+<a class="text-on-surface-variant hover:text-primary flex flex-col items-center" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-xs font-label-bold">Support</span>
+</a>
+<a class="text-on-surface-variant hover:text-primary flex flex-col items-center" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-xs font-label-bold">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area - Split Screen -->
+<main class="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-surface-container-low">
+<!-- Left Panel: Entry Details -->
+<section class="w-full md:w-1/2 p-margin-desktop overflow-y-auto border-r-2 border-outline-variant flex flex-col gap-lg">
+<div class="flex justify-between items-start">
+<div>
+<span class="bg-error text-on-error font-label-bold text-label-bold px-sm py-xs rounded-full inline-block mb-sm">NO BURGERS</span>
+<h1 class="font-headline-xl text-headline-xl text-primary">The Cubano Rex</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-xs">Team: Deli Devils • Round 3 Quarterfinals</p>
+</div>
+<div class="bg-surface-container-highest px-md py-sm rounded-xl text-center crust-border">
+<span class="block text-xs font-label-bold text-on-surface-variant uppercase">Current Avg</span>
+<span class="font-stats-number text-stats-number text-tertiary">8.4</span>
+</div>
+</div>
+<!-- MinIO Media Card -->
+<div class="bg-surface rounded-xl overflow-hidden shadow-sm crust-border relative group">
+<img class="w-full h-80 object-cover" data-alt="A high-resolution, vibrant close-up food photography shot of a massive, perfectly pressed Cubano sandwich sliced in half. The sandwich features thick layers of roast pork, glazed ham, melted Swiss cheese, bright yellow mustard, and thinly sliced crisp pickles, all compressed between deeply toasted, buttery Cuban bread with prominent grill marks. The lighting is warm and dramatic, highlighting the gooey cheese and the textures of the meat, creating a mouth-watering, high-energy culinary championship vibe against a dark, slightly rustic deli background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6PsGCRdjN15ZT_O0hyXj_FPWpVK_uXowJ0peD1rBQ3Au5NPd_pJFcn8giQ9uFOY_lcp_osLI7h_jZD3zCXHHOzwi4ddbPa9LdGAw20503F-BJQTaDW5DKAIVj6rQaUJoINMv9m-gMPhZ_qhUDc0kvXomlXPWkEKruWPfWCVjlwKjM1yF7SM4l2sNHtD5VhchqSL2PaI-Ze0AEMmSHuMITs3e0GfzwaL5g2T-T-XEdZrfk20dOoIaM"/>
+<div class="absolute top-sm right-sm bg-surface-container/90 backdrop-blur-sm rounded-lg p-xs flex gap-xs">
+<button class="p-xs hover:bg-surface-variant rounded-md text-on-surface"><span class="material-symbols-outlined">fullscreen</span></button>
+</div>
+<div class="p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Chef's Notes</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            Traditional Miami-style Cubano pressed with extra butter. We sourced heritage pork shoulder, marinated in a citrus mojo for 48 hours, and slow-roasted it. The mustard is a house-blend with a touch of habanero for a hidden kick.
+                        </p>
+<div class="mt-md flex gap-sm flex-wrap">
+<span class="bg-surface-container-highest text-on-surface-variant font-label-bold text-label-bold px-sm py-xs rounded-lg border border-outline-variant">Pork</span>
+<span class="bg-surface-container-highest text-on-surface-variant font-label-bold text-label-bold px-sm py-xs rounded-lg border border-outline-variant">Pressed</span>
+<span class="bg-surface-container-highest text-on-surface-variant font-label-bold text-label-bold px-sm py-xs rounded-lg border border-outline-variant">Spicy</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Panel: Rubric Scorecard -->
+<section class="w-full md:w-1/2 bg-surface p-margin-desktop overflow-y-auto relative">
+<div class="sticky top-0 bg-surface z-10 pb-md mb-md border-b-2 border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-lg text-headline-lg text-on-background">Official Scorecard</h2>
+<button class="text-on-surface-variant hover:text-error transition-colors flex items-center gap-xs font-label-bold text-label-bold">
+<span class="material-symbols-outlined">flag</span>
+                        Flag Entry
+                    </button>
+</div>
+<form class="flex flex-col gap-xl pb-xl">
+<!-- Structural Integrity -->
+<div class="bg-surface-container-low p-md rounded-xl crust-border">
+<div class="flex justify-between items-center mb-md">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Structural Integrity</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Does it hold together during consumption?</p>
+</div>
+<span class="font-stats-number text-stats-number text-primary-container">9</span>
+</div>
+<input class="w-full accent-primary-container cursor-pointer" max="10" min="1" type="range" value="9"/>
+<div class="flex justify-between mt-xs font-label-bold text-label-bold text-on-surface-variant text-xs">
+<span>Sloppy (1)</span>
+<span>Architectural Marvel (10)</span>
+</div>
+</div>
+<!-- Flavor Profile -->
+<div class="bg-surface-container-low p-md rounded-xl crust-border">
+<div class="flex justify-between items-center mb-md">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Flavor Profile (Umami)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Balance of salt, fat, acid, and heat.</p>
+</div>
+<span class="font-stats-number text-stats-number text-tertiary">8</span>
+</div>
+<input class="w-full accent-tertiary cursor-pointer" max="10" min="1" type="range" value="8"/>
+<div class="flex justify-between mt-xs font-label-bold text-label-bold text-on-surface-variant text-xs">
+<span>Bland (1)</span>
+<span>Explosive (10)</span>
+</div>
+</div>
+<!-- Bread Quality -->
+<div class="bg-surface-container-low p-md rounded-xl crust-border">
+<div class="flex justify-between items-center mb-md">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Bread Quality</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Crust-to-crumb ratio, toast level.</p>
+</div>
+<span class="font-stats-number text-stats-number text-secondary">7</span>
+</div>
+<input class="w-full accent-secondary cursor-pointer" max="10" min="1" type="range" value="7"/>
+<div class="flex justify-between mt-xs font-label-bold text-label-bold text-on-surface-variant text-xs">
+<span>Soggy (1)</span>
+<span>Perfect Crunch (10)</span>
+</div>
+</div>
+<!-- Judge Notes -->
+<div>
+<label class="font-headline-md text-headline-md text-on-surface block mb-sm" for="judge_notes">Tasting Notes</label>
+<textarea class="w-full bg-surface-container-lowest crust-border rounded-xl p-sm font-body-md text-body-md text-on-surface glow-focus resize-none placeholder-on-surface-variant/50" id="judge_notes" placeholder="Enter detailed feedback here..." rows="4"></textarea>
+</div>
+<!-- Actions -->
+<div class="flex gap-md mt-sm pt-md border-t-2 border-outline-variant">
+<button class="flex-1 bg-surface-container-lowest text-on-surface font-label-bold text-label-bold py-md rounded-xl crust-border tactile-button hover:bg-surface-container-low transition-colors" type="button">Save Draft</button>
+<button class="flex-2 w-full bg-primary-container text-on-primary-container font-label-bold text-label-bold py-md rounded-xl tactile-button shadow-sm hover:brightness-105 transition-all text-lg relative overflow-hidden group" type="submit">
+<span class="relative z-10 flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">gavel</span>
+                                Submit Final Score
+                            </span>
+</button>
+</div>
+</form>
+</section>
+</main>
+</div>
+</body></html>

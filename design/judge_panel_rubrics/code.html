@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Judge Panel - SNDWCH CHAMP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary-fixed-variant": "#76330d",
+                        "on-primary-container": "#613b00",
+                        "background": "#fdf9e9",
+                        "tertiary-container": "#30c88f",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#855300",
+                        "surface-container-high": "#ece8d9",
+                        "surface": "#fdf9e9",
+                        "outline-variant": "#d8c3ad",
+                        "outline": "#867461",
+                        "on-surface": "#1c1c13",
+                        "inverse-on-surface": "#f5f1e1",
+                        "secondary-fixed": "#ffdbcc",
+                        "on-secondary-fixed": "#351000",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#323126",
+                        "on-secondary-container": "#76340e",
+                        "inverse-primary": "#ffb95f",
+                        "on-tertiary-container": "#004e34",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006c49",
+                        "surface-container-low": "#f8f4e4",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#002113",
+                        "primary-container": "#f59e0b",
+                        "surface-container-highest": "#e6e3d3",
+                        "secondary-fixed-dim": "#ffb693",
+                        "secondary": "#944a23",
+                        "on-surface-variant": "#534434",
+                        "primary-fixed": "#ffddb8",
+                        "on-primary-fixed-variant": "#653e00",
+                        "on-background": "#1c1c13",
+                        "primary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#fd9e70",
+                        "surface-container": "#f2eede",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-variant": "#e6e3d3",
+                        "surface-dim": "#dedacb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-tint": "#855300",
+                        "surface-bright": "#fdf9e9",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "margin-desktop": "32px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "stats-number": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-bold": ["Inter"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "stats-number": ["40px", { "lineHeight": "40px", "fontWeight": "900" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .slider-thumb::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #855300;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(133,83,0,0.3);
+            border: 2px solid #ffffff;
+            transition: transform 0.1s;
+        }
+        .slider-thumb::-webkit-slider-thumb:active {
+            transform: scale(1.2);
+            background: #f59e0b;
+        }
+        .slider-track {
+            height: 8px;
+            border-radius: 4px;
+            background: #d8c3ad;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col pt-16 pb-[80px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim fixed top-0 w-full z-50 border-b-2 border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-margin-mobile h-16">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-primary-container/20 transition-colors active:translate-y-0.5 transition-transform duration-100 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">timer</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed-dim tracking-tighter">SNDWCH CHAMP</h1>
+<button class="hover:bg-primary-container/20 transition-colors active:translate-y-0.5 transition-transform duration-100 p-1 rounded-full overflow-hidden w-10 h-10 flex items-center justify-center">
+<img alt="user_profile_avatar" class="w-full h-full object-cover rounded-full" data-alt="A small circular avatar placeholder image showing a generic profile silhouette in high contrast warm paper white against a deep crust brown background, designed for a modern user interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXL-tZkRKJW9BAWfTU6oa63MuP0D5-y8pq_9C7egFOgx4tTkaNA0c58eCdEMPSGvaaou7LZco60A5iXqYIoU_Yt0buCC1QEo_PjJdg25fXnCpSh8yZFMXy1P_mh-cAThkyN3TPYQHUITcBG1kro1OFR4P5zVEQDpcOKnq7z2UzsCC10ZUmxvud-VfjUEBxDga9_Zb1mz1nu26eCS1RM7KMhGgpWYehC7WQoJRro3zJBts3o9E1N6ch"/>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-3xl mx-auto px-margin-mobile py-lg flex flex-col gap-lg">
+<!-- Tasting Guide Hero -->
+<section class="bg-surface-container-high rounded-xl border-2 border-outline shadow-[0_4px_12px_rgba(133,83,0,0.1)] overflow-hidden relative">
+<div class="h-48 w-full relative">
+<img class="w-full h-full object-cover absolute inset-0 z-0" data-alt="A dramatic close up of a massive artisanal deli sandwich stacked impossibly high with assorted cured meats, vibrant crisp lettuce, and thick slices of melting cheese on crusty artisanal bread. The scene is brightly lit with high contrast warm studio lighting, emphasizing the tactile textures of the food against a clean, warm paper background. Food photography style, high energy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3a-3Qi35LMKYlVzcvNf6QSOJIIMtwuG9SvdAp9UldFqFt2pCMxj6roLgFNvDMBKH7e8dfsVlVjfAUDPL7_-eKnzpvKbQ5pBfrcrNP4EWPS1qd55x6iWY0lb95foOnlF_POKu83TAi7ZOPk6EG3XK2meag2At8k6uLt7O3QgbRbtVWETqmPzCXVhovkBKQHh95yDZLE2B_4OA_1q3Vywz4b3Hn1jNWW0Jom7ExckShjnd_1rfBQHrD"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high via-surface-container-high/60 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 p-sm z-20 w-full">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-error text-on-error font-label-bold text-label-bold px-2 py-0.5 rounded-sm inline-flex items-center shadow-sm">
+                            NO BURGERS
+                        </span>
+<span class="bg-secondary text-on-secondary font-label-bold text-label-bold px-2 py-0.5 rounded-sm shadow-sm">
+                            Entry #42
+                        </span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-black drop-shadow-md">The "Godfather" Sub</h2>
+</div>
+</div>
+<div class="p-margin-mobile bg-surface-container-high">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Tasting Notes</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-prose">
+                            Look for structural integrity during the bite. The acidic bite of the giardiniera should cut through the rich capicola. Bread must resist sogging for at least 5 minutes post-prep.
+                        </p>
+</div>
+</div>
+<a class="inline-flex items-center gap-2 text-secondary font-label-bold text-label-bold hover:text-primary transition-colors py-2 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">menu_book</span>
+                    Full Digital Rubric
+                </a>
+</div>
+</section>
+<!-- Scoring Sliders -->
+<section class="flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface">Official Scorecard</h2>
+<span class="font-stats-number text-stats-number text-tertiary" id="total-score">32</span>
+</div>
+<!-- Taste -->
+<div class="bg-surface-container rounded-xl p-margin-mobile border border-outline-variant">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">restaurant_menu</span>
+<h3 class="font-headline-md text-headline-md">Taste</h3>
+</div>
+<span class="font-stats-number text-headline-md text-on-surface" id="val-taste">8</span>
+</div>
+<input class="w-full appearance-none slider-track slider-thumb" max="10" min="1" oninput="document.getElementById('val-taste').innerText = this.value; updateTotal();" type="range" value="8"/>
+<div class="flex justify-between mt-2 font-label-bold text-label-bold text-on-surface-variant text-xs">
+<span>Bland</span>
+<span>Transcendent</span>
+</div>
+</div>
+<!-- Texture -->
+<div class="bg-surface-container rounded-xl p-margin-mobile border border-outline-variant">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">waves</span>
+<h3 class="font-headline-md text-headline-md">Texture</h3>
+</div>
+<span class="font-stats-number text-headline-md text-on-surface" id="val-texture">9</span>
+</div>
+<input class="w-full appearance-none slider-track slider-thumb" max="10" min="1" oninput="document.getElementById('val-texture').innerText = this.value; updateTotal();" type="range" value="9"/>
+<div class="flex justify-between mt-2 font-label-bold text-label-bold text-on-surface-variant text-xs">
+<span>Mush</span>
+<span>Perfect Crunch</span>
+</div>
+</div>
+<!-- Creativity -->
+<div class="bg-surface-container rounded-xl p-margin-mobile border border-outline-variant">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<h3 class="font-headline-md text-headline-md">Creativity</h3>
+</div>
+<span class="font-stats-number text-headline-md text-on-surface" id="val-creativity">7</span>
+</div>
+<input class="w-full appearance-none slider-track slider-thumb" max="10" min="1" oninput="document.getElementById('val-creativity').innerText = this.value; updateTotal();" type="range" value="7"/>
+<div class="flex justify-between mt-2 font-label-bold text-label-bold text-on-surface-variant text-xs">
+<span>Basic</span>
+<span>Avant-Garde</span>
+</div>
+</div>
+<!-- Presentation -->
+<div class="bg-surface-container rounded-xl p-margin-mobile border border-outline-variant">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+<h3 class="font-headline-md text-headline-md">Presentation</h3>
+</div>
+<span class="font-stats-number text-headline-md text-on-surface" id="val-presentation">8</span>
+</div>
+<input class="w-full appearance-none slider-track slider-thumb" max="10" min="1" oninput="document.getElementById('val-presentation').innerText = this.value; updateTotal();" type="range" value="8"/>
+<div class="flex justify-between mt-2 font-label-bold text-label-bold text-on-surface-variant text-xs">
+<span>Messy</span>
+<span>Magazine Ready</span>
+</div>
+</div>
+<div class="flex flex-col gap-4 mt-6">
+<button class="w-full bg-primary text-on-primary font-headline-md text-headline-md rounded-xl py-4 shadow-[0_4px_14px_rgba(133,83,0,0.3)] hover:bg-primary-fixed-variant active:translate-y-0.5 active:shadow-sm transition-all flex items-center justify-center gap-2" id="save-btn">
+<span class="material-symbols-outlined">save</span>
+                    Lock In Score
+                </button>
+<a class="w-full bg-surface text-primary border-2 border-outline font-headline-md text-headline-md rounded-xl py-3 hover:bg-surface-variant active:translate-y-0.5 transition-all flex items-center justify-center gap-2" href="#">
+<span class="material-symbols-outlined">forum</span>
+                    Judges Private Chat
+                </a>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-highest fixed bottom-0 w-full z-50 rounded-t-xl border-t-2 border-outline-variant dark:border-outline shadow-[0_-4px_10px_rgba(133,83,0,0.1)] fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">restaurant</span>
+<span class="font-label-bold text-[10px] mt-1">Feed</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">emoji_events</span>
+<span class="font-label-bold text-[10px] mt-1">Bracket</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">forum</span>
+<span class="font-label-bold text-[10px] mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-on-primary-container text-on-primary-container dark:text-primary-fixed rounded-xl px-3 py-1 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-bold text-[10px] mt-1">Scoring</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">settings_suggest</span>
+<span class="font-label-bold text-[10px] mt-1">Admin</span>
+</a>
+</nav>
+<!-- Confirmation Toast (Hidden by default) -->
+<div class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-tertiary-container text-on-tertiary-container font-headline-md text-headline-md px-6 py-3 rounded-xl shadow-xl transition-all duration-300 opacity-0 pointer-events-none z-[60] flex items-center gap-2 border-2 border-tertiary" id="toast">
+<span class="material-symbols-outlined">check_circle</span>
+        Score Saved!
+    </div>
+<script>
+        function updateTotal() {
+            const t = parseInt(document.querySelector('input[value="8"][max="10"]:nth-of-type(1)').value || document.getElementById('val-taste').innerText); // Rough fallback for simple demo
+            
+            // Re-grabbing values cleanly
+            const taste = parseInt(document.getElementById('val-taste').innerText);
+            const texture = parseInt(document.getElementById('val-texture').innerText);
+            const creativity = parseInt(document.getElementById('val-creativity').innerText);
+            const presentation = parseInt(document.getElementById('val-presentation').innerText);
+            
+            document.getElementById('total-score').innerText = taste + texture + creativity + presentation;
+        }
+
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const btn = document.getElementById('save-btn');
+            const toast = document.getElementById('toast');
+            
+            // Button visual feedback
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Saving...';
+            btn.classList.add('opacity-75');
+            
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined">check</span> Locked';
+                btn.classList.remove('opacity-75');
+                btn.classList.replace('bg-primary', 'bg-tertiary');
+                btn.classList.replace('text-on-primary', 'text-on-tertiary');
+                
+                // Show toast
+                toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+                
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-[-20px]');
+                    // Reset button after a while
+                    setTimeout(()=> {
+                         btn.innerHTML = '<span class="material-symbols-outlined">save</span> Lock In Score';
+                         btn.classList.replace('bg-tertiary', 'bg-primary');
+                         btn.classList.replace('text-on-tertiary', 'text-on-primary');
+                    }, 1000);
+                }, 2500);
+            }, 600);
+        });
+    </script>
+</body></html>

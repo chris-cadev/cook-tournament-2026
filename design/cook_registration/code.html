@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SNDWCH CHAMP - Team Registration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary-fixed-variant": "#76330d",
+                        "on-primary-container": "#613b00",
+                        "background": "#fdf9e9",
+                        "tertiary-container": "#30c88f",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#855300",
+                        "surface-container-high": "#ece8d9",
+                        "surface": "#fdf9e9",
+                        "outline-variant": "#d8c3ad",
+                        "outline": "#867461",
+                        "on-surface": "#1c1c13",
+                        "inverse-on-surface": "#f5f1e1",
+                        "secondary-fixed": "#ffdbcc",
+                        "on-secondary-fixed": "#351000",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#323126",
+                        "on-secondary-container": "#76340e",
+                        "inverse-primary": "#ffb95f",
+                        "on-tertiary-container": "#004e34",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006c49",
+                        "surface-container-low": "#f8f4e4",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#002113",
+                        "primary-container": "#f59e0b",
+                        "surface-container-highest": "#e6e3d3",
+                        "secondary-fixed-dim": "#ffb693",
+                        "secondary": "#944a23",
+                        "on-surface-variant": "#534434",
+                        "primary-fixed": "#ffddb8",
+                        "on-primary-fixed-variant": "#653e00",
+                        "on-background": "#1c1c13",
+                        "primary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#fd9e70",
+                        "surface-container": "#f2eede",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-variant": "#e6e3d3",
+                        "surface-dim": "#dedacb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-tint": "#855300",
+                        "surface-bright": "#fdf9e9",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "margin-desktop": "32px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "stats-number": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-bold": ["Inter"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "stats-number": ["40px", { "lineHeight": "40px", "fontWeight": "900" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Montserrat', sans-serif; }
+        .step-active { display: block; }
+        .step-hidden { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24 md:pb-0 pt-16 flex flex-col md:flex-row">
+<!-- TopAppBar (Mobile & Desktop) -->
+<header class="bg-surface border-b-2 border-outline-variant shadow-sm fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="timer">timer</span>
+<span class="font-headline-md text-headline-md font-black text-primary tracking-tighter">SNDWCH CHAMP</span>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-primary-container/20 transition-colors rounded-full p-1" data-icon="user_profile_avatar">account_circle</span>
+</div>
+</header>
+<!-- Navigation Drawer (Desktop) -->
+<nav class="hidden md:flex bg-surface h-full w-80 rounded-r-xl bg-surface-container-low shadow-xl flex-col py-lg fixed left-0 top-16 z-40 border-r-2 border-outline-variant">
+<div class="px-margin-desktop mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-primary">CHAMPIONSHIP MENU</h2>
+</div>
+<div class="flex flex-col gap-sm">
+<a class="flex items-center gap-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg mx-2 p-3 active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="app_registration">app_registration</span>
+<span class="font-body-lg text-body-lg">Team Registration</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 p-3 transition-colors active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span class="font-body-lg text-body-lg">Judge Rubrics</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 p-3 transition-colors active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-body-lg text-body-lg">Umami Analytics</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 p-3 transition-colors active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="fastfood">fastfood</span>
+<span class="font-body-lg text-body-lg">Media Gallery</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-80 px-margin-mobile md:px-margin-desktop py-lg max-w-[1200px] mx-auto w-full">
+<div class="mb-xl text-center md:text-left">
+<h1 class="font-headline-xl text-headline-xl text-primary mb-sm">Register Your Team</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Step up to the plate. No burgers allowed.</p>
+</div>
+<div class="bg-surface-container rounded-xl p-6 md:p-10 border-2 border-outline shadow-[4px_4px_0px_rgba(133,83,0,0.2)]">
+<!-- Progress Indicator -->
+<div class="flex justify-between items-center mb-10 relative">
+<div class="absolute left-0 top-1/2 w-full h-1 bg-outline-variant -z-10 -translate-y-1/2"></div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold mb-2 border-2 border-outline" id="step1-indicator">1</div>
+<span class="font-label-bold text-label-bold text-on-surface text-center text-xs md:text-sm">The Meat</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface text-outline flex items-center justify-center font-bold mb-2 border-2 border-outline-variant" id="step2-indicator">2</div>
+<span class="font-label-bold text-label-bold text-on-surface-variant text-center text-xs md:text-sm">The Crew</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface text-outline flex items-center justify-center font-bold mb-2 border-2 border-outline-variant" id="step3-indicator">3</div>
+<span class="font-label-bold text-label-bold text-on-surface-variant text-center text-xs md:text-sm">Comms</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface text-outline flex items-center justify-center font-bold mb-2 border-2 border-outline-variant" id="step4-indicator">4</div>
+<span class="font-label-bold text-label-bold text-on-surface-variant text-center text-xs md:text-sm">Gear</span>
+</div>
+</div>
+<form id="registration-form" onsubmit="event.preventDefault(); nextStep(5);">
+<!-- Step 1: Team & Sandwich -->
+<div class="step-active" id="step-1">
+<h3 class="font-headline-md text-headline-md mb-6">1. The Concept</h3>
+<div class="space-y-6">
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">Team Name</label>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-shadow outline-none font-body-md text-body-md" placeholder="e.g. The Deli Llamas" required="" type="text"/>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">Signature Sandwich Name</label>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-shadow outline-none font-body-md text-body-md" placeholder="e.g. The Spicy Italian Job" required="" type="text"/>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">Brief Description</label>
+<textarea class="w-full bg-surface border-2 border-outline rounded-xl p-3 h-24 focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-shadow outline-none font-body-md text-body-md" placeholder="Describe the flavor profile..." required=""></textarea>
+</div>
+<div class="bg-error-container/30 border border-error text-error p-4 rounded-xl flex items-start gap-3">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-body-md text-sm font-bold">Reminder: NO BURGERS. If it's ground meat in a round bun, it will be disqualified.</span>
+</div>
+</div>
+<div class="mt-8 flex justify-end">
+<button class="bg-primary text-surface font-label-bold text-label-bold py-3 px-6 rounded-xl hover:translate-y-1 active:translate-y-2 transition-transform shadow-md hover:bg-surface-tint border-b-4 border-outline" onclick="nextStep(2)" type="button">Next: The Crew</button>
+</div>
+</div>
+<!-- Step 2: Members -->
+<div class="step-hidden" id="step-2">
+<h3 class="font-headline-md text-headline-md mb-6">2. Roster (Max 3)</h3>
+<div class="space-y-8">
+<!-- Captain -->
+<div class="p-4 bg-surface rounded-xl border border-outline-variant">
+<h4 class="font-label-bold text-label-bold mb-4 flex items-center gap-2"><span class="material-symbols-outlined" data-icon="star">star</span> Team Captain</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" placeholder="Name" required="" type="text"/>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" placeholder="Email" required="" type="email"/>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none md:col-span-2" placeholder="Phone" required="" type="tel"/>
+</div>
+</div>
+<!-- Member 2 -->
+<div class="p-4 bg-surface rounded-xl border border-outline-variant opacity-70 hover:opacity-100 transition-opacity">
+<h4 class="font-label-bold text-label-bold mb-4">Sous Chef (Optional)</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" placeholder="Name" type="text"/>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" placeholder="Email" type="email"/>
+</div>
+</div>
+<!-- Member 3 -->
+<div class="p-4 bg-surface rounded-xl border border-outline-variant opacity-70 hover:opacity-100 transition-opacity">
+<h4 class="font-label-bold text-label-bold mb-4">Prep Cook (Optional)</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" placeholder="Name" type="text"/>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" placeholder="Email" type="email"/>
+</div>
+</div>
+</div>
+<div class="mt-8 flex justify-between">
+<button class="bg-surface text-outline border-2 border-outline font-label-bold text-label-bold py-3 px-6 rounded-xl hover:bg-surface-variant transition-colors" onclick="nextStep(1)" type="button">Back</button>
+<button class="bg-primary text-surface font-label-bold text-label-bold py-3 px-6 rounded-xl hover:translate-y-1 transition-transform border-b-4 border-outline" onclick="nextStep(3)" type="button">Next: Comms</button>
+</div>
+</div>
+<!-- Step 3: Chat Password -->
+<div class="step-hidden" id="step-3">
+<h3 class="font-headline-md text-headline-md mb-6">3. Secure Comms</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Set a password for your team's private chat room to scheme against the competition.</p>
+<div class="space-y-6">
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">Chat Room Password</label>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" id="pwd" required="" type="password"/>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">Confirm Password</label>
+<input class="w-full bg-surface border-2 border-outline rounded-xl p-3 focus:ring-2 focus:ring-primary-container outline-none" id="pwd-confirm" required="" type="password"/>
+<p class="text-error text-sm mt-1 hidden" id="pwd-error">Passwords do not match.</p>
+</div>
+</div>
+<div class="mt-8 flex justify-between">
+<button class="bg-surface text-outline border-2 border-outline font-label-bold text-label-bold py-3 px-6 rounded-xl hover:bg-surface-variant transition-colors" onclick="nextStep(2)" type="button">Back</button>
+<button class="bg-primary text-surface font-label-bold text-label-bold py-3 px-6 rounded-xl hover:translate-y-1 transition-transform border-b-4 border-outline" onclick="validateStep3()" type="button">Next: Gear</button>
+</div>
+</div>
+<!-- Step 4: Equipment -->
+<div class="step-hidden" id="step-4">
+<h3 class="font-headline-md text-headline-md mb-6">4. Station Needs</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">What do you need at your prep station?</p>
+<div class="space-y-4 mb-8">
+<label class="flex items-center gap-3 p-4 border-2 border-outline-variant rounded-xl cursor-pointer hover:bg-surface transition-colors">
+<input class="w-5 h-5 text-primary focus:ring-primary-container rounded border-outline" type="checkbox"/>
+<span class="font-body-md font-bold">Standard 120V Power Outlet</span>
+</label>
+<label class="flex items-center gap-3 p-4 border-2 border-outline-variant rounded-xl cursor-pointer hover:bg-surface transition-colors">
+<input class="w-5 h-5 text-primary focus:ring-primary-container rounded border-outline" type="checkbox"/>
+<span class="font-body-md font-bold">Airfryer Approved Power</span>
+</label>
+<label class="flex items-center gap-3 p-4 border-2 border-outline-variant rounded-xl cursor-pointer hover:bg-surface transition-colors">
+<input class="w-5 h-5 text-primary focus:ring-primary-container rounded border-outline" type="checkbox"/>
+<span class="font-body-md font-bold">Panini Press / Griddle Space</span>
+</label>
+<label class="flex items-center gap-3 p-4 border-2 border-outline-variant rounded-xl cursor-pointer hover:bg-surface transition-colors">
+<input class="w-5 h-5 text-primary focus:ring-primary-container rounded border-outline" type="checkbox"/>
+<span class="font-body-md font-bold">Extra Cutting Board Space</span>
+</label>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant mb-8 flex items-center justify-center h-24">
+<span class="text-outline-variant font-bold">[ CAPTCHA PLACEHOLDER ]</span>
+</div>
+<div class="mt-8 flex justify-between">
+<button class="bg-surface text-outline border-2 border-outline font-label-bold text-label-bold py-3 px-6 rounded-xl hover:bg-surface-variant transition-colors" onclick="nextStep(3)" type="button">Back</button>
+<button class="bg-tertiary text-on-tertiary font-label-bold text-label-bold py-3 px-8 rounded-xl hover:translate-y-1 transition-transform border-b-4 border-on-tertiary-fixed text-lg" type="submit">SUBMIT REGISTRATION</button>
+</div>
+</div>
+<!-- Success State -->
+<div class="step-hidden text-center py-10" id="step-5">
+<div class="w-24 h-24 bg-tertiary-container rounded-full mx-auto flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="check_circle" style="font-size: 48px;">check_circle</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-4">You're In the Bracket!</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">Registration received. Watch your email for station assignments.</p>
+<button class="bg-surface text-primary border-2 border-primary font-label-bold text-label-bold py-3 px-6 rounded-xl hover:bg-surface-variant transition-colors" onclick="location.reload()" type="button">Register Another Team</button>
+</div>
+</form>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-surface-container fixed bottom-0 w-full z-50 rounded-t-xl border-t-2 border-outline-variant shadow-[0_-4px_10px_rgba(133,83,0,0.1)] fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+<span class="font-label-bold text-[10px] mt-1">Feed</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="font-label-bold text-[10px] mt-1">Bracket</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-bold text-[10px] mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-bold text-[10px] mt-1">Scoring</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="app_registration">app_registration</span>
+<span class="font-label-bold text-[10px] mt-1">Register</span>
+</a>
+</nav>
+<script>
+        function nextStep(step) {
+            // Hide all
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`step-${i}`).classList.remove('step-active');
+                document.getElementById(`step-${i}`).classList.add('step-hidden');
+            }
+            // Show target
+            document.getElementById(`step-${step}`).classList.remove('step-hidden');
+            document.getElementById(`step-${step}`).classList.add('step-active');
+
+            // Update indicators if not success step
+            if(step < 5) {
+                for (let i = 1; i <= 4; i++) {
+                    const indicator = document.getElementById(`step${i}-indicator`);
+                    if (i < step) {
+                        indicator.className = "w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold mb-2 border-2 border-outline"; // completed
+                    } else if (i === step) {
+                        indicator.className = "w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold mb-2 border-2 border-outline ring-4 ring-primary-container/30"; // active
+                    } else {
+                        indicator.className = "w-10 h-10 rounded-full bg-surface text-outline flex items-center justify-center font-bold mb-2 border-2 border-outline-variant"; // future
+                    }
+                }
+            } else {
+                 document.querySelector('.flex.justify-between.items-center.mb-10').style.display = 'none';
+            }
+        }
+
+        function validateStep3() {
+            const pwd = document.getElementById('pwd').value;
+            const confirm = document.getElementById('pwd-confirm').value;
+            const error = document.getElementById('pwd-error');
+            
+            if(pwd !== confirm || pwd === '') {
+                error.classList.remove('hidden');
+            } else {
+                error.classList.add('hidden');
+                nextStep(4);
+            }
+        }
+        
+        // Init active state for step 1
+        nextStep(1);
+    </script>
+</body></html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invite Friends - Sandwich Championship</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Montserrat:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffddb8",
+                      "surface-container": "#f2eede",
+                      "primary-fixed-dim": "#ffb95f",
+                      "on-background": "#1c1c13",
+                      "on-secondary": "#ffffff",
+                      "surface-dim": "#dedacb",
+                      "on-secondary-fixed": "#351000",
+                      "inverse-on-surface": "#f5f1e1",
+                      "primary": "#855300",
+                      "on-surface": "#1c1c13",
+                      "on-secondary-container": "#76340e",
+                      "on-primary-container": "#613b00",
+                      "inverse-surface": "#323126",
+                      "inverse-primary": "#ffb95f",
+                      "primary-container": "#f59e0b",
+                      "outline": "#867461",
+                      "on-primary-fixed-variant": "#653e00",
+                      "surface-bright": "#fdf9e9",
+                      "tertiary": "#006c49",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#534434",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#004e34",
+                      "surface-container-high": "#ece8d9",
+                      "on-primary-fixed": "#2a1700",
+                      "surface-container-low": "#f8f4e4",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#30c88f",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface-tint": "#855300",
+                      "surface-variant": "#e6e3d3",
+                      "on-primary": "#ffffff",
+                      "secondary": "#944a23",
+                      "on-secondary-fixed-variant": "#76330d",
+                      "outline-variant": "#d8c3ad",
+                      "secondary-fixed-dim": "#ffb693",
+                      "tertiary-fixed": "#6ffbbe",
+                      "secondary-container": "#fd9e70",
+                      "surface": "#fdf9e9",
+                      "on-tertiary-fixed": "#002113",
+                      "background": "#fdf9e9",
+                      "secondary-fixed": "#ffdbcc",
+                      "surface-container-highest": "#e6e3d3",
+                      "on-tertiary-fixed-variant": "#005236"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "margin-mobile": "16px",
+                      "gutter": "16px",
+                      "lg": "40px",
+                      "xl": "64px",
+                      "margin-desktop": "32px",
+                      "base": "8px",
+                      "md": "24px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "stats-number": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Montserrat"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "stats-number": [
+                              "40px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "52px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-surface dark:bg-surface-dim text-primary dark:text-inverse-primary font-headline-md text-headline-md font-body-md text-body-md w-full h-16 border-b-2 border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-margin-desktop max-w-7xl mx-auto flex-shrink-0">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">Sandwich Championship</span>
+<div class="hidden md:flex gap-base ml-lg">
+<!-- Navigation Links -->
+<a class="text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 px-sm py-xs" href="#">Bracket</a>
+<a class="text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 px-sm py-xs" href="#">Teams</a>
+<a class="text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 px-sm py-xs" href="#">Live Stream</a>
+<a class="text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 px-sm py-xs" href="#">History</a>
+</div>
+</div>
+<div class="flex items-center gap-base">
+<!-- Search Bar on Left of Actions -->
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-lg pr-sm py-xs bg-surface-container rounded-full border-2 border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md text-on-surface" placeholder="Search..." type="text"/>
+</div>
+<button class="text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 px-sm py-xs font-label-bold text-label-bold">Login</button>
+<button class="bg-primary text-on-primary hover:bg-primary/90 transition-colors rounded-xl active:translate-y-0.5 transition-all duration-150 px-md py-sm font-label-bold text-label-bold shadow-md">Register Team</button>
+<img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-outline object-cover ml-sm" data-alt="A small circular profile picture placeholder for a user account, showing a generic friendly silhouette against a neutral background, high contrast, flat lighting, clean vector style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKYOxxjwHYy3K_5Of6eHd0QKFmxs0lLLC_0K6jssQXxW6MK8-RoZA_4apzD5V7zwZdfolOT2EZYUezMldQIxG20NY0SBnEoJqHEQZYB9gvg6cH_KRKFKSXxaxFgr3HlXcy0EWcMiLB6_uznHgezTXcCLPCRh-QPdGzlfqL7oEj0ywNb0mrvtdqV4o50K3Sw5792gf1xiqLZWz_I-4uLBqmN8YehN9E8YMh4Rot8cRIzalziL1QUho1"/>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col md:flex-row max-w-7xl mx-auto w-full px-margin-desktop py-lg gap-xl">
+<!-- Left Column: Invitation Types Grid -->
+<div class="w-full md:w-1/2 flex flex-col gap-md">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-sm">Invite Friends</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-md">Select a role to invite your friends to the Sandwich Championship. More roles mean more chaos, and definitely no burgers.</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+<!-- Judge Card -->
+<button class="group bg-surface-container hover:bg-surface-container-high transition-colors rounded-xl p-md border-2 border-outline-variant hover:border-primary flex flex-col items-start gap-sm text-left relative overflow-hidden shadow-sm hover:shadow-md active:translate-y-0.5">
+<div class="bg-secondary-container text-on-secondary-container p-sm rounded-lg mb-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">gavel</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors">Judge</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Grant them the power to rate sandwiches on Umami, Structural Integrity, and No-Burger compliance.</p>
+</button>
+<!-- Team Member Card (Active State Example) -->
+<button class="group bg-primary-fixed hover:bg-primary-fixed-dim transition-colors rounded-xl p-md border-2 border-primary flex flex-col items-start gap-sm text-left relative overflow-hidden shadow-md active:translate-y-0.5">
+<div class="bg-primary text-on-primary p-sm rounded-lg mb-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group_add</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-primary-fixed group-hover:text-on-primary-fixed-variant transition-colors">Team Member</h3>
+<p class="font-body-md text-body-md text-on-primary-fixed-variant">Add a chef to your squad. They'll need strong hands for the heavy rye breads.</p>
+<!-- Active Indicator -->
+<div class="absolute top-sm right-sm text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</button>
+<!-- Spectator Card -->
+<button class="group bg-surface-container hover:bg-surface-container-high transition-colors rounded-xl p-md border-2 border-outline-variant hover:border-primary flex flex-col items-start gap-sm text-left relative overflow-hidden shadow-sm hover:shadow-md active:translate-y-0.5">
+<div class="bg-tertiary-container text-on-tertiary-container p-sm rounded-lg mb-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stadium</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors">Spectator</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">For those who just want to watch the crumbs fall. Access to live streams and brackets.</p>
+</button>
+<!-- VIP Card -->
+<button class="group bg-surface-container hover:bg-surface-container-high transition-colors rounded-xl p-md border-2 border-outline-variant hover:border-primary flex flex-col items-start gap-sm text-left relative overflow-hidden shadow-sm hover:shadow-md active:translate-y-0.5">
+<div class="bg-surface-variant text-on-surface-variant p-sm rounded-lg mb-xs border-2 border-outline">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors">VIP Tester</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Exclusive early access to experimental sandwich prototypes. High risk, high reward.</p>
+</button>
+</div>
+</div>
+<!-- Right Column: Invitation Form (Expanded State for Team Member) -->
+<div class="w-full md:w-1/2 flex flex-col bg-surface-bright rounded-xl border-2 border-outline-variant p-lg shadow-md relative overflow-hidden">
+<!-- Decorative Background Element -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<h2 class="font-headline-md text-headline-md text-primary mb-sm">Invite Team Member</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Send them a direct link or enter their email address to send a formal invitation.</p>
+<!-- Share Link Section -->
+<div class="mb-lg">
+<label class="font-label-bold text-label-bold text-on-surface block mb-xs">Shareable Link</label>
+<div class="flex gap-sm">
+<div class="flex-grow relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">link</span>
+<input class="w-full pl-lg pr-sm py-sm bg-surface-container rounded-lg border-2 border-outline-variant text-on-surface font-body-md text-body-md outline-none cursor-default truncate" readonly="" type="text" value="https://sandwichchamp.com/invite/tm-8f92a"/>
+</div>
+<button class="bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-on-secondary transition-colors rounded-lg px-md py-sm font-label-bold text-label-bold flex items-center gap-xs active:translate-y-0.5">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">content_copy</span>
+                        Copy
+                    </button>
+</div>
+</div>
+<div class="flex items-center gap-md mb-lg">
+<div class="h-px bg-outline-variant flex-grow"></div>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest">or send email</span>
+<div class="h-px bg-outline-variant flex-grow"></div>
+</div>
+<!-- Email Form Section -->
+<form class="flex flex-col gap-md">
+<div>
+<label class="font-label-bold text-label-bold text-on-surface block mb-xs" for="email-input">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+<input class="w-full pl-lg pr-sm py-sm bg-surface rounded-lg border-2 border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-body-md text-body-md text-on-surface" id="email-input" placeholder="chef@example.com" type="email"/>
+</div>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface block mb-xs" for="message-input">Personal Message (Optional)</label>
+<textarea class="w-full p-sm bg-surface rounded-lg border-2 border-outline focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-body-md text-body-md text-on-surface resize-none" id="message-input" placeholder="Get ready to make the ultimate BLT..." rows="3"></textarea>
+</div>
+<button class="w-full bg-primary text-on-primary hover:bg-primary/90 transition-colors rounded-xl py-md font-headline-md text-headline-md flex items-center justify-center gap-sm shadow-md active:translate-y-0.5 mt-sm" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+                    Send Invitation
+                </button>
+</form>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-inverse-surface text-secondary dark:text-secondary-fixed-dim font-body-md text-body-md font-label-bold text-label-bold w-full py-xl mt-xl border-t-2 border-outline-variant dark:border-outline flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-7xl mx-auto gap-md flex-shrink-0">
+<div class="font-headline-md text-headline-md text-primary">Sandwich Championship</div>
+<div class="text-center md:text-left">© 2024 International Sandwich Championship. NO BURGERS ALLOWED.</div>
+<div class="flex gap-md flex-wrap justify-center">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Rules of Entry</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Contact Host</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">MinIO Assets</a>
+</div>
+</footer>
+</body></html>

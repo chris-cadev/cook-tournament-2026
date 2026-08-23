@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sandwich Championship &amp; Birthday</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-secondary-fixed-variant": "#76330d",
+                      "on-primary-container": "#613b00",
+                      "background": "#fdf9e9",
+                      "tertiary-container": "#30c88f",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#855300",
+                      "surface-container-high": "#ece8d9",
+                      "surface": "#fdf9e9",
+                      "outline-variant": "#d8c3ad",
+                      "outline": "#867461",
+                      "on-surface": "#1c1c13",
+                      "inverse-on-surface": "#f5f1e1",
+                      "secondary-fixed": "#ffdbcc",
+                      "on-secondary-fixed": "#351000",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#323126",
+                      "on-secondary-container": "#76340e",
+                      "inverse-primary": "#ffb95f",
+                      "on-tertiary-container": "#004e34",
+                      "on-primary": "#ffffff",
+                      "tertiary": "#006c49",
+                      "surface-container-low": "#f8f4e4",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#002113",
+                      "primary-container": "#f59e0b",
+                      "surface-container-highest": "#e6e3d3",
+                      "secondary-fixed-dim": "#ffb693",
+                      "secondary": "#944a23",
+                      "on-surface-variant": "#534434",
+                      "primary-fixed": "#ffddb8",
+                      "on-primary-fixed-variant": "#653e00",
+                      "on-background": "#1c1c13",
+                      "primary-fixed-dim": "#ffb95f",
+                      "secondary-container": "#fd9e70",
+                      "surface-container": "#f2eede",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#2a1700",
+                      "surface-variant": "#e6e3d3",
+                      "surface-dim": "#dedacb",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-tint": "#855300",
+                      "surface-bright": "#fdf9e9",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "xs": "4px",
+                      "gutter": "16px",
+                      "lg": "40px",
+                      "xl": "64px",
+                      "sm": "12px",
+                      "margin-desktop": "32px",
+                      "md": "24px"
+              },
+              "fontFamily": {
+                      "stats-number": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "stats-number": [
+                              "40px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "52px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .festive-shadow {
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.15);
+        }
+        .crust-border {
+            border: 2px solid #867461;
+        }
+        .no-burger-pill {
+            background-color: #ba1a1a;
+            color: #ffffff;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface border-b-2 border-outline-variant shadow-sm fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 md:hidden">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="timer">timer</span>
+<span class="font-headline-md text-headline-md font-black text-primary tracking-tighter">SNDWCH CHAMP</span>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+</div>
+</header>
+<!-- Desktop Navigation Drawer (Hidden on mobile) -->
+<aside class="hidden md:flex flex-col h-screen w-80 bg-surface border-r-2 border-surface-container-low shadow-xl fixed left-0 top-0 z-40 pt-lg pb-lg">
+<div class="px-margin-desktop mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tighter uppercase">CHAMPIONSHIP MENU</h2>
+</div>
+<nav class="flex-1 flex flex-col gap-sm px-2">
+<a class="flex items-center gap-3 bg-secondary-container text-on-secondary-container font-label-bold text-label-bold rounded-lg px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="app_registration">app_registration</span>
+                Team Registration
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant font-label-bold text-label-bold rounded-lg px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+                Judge Rubrics
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant font-label-bold text-label-bold rounded-lg px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+                Umami Analytics
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant font-label-bold text-label-bold rounded-lg px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="fastfood">fastfood</span>
+                Media Gallery
+            </a>
+</nav>
+</aside>
+<main class="pt-20 md:pt-8 px-margin-mobile md:pl-[352px] max-w-7xl mx-auto space-y-xl md:space-y-32">
+<!-- Hero Section -->
+<section class="relative rounded-3xl overflow-hidden crust-border festive-shadow bg-surface-container-low p-margin-mobile md:p-margin-desktop mt-8">
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'#855300\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+<div class="relative z-10 flex flex-col md:flex-row gap-lg items-center">
+<div class="flex-1 space-y-md text-center md:text-left">
+<div class="inline-flex items-center justify-center bg-primary-container text-on-primary-container font-label-bold text-label-bold px-4 py-1.5 rounded-full uppercase tracking-widest crust-border">
+<span class="material-symbols-outlined mr-2 text-sm" data-icon="cake">cake</span>
+                        Annual Birthday Bash
+                    </div>
+<h1 class="font-headline-xl text-headline-xl text-primary md:text-[64px] md:leading-[68px]">THE ULTIMATE SANDWICH SHOWDOWN</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                        A high-stakes culinary competition celebrating the art of layered perfection between two slices of bread. Do you have what it takes to claim the title?
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 pt-4 justify-center md:justify-start">
+<button class="bg-primary text-on-primary font-label-bold text-label-bold px-8 py-4 rounded-xl hover:translate-y-0.5 active:translate-y-1 transition-transform crust-border flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="app_registration">app_registration</span>
+                            Register Team
+                        </button>
+<button class="bg-surface text-primary font-label-bold text-label-bold px-8 py-4 rounded-xl hover:bg-surface-variant active:translate-y-0.5 transition-transform crust-border flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+                            Join Global Chat
+                        </button>
+</div>
+</div>
+<div class="flex-1 w-full max-w-md bg-inverse-surface rounded-2xl p-sm crust-border festive-shadow">
+<div class="bg-surface rounded-xl p-md text-center h-full flex flex-col justify-center border border-outline-variant">
+<h3 class="font-headline-md text-headline-md text-primary mb-2">TIME UNTIL FIRST BITE</h3>
+<div class="grid grid-cols-4 gap-2 text-primary" id="countdown">
+<div class="bg-surface-container p-2 rounded-lg crust-border flex flex-col">
+<span class="font-stats-number text-stats-number text-primary" id="days">14</span>
+<span class="font-label-bold text-label-bold text-[10px] text-on-surface-variant">DAYS</span>
+</div>
+<div class="bg-surface-container p-2 rounded-lg crust-border flex flex-col">
+<span class="font-stats-number text-stats-number text-primary" id="hours">08</span>
+<span class="font-label-bold text-label-bold text-[10px] text-on-surface-variant">HOURS</span>
+</div>
+<div class="bg-surface-container p-2 rounded-lg crust-border flex flex-col">
+<span class="font-stats-number text-stats-number text-primary" id="mins">45</span>
+<span class="font-label-bold text-label-bold text-[10px] text-on-surface-variant">MINS</span>
+</div>
+<div class="bg-surface-container p-2 rounded-lg crust-border flex flex-col">
+<span class="font-stats-number text-stats-number text-primary" id="secs">22</span>
+<span class="font-label-bold text-label-bold text-[10px] text-on-surface-variant">SECS</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- What is this? & Rules Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-margin-desktop">
+<!-- About -->
+<div class="bg-surface-container rounded-3xl p-margin-desktop crust-border flex flex-col justify-center relative overflow-hidden">
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-[200px]" data-icon="restaurant">restaurant</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4 relative z-10">What is this?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant relative z-10 mb-6">
+                    A multi-round tournament where amateur chefs and deli enthusiasts compete to construct the most structurally sound, flavor-balanced, and aesthetically pleasing sandwich known to humanity.
+                </p>
+<div class="flex items-center gap-3 bg-tertiary-container/20 p-4 rounded-xl crust-border relative z-10 w-fit">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="emoji_events">emoji_events</span>
+<div>
+<div class="font-label-bold text-label-bold text-tertiary uppercase">Grand Prize</div>
+<div class="font-headline-md text-headline-md text-on-surface">The Golden Spatula</div>
+</div>
+</div>
+</div>
+<!-- Rules / No Burgers -->
+<div class="bg-error-container rounded-3xl p-margin-desktop crust-border border-error flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-error text-[80px] mb-4 drop-shadow-md" data-icon="block">block</span>
+<h2 class="font-headline-lg text-headline-lg text-on-error-container mb-2 uppercase">Core Rule</h2>
+<div class="no-burger-pill text-2xl mb-6 shadow-lg shadow-error/20 crust-border border-error">NO BURGERS ALLOWED</div>
+<p class="font-body-md text-body-md text-on-error-container max-w-sm">
+                    A sandwich must consist of varied fillings between bread. Ground meat patties in round buns will be immediately disqualified by the judging panel.
+                </p>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container fixed bottom-0 w-full z-50 rounded-t-xl border-t-2 border-outline-variant shadow-[0_-4px_10px_rgba(133,83,0,0.1)] flex justify-around items-center px-2 py-3 pb-safe md:hidden">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="app_registration">app_registration</span>
+<span class="font-label-bold text-[10px] mt-1">Register</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary p-2 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="font-label-bold text-[10px] mt-1">Bracket</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary p-2 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-bold text-[10px] mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary p-2 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-bold text-[10px] mt-1">Scoring</span>
+</a>
+</nav>
+<script>
+        // Simple Countdown Script
+        function updateCountdown() {
+            const now = new Date();
+            const eventDate = new Date();
+            eventDate.setDate(now.getDate() + 14); // Mock date: 14 days from now
+            eventDate.setHours(eventDate.getHours() + 8);
+            eventDate.setMinutes(eventDate.getMinutes() + 45);
+            eventDate.setSeconds(eventDate.getSeconds() + 22);
+
+            const diff = eventDate - now;
+
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const mins = Math.floor((diff / 1000 / 60) % 60);
+                const secs = Math.floor((diff / 1000) % 60);
+
+                document.getElementById('days').innerText = days.toString().padStart(2, '0');
+                document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+                document.getElementById('mins').innerText = mins.toString().padStart(2, '0');
+                document.getElementById('secs').innerText = secs.toString().padStart(2, '0');
+            }
+        }
+        
+        // Update roughly every second for the visual effect, though date is mocked to stay static for demo
+        setInterval(() => {
+            let s = parseInt(document.getElementById('secs').innerText);
+            let m = parseInt(document.getElementById('mins').innerText);
+            s--;
+            if(s < 0) { s = 59; m--; }
+            document.getElementById('secs').innerText = s.toString().padStart(2, '0');
+            document.getElementById('mins').innerText = m.toString().padStart(2, '0');
+        }, 1000);
+    </script>
+</body></html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Management Suite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "error": "#ba1a1a",
+                            "primary-fixed": "#ffddb8",
+                            "surface-container": "#f2eede",
+                            "primary-fixed-dim": "#ffb95f",
+                            "on-background": "#1c1c13",
+                            "on-secondary": "#ffffff",
+                            "surface-dim": "#dedacb",
+                            "on-secondary-fixed": "#351000",
+                            "inverse-on-surface": "#f5f1e1",
+                            "primary": "#855300",
+                            "on-surface": "#1c1c13",
+                            "on-secondary-container": "#76340e",
+                            "on-primary-container": "#613b00",
+                            "inverse-surface": "#323126",
+                            "inverse-primary": "#ffb95f",
+                            "primary-container": "#f59e0b",
+                            "outline": "#867461",
+                            "on-primary-fixed-variant": "#653e00",
+                            "surface-bright": "#fdf9e9",
+                            "tertiary": "#006c49",
+                            "on-error": "#ffffff",
+                            "on-surface-variant": "#534434",
+                            "error-container": "#ffdad6",
+                            "surface-container-lowest": "#ffffff",
+                            "on-tertiary-container": "#004e34",
+                            "surface-container-high": "#ece8d9",
+                            "on-primary-fixed": "#2a1700",
+                            "surface-container-low": "#f8f4e4",
+                            "on-tertiary": "#ffffff",
+                            "tertiary-container": "#30c88f",
+                            "on-error-container": "#93000a",
+                            "tertiary-fixed-dim": "#4edea3",
+                            "surface-tint": "#855300",
+                            "surface-variant": "#e6e3d3",
+                            "on-primary": "#ffffff",
+                            "secondary": "#944a23",
+                            "on-secondary-fixed-variant": "#76330d",
+                            "outline-variant": "#d8c3ad",
+                            "secondary-fixed-dim": "#ffb693",
+                            "tertiary-fixed": "#6ffbbe",
+                            "secondary-container": "#fd9e70",
+                            "surface": "#fdf9e9",
+                            "on-tertiary-fixed": "#002113",
+                            "background": "#fdf9e9",
+                            "secondary-fixed": "#ffdbcc",
+                            "surface-container-highest": "#e6e3d3",
+                            "on-tertiary-fixed-variant": "#005236"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "xs": "4px",
+                            "margin-mobile": "16px",
+                            "gutter": "16px",
+                            "lg": "40px",
+                            "xl": "64px",
+                            "margin-desktop": "32px",
+                            "base": "8px",
+                            "md": "24px",
+                            "sm": "12px"
+                    },
+                    "fontFamily": {
+                            "headline-lg": ["Montserrat"],
+                            "headline-lg-mobile": ["Montserrat"],
+                            "body-md": ["Inter"],
+                            "headline-md": ["Montserrat"],
+                            "stats-number": ["Montserrat"],
+                            "body-lg": ["Inter"],
+                            "headline-xl": ["Montserrat"],
+                            "label-bold": ["Inter"]
+                    },
+                    "fontSize": {
+                            "headline-lg": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                            "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "headline-md": ["24px", {"lineHeight": "28px", "fontWeight": "700"}],
+                            "stats-number": ["40px", {"lineHeight": "40px", "fontWeight": "900"}],
+                            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                            "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900"}],
+                            "label-bold": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-high h-screen w-64 fixed left-0 top-0 border-r-2 border-outline-variant dark:border-outline flex flex-col h-full py-md z-40 hidden md:flex">
+<div class="px-md mb-xl flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-primary-container mb-sm flex items-center justify-center overflow-hidden border-2 border-outline">
+<img alt="Championship Logo" class="w-full h-full object-cover" data-alt="A detailed, vibrant vector-style logo for a sandwich championship, featuring a stacked sandwich with dynamic lines and bold typography. High contrast, clean edges, and warm colors on a neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpAteLiftpIsurob5EjAAnQxL9CrphJmRrhJg_e8vgDg7mcmg0wy9bhxYdCz1RcFXYrINS6xn7utJhMgVdEtNOlYvI2ANTmnzupxY0NzN3paxJCwxf_n47ap2U2KVGOCXzP8cCnXY3pjNbsDgw78BoxjDibjWFUiUVT2jRh11RV25HT6Kgj6-qZNjq6BLdanSVTN6UlZVs2YRyq8El6wZQvGxDMSpnN5pz1xGMeXvAX8fZFPE1r_82"/>
+</div>
+<h1 class="font-headline-md text-headline-md font-black text-secondary dark:text-secondary-fixed-dim text-center">Host Panel</h1>
+<p class="font-label-bold text-label-bold text-on-surface-variant text-center">Season 2024</p>
+</div>
+<div class="px-md mb-md">
+<button class="w-full bg-primary text-on-primary font-label-bold text-label-bold py-sm rounded-xl hover:translate-y-[2px] transition-transform shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">cell_tower</span> Live Status
+            </button>
+</div>
+<ul class="flex-1 overflow-y-auto w-full px-sm space-y-1">
+<li>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-bold text-label-bold">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-bold text-label-bold">Global Chat</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-md py-sm bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-bold text-label-bold">Team Hub</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">star_rate</span>
+<span class="font-label-bold text-label-bold">Scoring</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-bold text-label-bold">Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-label-bold text-label-bold">Management</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto px-sm pt-md border-t-2 border-outline-variant mx-md">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-md py-sm text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-bold text-label-bold">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 ml-0 md:ml-64 p-margin-mobile md:p-margin-desktop bg-surface w-full max-w-7xl mx-auto overflow-y-auto">
+<header class="mb-xl flex justify-between items-end border-b-2 border-outline-variant pb-md">
+<div>
+<h2 class="font-headline-xl text-headline-xl text-primary font-black tracking-tight mb-sm">Team Hub</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage competitors, review entries, and enforce the rules.</p>
+</div>
+<button class="bg-surface-bright border-2 border-outline text-on-surface font-label-bold text-label-bold px-md py-sm rounded-xl hover:bg-surface-container transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined">download</span> Export Roster
+            </button>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md mb-xl">
+<!-- Main Data Table (Spans 2 columns) -->
+<div class="lg:col-span-2 bg-surface-container-low rounded-xl border-2 border-outline overflow-hidden flex flex-col shadow-sm">
+<div class="bg-surface-container-high px-md py-sm border-b-2 border-outline flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-on-surface">Registered Teams</h3>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface border-2 border-outline rounded-lg pl-10 pr-4 py-xs focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all outline-none font-body-md text-on-surface w-64" placeholder="Search teams..." type="text"/>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container font-label-bold text-label-bold text-on-surface-variant border-b-2 border-outline">
+<th class="p-sm pl-md">Team Name</th>
+<th class="p-sm">Chef</th>
+<th class="p-sm">Entry Category</th>
+<th class="p-sm">Status</th>
+<th class="p-sm text-right pr-md">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-on-surface divide-y-2 divide-outline-variant">
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="p-sm pl-md font-bold">The Rye Guys</td>
+<td class="p-sm">Chef Antonio</td>
+<td class="p-sm">Classic Pastrami</td>
+<td class="p-sm"><span class="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-md text-xs font-bold uppercase">Approved</span></td>
+<td class="p-sm text-right pr-md">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="p-sm pl-md font-bold">Crust &amp; Crumb</td>
+<td class="p-sm">Sarah Jenkins</td>
+<td class="p-sm">Vegan Banh Mi</td>
+<td class="p-sm"><span class="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-md text-xs font-bold uppercase">Approved</span></td>
+<td class="p-sm text-right pr-md">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest transition-colors bg-error-container/30">
+<td class="p-sm pl-md font-bold flex items-center gap-2">Burger Bros <span class="material-symbols-outlined text-error text-sm">warning</span></td>
+<td class="p-sm">Mike Patty</td>
+<td class="p-sm">Double Smash</td>
+<td class="p-sm"><span class="bg-error text-on-error px-2 py-1 rounded-md text-xs font-bold uppercase shadow-sm">Violation</span></td>
+<td class="p-sm text-right pr-md">
+<button class="text-error hover:text-on-error hover:bg-error rounded p-1 transition-colors"><span class="material-symbols-outlined">delete_forever</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="p-sm pl-md font-bold">Sourdough Syndicate</td>
+<td class="p-sm">Leo V.</td>
+<td class="p-sm">Artisan Melt</td>
+<td class="p-sm"><span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-md text-xs font-bold uppercase">Pending</span></td>
+<td class="p-sm text-right pr-md">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Side Panel (To-Do & Stats) -->
+<div class="flex flex-col gap-md">
+<!-- Quick Stats -->
+<div class="bg-surface-container-high rounded-xl border-2 border-outline p-md flex flex-col justify-center shadow-sm">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-sm">Active Competitors</p>
+<div class="flex items-baseline gap-2">
+<span class="font-stats-number text-stats-number text-tertiary">142</span>
+<span class="font-body-md text-on-surface-variant">/ 150 Max</span>
+</div>
+</div>
+<!-- Markdown To-Do -->
+<div class="bg-surface-bright rounded-xl border-2 border-outline p-md shadow-sm flex-1 flex flex-col">
+<div class="flex justify-between items-center mb-md pb-sm border-b-2 border-outline-variant">
+<h3 class="font-headline-md text-headline-md text-on-surface">Event Checklist</h3>
+<span class="material-symbols-outlined text-secondary">checklist</span>
+</div>
+<div class="font-body-md text-on-surface space-y-3 flex-1 overflow-y-auto pr-2">
+<label class="flex items-start gap-3 cursor-pointer group">
+<input checked="" class="mt-1 w-5 h-5 rounded border-2 border-outline text-primary-container focus:ring-primary-container bg-surface checked:bg-primary-container checked:border-primary-container transition-all" type="checkbox"/>
+<span class="group-hover:text-primary transition-colors line-through text-on-surface-variant">Finalize judging criteria</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<input checked="" class="mt-1 w-5 h-5 rounded border-2 border-outline text-primary-container focus:ring-primary-container bg-surface checked:bg-primary-container checked:border-primary-container transition-all" type="checkbox"/>
+<span class="group-hover:text-primary transition-colors line-through text-on-surface-variant">Verify bread supplier deliveries</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<input class="mt-1 w-5 h-5 rounded border-2 border-outline text-primary-container focus:ring-primary-container bg-surface checked:bg-primary-container checked:border-primary-container transition-all" type="checkbox"/>
+<span class="group-hover:text-primary transition-colors font-bold">Review pending team applications</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<input class="mt-1 w-5 h-5 rounded border-2 border-outline text-primary-container focus:ring-primary-container bg-surface checked:bg-primary-container checked:border-primary-container transition-all" type="checkbox"/>
+<span class="group-hover:text-primary transition-colors">Send automated reminder emails</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<input class="mt-1 w-5 h-5 rounded border-2 border-outline text-primary-container focus:ring-primary-container bg-surface checked:bg-primary-container checked:border-primary-container transition-all" type="checkbox"/>
+<span class="group-hover:text-primary transition-colors">Setup live stream equipment</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

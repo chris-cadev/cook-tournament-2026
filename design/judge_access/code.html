@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SNDWCH CHAMP - Judge Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Montserrat:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-secondary-fixed-variant": "#76330d",
+                      "on-primary-container": "#613b00",
+                      "background": "#fdf9e9",
+                      "tertiary-container": "#30c88f",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#855300",
+                      "surface-container-high": "#ece8d9",
+                      "surface": "#fdf9e9",
+                      "outline-variant": "#d8c3ad",
+                      "outline": "#867461",
+                      "on-surface": "#1c1c13",
+                      "inverse-on-surface": "#f5f1e1",
+                      "secondary-fixed": "#ffdbcc",
+                      "on-secondary-fixed": "#351000",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#323126",
+                      "on-secondary-container": "#76340e",
+                      "inverse-primary": "#ffb95f",
+                      "on-tertiary-container": "#004e34",
+                      "on-primary": "#ffffff",
+                      "tertiary": "#006c49",
+                      "surface-container-low": "#f8f4e4",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#002113",
+                      "primary-container": "#f59e0b",
+                      "surface-container-highest": "#e6e3d3",
+                      "secondary-fixed-dim": "#ffb693",
+                      "secondary": "#944a23",
+                      "on-surface-variant": "#534434",
+                      "primary-fixed": "#ffddb8",
+                      "on-primary-fixed-variant": "#653e00",
+                      "on-background": "#1c1c13",
+                      "primary-fixed-dim": "#ffb95f",
+                      "secondary-container": "#fd9e70",
+                      "surface-container": "#f2eede",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#2a1700",
+                      "surface-variant": "#e6e3d3",
+                      "surface-dim": "#dedacb",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-tint": "#855300",
+                      "surface-bright": "#fdf9e9",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "xs": "4px",
+                      "gutter": "16px",
+                      "lg": "40px",
+                      "xl": "64px",
+                      "sm": "12px",
+                      "margin-desktop": "32px",
+                      "md": "24px"
+              },
+              "fontFamily": {
+                      "stats-number": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "stats-number": [
+                              "40px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "52px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- Linear/Transactional Page - Suppressing Navigation Shell -->
+<!-- Main Content Canvas -->
+<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop relative overflow-hidden">
+<!-- Decorative Background Elements -->
+<div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute -top-32 -right-32 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary-container/20 rounded-full blur-3xl"></div>
+</div>
+<!-- Login Card -->
+<div class="bg-surface-container-lowest border-2 border-outline w-full max-w-md rounded-xl shadow-[0_8px_30px_rgba(133,83,0,0.08)] relative z-10 flex flex-col overflow-hidden">
+<!-- Header Section -->
+<div class="bg-surface-container py-md px-margin-mobile flex flex-col items-center justify-center border-b-2 border-outline-variant relative">
+<!-- Lock Icon Indicator -->
+<div class="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mb-sm shadow-sm">
+<span class="material-symbols-outlined fill-icon text-3xl" data-icon="admin_panel_settings">admin_panel_settings</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary tracking-tighter text-center">JUDGE ACCESS</h1>
+<p class="font-body-md text-body-md text-on-surface-variant text-center mt-xs">Authorized panel members only.</p>
+</div>
+<!-- Form Section -->
+<form class="p-margin-mobile flex flex-col gap-md" id="judge-login-form">
+<!-- Password Input Group -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-bold text-label-bold text-on-surface" for="global-password">Global Passkey</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant z-10 pointer-events-none" data-icon="key">key</span>
+<input autocomplete="current-password" class="w-full bg-surface pl-12 pr-sm py-sm rounded-lg border-2 border-outline text-on-surface font-body-lg text-body-lg focus:outline-none focus:border-primary-container focus:ring-4 focus:ring-primary-container/20 transition-all placeholder:text-on-surface-variant/50" id="global-password" name="global-password" placeholder="Enter the secret ingredient..." type="password"/>
+</div>
+</div>
+<!-- Error State Container (Hidden by default) -->
+<div class="hidden bg-error-container text-on-error-container border-2 border-error/20 rounded-lg p-sm flex items-start gap-sm" id="error-message">
+<span class="material-symbols-outlined shrink-0 text-error mt-0.5" data-icon="error">error</span>
+<div class="flex flex-col">
+<span class="font-label-bold text-label-bold">Unauthorized Access</span>
+<span class="font-body-md text-body-md text-sm">The passkey entered is incorrect. Only credentialed judges may proceed.</span>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="mt-sm w-full bg-primary text-on-primary font-label-bold text-label-bold py-sm px-md rounded-xl hover:bg-surface-tint active:translate-y-0.5 transition-all shadow-md flex items-center justify-center gap-xs" type="submit">
+                    ENTER PANEL
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Back to Public Link -->
+<div class="text-center mt-xs">
+<a class="font-body-md text-body-md text-secondary hover:text-on-secondary-fixed-variant underline underline-offset-4 decoration-2 transition-colors" href="#">Return to Public Feed</a>
+</div>
+</form>
+</div>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('judge-login-form');
+            const passwordInput = document.getElementById('global-password');
+            const errorMessage = document.getElementById('error-message');
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const password = passwordInput.value.trim();
+
+                // Simple client-side validation logic for demonstration
+                // Simulating an 'Unauthorized' error state if password is not "champion"
+                if (password !== "champion") {
+                    errorMessage.classList.remove('hidden');
+                    passwordInput.classList.add('border-error', 'focus:border-error', 'focus:ring-error/20');
+                    passwordInput.classList.remove('border-outline', 'focus:border-primary-container', 'focus:ring-primary-container/20');
+                    
+                    // Add a shake animation class temporarily
+                    passwordInput.parentElement.classList.add('animate-shake');
+                    setTimeout(() => {
+                        passwordInput.parentElement.classList.remove('animate-shake');
+                    }, 500);
+
+                } else {
+                    // Success state simulation
+                    errorMessage.classList.add('hidden');
+                    passwordInput.classList.remove('border-error', 'focus:border-error', 'focus:ring-error/20');
+                    passwordInput.classList.add('border-tertiary', 'focus:border-tertiary', 'focus:ring-tertiary/20');
+                    
+                    // In a real app, this would redirect
+                    alert("Authentication successful. Entering panel...");
+                }
+            });
+
+            // Clear error state on input focus
+            passwordInput.addEventListener('input', () => {
+                errorMessage.classList.add('hidden');
+                passwordInput.classList.remove('border-error', 'focus:border-error', 'focus:ring-error/20');
+                passwordInput.classList.add('border-outline', 'focus:border-primary-container', 'focus:ring-primary-container/20');
+            });
+        });
+    </script>
+<style>
+        /* Custom animation for shake effect on error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .animate-shake {
+            animation: shake 0.2s ease-in-out 0s 2;
+        }
+    </style>
+</body></html>

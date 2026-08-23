@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sandwich Championship</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Montserrat:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#ffddb8",
+                    "surface-container": "#f2eede",
+                    "primary-fixed-dim": "#ffb95f",
+                    "on-background": "#1c1c13",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#dedacb",
+                    "on-secondary-fixed": "#351000",
+                    "inverse-on-surface": "#f5f1e1",
+                    "primary": "#855300",
+                    "on-surface": "#1c1c13",
+                    "on-secondary-container": "#76340e",
+                    "on-primary-container": "#613b00",
+                    "inverse-surface": "#323126",
+                    "inverse-primary": "#ffb95f",
+                    "primary-container": "#f59e0b",
+                    "outline": "#867461",
+                    "on-primary-fixed-variant": "#653e00",
+                    "surface-bright": "#fdf9e9",
+                    "tertiary": "#006c49",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#534434",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#004e34",
+                    "surface-container-high": "#ece8d9",
+                    "on-primary-fixed": "#2a1700",
+                    "surface-container-low": "#f8f4e4",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#30c88f",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-tint": "#855300",
+                    "surface-variant": "#e6e3d3",
+                    "on-primary": "#ffffff",
+                    "secondary": "#944a23",
+                    "on-secondary-fixed-variant": "#76330d",
+                    "outline-variant": "#d8c3ad",
+                    "secondary-fixed-dim": "#ffb693",
+                    "tertiary-fixed": "#6ffbbe",
+                    "secondary-container": "#fd9e70",
+                    "surface": "#fdf9e9",
+                    "on-tertiary-fixed": "#002113",
+                    "background": "#fdf9e9",
+                    "secondary-fixed": "#ffdbcc",
+                    "surface-container-highest": "#e6e3d3",
+                    "on-tertiary-fixed-variant": "#005236"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "lg": "40px",
+                    "xl": "64px",
+                    "margin-desktop": "32px",
+                    "base": "8px",
+                    "md": "24px",
+                    "sm": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "Montserrat"
+                    ],
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "stats-number": [
+                            "Montserrat"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-xl": [
+                            "Montserrat"
+                    ],
+                    "label-bold": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "36px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "stats-number": [
+                            "40px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-xl": [
+                            "48px",
+                            {
+                                    "lineHeight": "52px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "label-bold": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim border-b-2 border-outline-variant dark:border-outline shadow-sm w-full h-16 flex justify-between items-center px-margin-desktop w-full max-w-7xl mx-auto z-50 sticky top-0">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">Sandwich Championship</span>
+</div>
+<nav class="hidden md:flex items-center gap-lg">
+<a class="font-headline-md text-headline-md font-body-md text-body-md text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 p-2" href="#">Bracket</a>
+<a class="font-headline-md text-headline-md font-body-md text-body-md text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 p-2" href="#">Teams</a>
+<a class="font-headline-md text-headline-md font-body-md text-body-md text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 p-2" href="#">Live Stream</a>
+<a class="font-headline-md text-headline-md font-body-md text-body-md text-on-surface-variant dark:text-on-surface hover:text-primary transition-colors hover:bg-primary-container/10 dark:hover:bg-primary-fixed-dim/10 rounded-lg active:translate-y-0.5 transition-all duration-150 p-2" href="#">History</a>
+</nav>
+<div class="flex items-center gap-sm">
+<button class="bg-surface border-2 border-outline text-on-surface font-label-bold text-label-bold px-4 py-2 rounded-xl hover:bg-surface-variant transition-colors">Login</button>
+<button class="bg-primary text-on-primary font-label-bold text-label-bold px-4 py-2 rounded-xl hover:bg-primary/90 transition-colors active:translate-y-0.5 shadow-sm">Register Team</button>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center w-full px-margin-mobile md:px-margin-desktop py-xl gap-xl max-w-7xl mx-auto">
+<!-- Hero Section -->
+<section class="w-full flex flex-col md:flex-row items-center gap-lg bg-surface-container-low rounded-[1.5rem] p-lg border-2 border-outline overflow-hidden relative">
+<div class="flex-1 flex flex-col gap-md z-10">
+<span class="bg-primary-container text-on-primary-container font-label-bold text-label-bold px-3 py-1 rounded-full w-fit uppercase shadow-sm">The Ultimate Culinary Showdown</span>
+<h1 class="font-headline-xl text-headline-xl text-primary font-black leading-tight drop-shadow-md">
+                    BATTLE OF THE BREADS: 2024
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
+                    Prepare for the most intense, flavor-packed, high-stakes competition in the culinary world. Bring your best ingredients, your finest techniques, and absolutely NO burgers.
+                </p>
+<div class="flex flex-col gap-sm bg-surface-container rounded-xl p-md border-2 border-outline-variant w-fit mt-sm">
+<span class="font-label-bold text-label-bold text-secondary uppercase tracking-widest text-sm">Championship Begins In:</span>
+<div class="flex gap-sm items-center font-stats-number text-stats-number text-primary">
+<div class="flex flex-col items-center bg-surface p-sm rounded-lg border border-outline-variant min-w-[70px] shadow-sm"><span id="days">42</span><span class="font-label-bold text-[10px] text-on-surface-variant mt-1">DAYS</span></div>
+<span class="text-outline-variant">:</span>
+<div class="flex flex-col items-center bg-surface p-sm rounded-lg border border-outline-variant min-w-[70px] shadow-sm"><span id="hours">14</span><span class="font-label-bold text-[10px] text-on-surface-variant mt-1">HRS</span></div>
+<span class="text-outline-variant">:</span>
+<div class="flex flex-col items-center bg-surface p-sm rounded-lg border border-outline-variant min-w-[70px] shadow-sm"><span id="mins">59</span><span class="font-label-bold text-[10px] text-on-surface-variant mt-1">MIN</span></div>
+</div>
+</div>
+</div>
+<div class="flex-1 relative w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden border-2 border-outline shadow-lg transform rotate-2 hover:rotate-0 transition-transform duration-300">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A massive, impossibly tall, decadent artisan sandwich towering on a wooden cutting board. Highly detailed, mouth-watering food photography with dramatic lighting highlighting crispy bacon, fresh greens, melting cheese, and perfectly toasted artisanal sourdough bread. The background is a slightly blurred bustling deli kitchen. Vibrant colors, warm tones, high contrast, cinematic framing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyMNwBiM2dX-FBi3rm2DY-o2nj9pRaWe-aH5L9uPdeZCunYS1PvckK2Y747kW0rkeCM2H2iGkmHiSa_GOsOa0sgvzlGG0SmHrNdmsvt4Z6-cdoOx-5Sk0gMJkkESOw0cRuhsGz6yHgzIkf1YXEA1NDPwTllUhoESJqMblfwNdG10r3QcVtNK0rYe8qdxOBd-jupWMdTwm_Q5pwSYqRevVEFhLAyVFJJcPYnXcsz3I0NUBGlPiuy_33"/>
+</div>
+</section>
+<!-- No Burgers Rule Highlight -->
+<section class="w-full bg-error-container text-on-error-container rounded-[1.5rem] p-lg flex flex-col md:flex-row items-center justify-between gap-md border-4 border-error transform -rotate-1 shadow-md">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-[64px] text-error font-black">gpp_bad</span>
+<div>
+<h2 class="font-headline-lg text-headline-lg font-black uppercase text-error tracking-tight">Core Rule: NO BURGERS ALLOWED.</h2>
+<p class="font-body-md text-body-md mt-2 font-bold opacity-90 max-w-2xl">This is a strict policy. A burger is not a sandwich for the purposes of this championship. Violators will be immediately disqualified, mocked, and banned from future events. Ground meat patties on buns are explicitly forbidden.</p>
+</div>
+</div>
+<button class="bg-error text-on-error font-label-bold text-label-bold px-6 py-3 rounded-xl hover:bg-error/90 transition-colors whitespace-nowrap shadow-sm active:translate-y-0.5">Read Full Rulebook</button>
+</section>
+<!-- What is this? Grid -->
+<section class="w-full flex flex-col gap-lg">
+<div class="flex flex-col items-center text-center gap-sm">
+<h2 class="font-headline-lg text-headline-lg text-primary font-black">What is the Sandwich Championship?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl">An annual gauntlet where culinary legends and passionate amateurs clash to prove their mastery over ingredients layered between bread.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Card 1 -->
+<div class="bg-surface-container rounded-[1.5rem] p-md border-2 border-outline-variant flex flex-col gap-sm hover:shadow-md transition-shadow">
+<div class="h-48 rounded-xl overflow-hidden mb-sm border-2 border-outline">
+<img class="w-full h-full object-cover" data-alt="A dynamic action shot of a chef aggressively searing a massive piece of seasoned pastrami on a smoking hot flat top grill. Intense orange flames lick the edges of the meat. High-contrast, gritty, energetic food photography emphasizing heat, action, and raw culinary power. Dark background with vibrant highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp2FGdH3sVou7QHDE7tbllIW4CQElsgZNcEu-QsMSh8Au7yN_oNvghq1y43wqR0RrzHbVaRgzdmDSLiVWLg1OBrRxXDdotUjItOSuJbcZ_aBrRb-h4lLMiKkHO_5otXjkEqESl9MMacB6Ytj7chK8JWaROGopr2Jba0mc2D17FxbcP5WkRfQudikQsYxDEtZ42q9UfYTFCPMBXQ5wmXMiFgRqxebJrpBhmtPRE0avKnzc5i7QcrsDY"/>
+</div>
+<h3 class="font-headline-md text-headline-md text-secondary font-bold flex items-center gap-2"><span class="material-symbols-outlined">local_fire_department</span> The Heat</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Intense, timed rounds. Competitors must source, prep, and assemble their creations under extreme pressure while navigating surprise ingredient twists.</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container rounded-[1.5rem] p-md border-2 border-outline-variant flex flex-col gap-sm hover:shadow-md transition-shadow relative top-4">
+<div class="h-48 rounded-xl overflow-hidden mb-sm border-2 border-outline">
+<img class="w-full h-full object-cover" data-alt="A pristine, clinical top-down view of a judging table. A beautifully plated, geometrically perfect club sandwich sits in the center on a white plate, flanked by precise culinary scoring sheets, a magnifying glass, and a stainless steel ruler. Clean, high-key lighting, organized, serious, and analytical atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQNh9vhKdPwQ832-XeDpEfOnw-gRiuU6dMuO_ZBl3vUSeUoeuj_Nus_ccQoSDZSdHcnxrh5kLhzZ-4vpbbL9triSBFGXznd93T2a0bm8OC-H69BpVndCWy9M7PM3cmhMAiLnkuuiUnusfDX9kUq-JUTL0IY62muqKhsG3c3_lDM_tg6JgwAU-jBnYOwcivOK_P_Rq8rZzX0-1-F9s68qgznXMygnpClpooW-J1u5aAHGSPUg2x2Uf6"/>
+</div>
+<h3 class="font-headline-md text-headline-md text-secondary font-bold flex items-center gap-2"><span class="material-symbols-outlined">gavel</span> The Judging</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">A panel of ruthless, Michelin-starred critics evaluate based on structural integrity, flavor profile synergy, crumb texture, and aesthetic presentation.</p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container rounded-[1.5rem] p-md border-2 border-outline-variant flex flex-col gap-sm hover:shadow-md transition-shadow">
+<div class="h-48 rounded-xl overflow-hidden mb-sm border-2 border-outline">
+<img class="w-full h-full object-cover" data-alt="A massive, gleaming golden trophy in the shape of a perfectly crafted submarine sandwich, resting on a polished mahogany podium. Confetti falls in the background out of focus. Spotlights illuminate the trophy, giving it a majestic, triumphant aura. High contrast, celebratory, epic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZcCCZopWH_gH89dZwxQtlzqXDx8p587yjLnLGv8Dzg8Nwp9234U2RPSz7lV2JbQrqWe1RM4BkZPjCSTGkvqxLFhidTD8y7n9kkffvgk-169NMyNccOpbiyeL3sIXDA8S8e3THyNdy6YRuGdGzoAKP0aSXIFgDlaT25YZWm13ndsAppDBQigNiG7HDcVYjB1_yFA6uZGB36vRsRMDIjbdK182ra9NQBPrKp-frwlCx71jpO4Ek03_A"/>
+</div>
+<h3 class="font-headline-md text-headline-md text-secondary font-bold flex items-center gap-2"><span class="material-symbols-outlined">emoji_events</span> The Glory</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">The victor claims the Golden Loaf, a $50,000 grand prize, and eternal bragging rights as the undisputed monarch of the sandwich world.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-inverse-surface border-t-2 border-outline-variant dark:border-outline w-full py-xl mt-xl">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-7xl mx-auto gap-md">
+<span class="font-headline-md text-headline-md text-primary font-black">Sandwich Championship</span>
+<div class="flex gap-md font-body-md text-body-md font-label-bold text-label-bold text-on-surface-variant dark:text-surface-variant">
+<a class="hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Rules of Entry</a>
+<a class="hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Privacy Policy</a>
+<a class="hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Contact Host</a>
+<a class="hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">MinIO Assets</a>
+</div>
+<span class="font-body-md text-body-md text-secondary dark:text-secondary-fixed-dim text-sm">© 2024 International Sandwich Championship. NO BURGERS ALLOWED.</span>
+</div>
+</footer>
+</body></html>

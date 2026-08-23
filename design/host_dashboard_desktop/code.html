@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sandwich Championship Host Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#ffddb8",
+                        "surface-container": "#f2eede",
+                        "primary-fixed-dim": "#ffb95f",
+                        "on-background": "#1c1c13",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dedacb",
+                        "on-secondary-fixed": "#351000",
+                        "inverse-on-surface": "#f5f1e1",
+                        "primary": "#855300",
+                        "on-surface": "#1c1c13",
+                        "on-secondary-container": "#76340e",
+                        "on-primary-container": "#613b00",
+                        "inverse-surface": "#323126",
+                        "inverse-primary": "#ffb95f",
+                        "primary-container": "#f59e0b",
+                        "outline": "#867461",
+                        "on-primary-fixed-variant": "#653e00",
+                        "surface-bright": "#fdf9e9",
+                        "tertiary": "#006c49",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#534434",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#004e34",
+                        "surface-container-high": "#ece8d9",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-container-low": "#f8f4e4",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#30c88f",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-tint": "#855300",
+                        "surface-variant": "#e6e3d3",
+                        "on-primary": "#ffffff",
+                        "secondary": "#944a23",
+                        "on-secondary-fixed-variant": "#76330d",
+                        "outline-variant": "#d8c3ad",
+                        "secondary-fixed-dim": "#ffb693",
+                        "tertiary-fixed": "#6ffbbe",
+                        "secondary-container": "#fd9e70",
+                        "surface": "#fdf9e9",
+                        "on-tertiary-fixed": "#002113",
+                        "background": "#fdf9e9",
+                        "secondary-fixed": "#ffdbcc",
+                        "surface-container-highest": "#e6e3d3",
+                        "on-tertiary-fixed-variant": "#005236"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "margin-desktop": "32px",
+                        "base": "8px",
+                        "md": "24px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "stats-number": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "label-bold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "stats-number": ["40px", { "lineHeight": "40px", "fontWeight": "900" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-high border-r-2 border-outline-variant dark:border-outline flat no shadows h-screen w-64 fixed left-0 top-0 flex flex-col h-full py-md z-50 md:flex hidden">
+<div class="px-md mb-lg flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<img alt="Championship Logo" class="w-10 h-10 rounded-full border-2 border-outline object-cover" data-alt="A stylized, high-contrast flat graphic logo of a stacked sandwich with a crossed-out burger next to it. Warm oranges and browns on a cream background. Modern deli aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtAqaqpsb4FKdX-KxYQP9ZBk2ERuxiqV5ZOHz8fXfMB1B8lnJKbypiVbSus4tXOuB_DPmTeBAMTCYDptI2ddYXQWZQWL3Q1LaDrR58lkINcS4ZbeU-x6M42QvYc2mUHvPiUC4IUzJCpeJzDZ9NTRfuB1FDsMhegCM4OTYvV-TEBgbIa61F81eLWwFXfEnU_XBmd-2WDPIMNAQENj9Zd_5wnU_2oMqgAfeW1-fOPIM6cD1muHiexh_U"/>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-secondary dark:text-secondary-fixed-dim tracking-tight">Host Panel</h1>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Season 2024</span>
+</div>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-xs px-xs">
+<li>
+<a class="bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">chat</span>
+                    Global Chat
+                </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+                    Team Hub
+                </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">star_rate</span>
+                    Scoring
+                </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+                    Analytics
+                </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+                    Management
+                </a>
+</li>
+</ul>
+<div class="px-md mb-md">
+<button class="w-full bg-primary text-on-primary rounded-xl py-sm font-label-bold text-label-bold hover:translate-y-[2px] transition-transform flex items-center justify-center gap-sm shadow-sm border-2 border-outline">
+<span class="material-symbols-outlined">sensors</span>
+                Live Status
+            </button>
+</div>
+<ul class="flex flex-col gap-xs px-xs border-t-2 border-outline-variant pt-md">
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+                    Support
+                </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 flex items-center gap-sm px-md py-sm font-label-bold text-label-bold hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</li>
+</ul>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 h-full overflow-y-auto bg-surface">
+<!-- Top App Bar (Mobile only since side nav is desktop) -->
+<header class="md:hidden bg-surface dark:bg-surface-dim border-b-2 border-outline-variant shadow-sm flex justify-between items-center px-margin-mobile w-full h-16 sticky top-0 z-40">
+<h1 class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Host Panel</h1>
+<button class="text-primary p-xs"><span class="material-symbols-outlined text-3xl">menu</span></button>
+</header>
+<div class="p-margin-mobile md:p-margin-desktop max-w-7xl mx-auto flex flex-col gap-lg pb-xl">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
+<div>
+<h2 class="font-headline-xl text-headline-xl text-on-surface tracking-tight mb-xs">Dashboard Overview</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Live metrics for the Sandwich Championship.</p>
+</div>
+<div class="flex gap-sm">
+<button class="bg-surface-bright border-2 border-outline rounded-xl px-md py-sm font-label-bold text-label-bold text-on-surface hover:bg-surface-container transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined">download</span> Export
+                    </button>
+<button class="bg-primary text-on-primary rounded-xl px-md py-sm font-label-bold text-label-bold hover:translate-y-[2px] transition-transform shadow-sm border-2 border-outline flex items-center gap-xs">
+<span class="material-symbols-outlined">add</span> New Alert
+                    </button>
+</div>
+</div>
+<!-- Analytics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+<!-- Metric 1 -->
+<div class="bg-surface-container rounded-xl p-md border-2 border-outline-variant flex flex-col gap-sm shadow-sm relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-all"></div>
+<div class="flex justify-between items-center">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Registered Teams</h3>
+<span class="material-symbols-outlined text-primary">groups</span>
+</div>
+<div class="font-stats-number text-stats-number text-on-surface mt-auto">64</div>
+<div class="flex items-center gap-xs text-tertiary font-label-bold text-label-bold mt-xs">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+12 this week</span>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-container rounded-xl p-md border-2 border-outline-variant flex flex-col gap-sm shadow-sm relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-all"></div>
+<div class="flex justify-between items-center">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Total Scores</h3>
+<span class="material-symbols-outlined text-secondary">star_rate</span>
+</div>
+<div class="font-stats-number text-stats-number text-on-surface mt-auto">1,402</div>
+<div class="flex items-center gap-xs text-tertiary font-label-bold text-label-bold mt-xs">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+340 today</span>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-container rounded-xl p-md border-2 border-outline-variant flex flex-col gap-sm shadow-sm relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-tertiary/10 rounded-full blur-xl group-hover:bg-tertiary/20 transition-all"></div>
+<div class="flex justify-between items-center">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Active Chatters</h3>
+<span class="material-symbols-outlined text-tertiary">chat</span>
+</div>
+<div class="font-stats-number text-stats-number text-on-surface mt-auto">892</div>
+<div class="flex items-center gap-xs text-error font-label-bold text-label-bold mt-xs">
+<span class="material-symbols-outlined text-sm">trending_down</span>
+<span>-4% vs avg</span>
+</div>
+</div>
+<!-- Metric 4 (Umami Stats Special) -->
+<div class="bg-on-background text-surface-bright rounded-xl p-md border-2 border-outline flex flex-col gap-sm shadow-md relative overflow-hidden">
+<div class="absolute inset-0 bg-primary/20 blur-2xl"></div>
+<div class="flex justify-between items-center relative z-10">
+<h3 class="font-label-bold text-label-bold text-surface-dim uppercase tracking-wider">Umami Index</h3>
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div class="font-stats-number text-stats-number text-tertiary-fixed-dim mt-auto relative z-10">9.4</div>
+<div class="flex items-center gap-xs text-surface-dim font-label-bold text-label-bold mt-xs relative z-10">
+<span>Avg Rating / 10</span>
+</div>
+</div>
+</div>
+<!-- Complex Layout Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+<!-- Chart Area (Bento style) -->
+<div class="lg:col-span-2 bg-surface-container-low rounded-xl border-2 border-outline p-md shadow-sm flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Engagement Trends</h3>
+<select class="bg-surface border-2 border-outline rounded-lg px-sm py-xs font-label-bold text-label-bold text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+<option>All Time</option>
+</select>
+</div>
+<!-- Placeholder for Chart -->
+<div class="flex-1 bg-surface-container border-2 border-outline-variant rounded-lg min-h-[300px] flex items-center justify-center relative overflow-hidden">
+<div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-primary/10 to-transparent"></div>
+<p class="font-label-bold text-label-bold text-on-surface-variant z-10">Interactive Chart Placeholder</p>
+<!-- Simulated Chart Bars -->
+<div class="absolute bottom-0 left-0 w-full flex items-end justify-around px-md gap-sm opacity-50">
+<div class="w-full bg-secondary-container rounded-t-sm" style="height: 40%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm" style="height: 60%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm" style="height: 30%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm" style="height: 80%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm" style="height: 50%;"></div>
+<div class="w-full bg-primary rounded-t-sm" style="height: 90%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm" style="height: 70%;"></div>
+</div>
+</div>
+</div>
+<!-- Quick Actions & Alerts -->
+<div class="flex flex-col gap-md">
+<!-- Alerts Card -->
+<div class="bg-surface-container rounded-xl border-2 border-outline p-md shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">notifications_active</span>
+                            System Alerts
+                        </h3>
+<ul class="flex flex-col gap-sm">
+<li class="bg-error-container text-on-error-container p-sm rounded-lg border border-error/20 flex gap-sm items-start">
+<span class="material-symbols-outlined text-error mt-xs">warning</span>
+<div>
+<h4 class="font-label-bold text-label-bold">Rule Violation</h4>
+<p class="font-body-md text-body-md text-sm mt-xs">Team 'Meat Sweats' attempted to submit a burger. Immediate DQ initiated.</p>
+</div>
+</li>
+<li class="bg-surface p-sm rounded-lg border border-outline-variant flex gap-sm items-start">
+<span class="material-symbols-outlined text-tertiary mt-xs">info</span>
+<div>
+<h4 class="font-label-bold text-label-bold text-on-surface">Stream Stable</h4>
+<p class="font-body-md text-body-md text-sm text-on-surface-variant mt-xs">Main camera feed is operating at 100% capacity.</p>
+</div>
+</li>
+</ul>
+</div>
+<!-- Management Links -->
+<div class="bg-surface-container-high rounded-xl border-2 border-outline-variant p-md shadow-sm flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Quick Tools</h3>
+<div class="grid grid-cols-2 gap-sm">
+<button class="bg-surface hover:bg-surface-variant border-2 border-outline rounded-lg p-sm flex flex-col items-center justify-center gap-xs transition-colors h-24">
+<span class="material-symbols-outlined text-secondary text-3xl">gavel</span>
+<span class="font-label-bold text-label-bold text-center text-on-surface">Manage Judges</span>
+</button>
+<button class="bg-surface hover:bg-surface-variant border-2 border-outline rounded-lg p-sm flex flex-col items-center justify-center gap-xs transition-colors h-24">
+<span class="material-symbols-outlined text-primary text-3xl">stadium</span>
+<span class="font-label-bold text-label-bold text-center text-on-surface">Venue Setup</span>
+</button>
+<button class="bg-surface hover:bg-surface-variant border-2 border-outline rounded-lg p-sm flex flex-col items-center justify-center gap-xs transition-colors h-24">
+<span class="material-symbols-outlined text-tertiary text-3xl">receipt_long</span>
+<span class="font-label-bold text-label-bold text-center text-on-surface">Audit Logs</span>
+</button>
+<button class="bg-surface hover:bg-surface-variant border-2 border-outline rounded-lg p-sm flex flex-col items-center justify-center gap-xs transition-colors h-24">
+<span class="material-symbols-outlined text-error text-3xl">block</span>
+<span class="font-label-bold text-label-bold text-center text-on-surface">Ban List</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity (Asymmetric List) -->
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-md">Recent Submissions</h3>
+<div class="flex flex-col gap-sm">
+<div class="bg-surface-container rounded-xl border-2 border-outline-variant p-sm flex flex-col sm:flex-row items-center gap-md shadow-sm hover:shadow-md transition-shadow">
+<img alt="Submission 1" class="w-full sm:w-32 h-32 object-cover rounded-lg border-2 border-outline" data-alt="A close up, high quality studio photo of a giant, multi-layered pastrami sandwich on rye bread with mustard dripping down the side. Warm lighting, stark white background. Deli style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRiVb2yivMAbsnEBoiYA9oiDq-ZSWBpz2WlhZcvmqk48RXzVvSqPU7lrYaSV81xSKz_7DQqKlp3cXOQhLM1nenmBzZWoLPdTwAnnxI9nQP9PXIKpd7gHr03ivemEwSYJgoa1FiVMI2JeO9MWvrDEFF2eHMBPdsUmdF-GuG7QIUTt4e1tpKt9_Otkrpt9WWw3xzTRZFWVxqz1bj1oBY7UpTAU8U9bsAr8ZDR6QHYR7lSke89GZ22q06"/>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-xs">
+<h4 class="font-headline-md text-headline-md text-on-surface">The Pastrami Skyscraper</h4>
+<span class="bg-tertiary-container text-on-tertiary-container px-xs py-1 rounded font-label-bold text-label-bold text-xs uppercase tracking-wider">Approved</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Submitted by Team Deli-quent. Category: Classic Deli.</p>
+<div class="flex gap-sm">
+<span class="text-sm font-label-bold text-secondary flex items-center gap-xs"><span class="material-symbols-outlined text-sm">schedule</span> 10 mins ago</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl border-2 border-outline-variant p-sm flex flex-col sm:flex-row items-center gap-md shadow-sm hover:shadow-md transition-shadow">
+<img alt="Submission 2" class="w-full sm:w-32 h-32 object-cover rounded-lg border-2 border-outline" data-alt="A brightly lit photo of a delicate tea sandwich with cucumber and herbed cream cheese on crustless white bread. Minimalist presentation on a wooden board. Clean, modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3Y3aPQBffeCbXuynR9uyDupLtQh9BySWUt7-ZNaLWlscU02PqG83g92AKjl1fi0mS5Lm9ZYvNPU4KwyxUE2VhwyB-RA1C920vjcgK2xsKH0mZoFhhNTBSmmTBeLMQSylDozbvzyPdevrfvxcpLdFh8BEtyAqj3BVA1GPNAdNggWqSrYu0nVxR8xpJGNAOeebjhKLLpDACQRo493TR15A84mVNGwLvY6JwhBtdN_hVeMTl6Zy70mgI"/>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-xs">
+<h4 class="font-headline-md text-headline-md text-on-surface">Cucumber Minimalist</h4>
+<span class="bg-surface-variant text-on-surface-variant px-xs py-1 rounded border border-outline-variant font-label-bold text-label-bold text-xs uppercase tracking-wider">Pending Review</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Submitted by The High Tea Society. Category: Avant-Garde.</p>
+<div class="flex gap-sm">
+<span class="text-sm font-label-bold text-secondary flex items-center gap-xs"><span class="material-symbols-outlined text-sm">schedule</span> 45 mins ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer (Hidden on dashboard per standard app patterns, but requested in JSON. Will include minimally at bottom of scroll) -->
+<footer class="bg-surface-container-lowest dark:bg-inverse-surface border-t-2 border-outline-variant dark:border-outline w-full py-xl mt-xl flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-7xl mx-auto gap-md">
+<div class="font-headline-md text-headline-md text-primary">Sandwich Championship</div>
+<p class="font-body-md text-body-md text-on-surface-variant">© 2024 International Sandwich Championship. NO BURGERS ALLOWED.</p>
+<ul class="flex flex-wrap gap-md justify-center">
+<li><a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Rules of Entry</a></li>
+<li><a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Privacy Policy</a></li>
+<li><a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">Contact Host</a></li>
+<li><a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80" href="#">MinIO Assets</a></li>
+</ul>
+</footer>
+</main>
+</body></html>

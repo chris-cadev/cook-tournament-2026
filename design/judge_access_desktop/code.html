@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Judge Access - Sandwich Championship</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Montserrat:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#ffddb8",
+                    "surface-container": "#f2eede",
+                    "primary-fixed-dim": "#ffb95f",
+                    "on-background": "#1c1c13",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#dedacb",
+                    "on-secondary-fixed": "#351000",
+                    "inverse-on-surface": "#f5f1e1",
+                    "primary": "#855300",
+                    "on-surface": "#1c1c13",
+                    "on-secondary-container": "#76340e",
+                    "on-primary-container": "#613b00",
+                    "inverse-surface": "#323126",
+                    "inverse-primary": "#ffb95f",
+                    "primary-container": "#f59e0b",
+                    "outline": "#867461",
+                    "on-primary-fixed-variant": "#653e00",
+                    "surface-bright": "#fdf9e9",
+                    "tertiary": "#006c49",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#534434",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#004e34",
+                    "surface-container-high": "#ece8d9",
+                    "on-primary-fixed": "#2a1700",
+                    "surface-container-low": "#f8f4e4",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#30c88f",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-tint": "#855300",
+                    "surface-variant": "#e6e3d3",
+                    "on-primary": "#ffffff",
+                    "secondary": "#944a23",
+                    "on-secondary-fixed-variant": "#76330d",
+                    "outline-variant": "#d8c3ad",
+                    "secondary-fixed-dim": "#ffb693",
+                    "tertiary-fixed": "#6ffbbe",
+                    "secondary-container": "#fd9e70",
+                    "surface": "#fdf9e9",
+                    "on-tertiary-fixed": "#002113",
+                    "background": "#fdf9e9",
+                    "secondary-fixed": "#ffdbcc",
+                    "surface-container-highest": "#e6e3d3",
+                    "on-tertiary-fixed-variant": "#005236"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "lg": "40px",
+                    "xl": "64px",
+                    "margin-desktop": "32px",
+                    "base": "8px",
+                    "md": "24px",
+                    "sm": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "Montserrat"
+                    ],
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "stats-number": [
+                            "Montserrat"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-xl": [
+                            "Montserrat"
+                    ],
+                    "label-bold": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "36px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "stats-number": [
+                            "40px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-xl": [
+                            "48px",
+                            {
+                                    "lineHeight": "52px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "label-bold": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        .bg-pattern {
+            background-image: radial-gradient(var(--tw-colors-outline-variant) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- Transactional page: Nav/Footer shell suppressed -->
+<main class="flex-grow flex items-center justify-center p-margin-desktop bg-surface-container-low relative overflow-hidden">
+<!-- Abstract decorative background elements -->
+<div class="absolute inset-0 bg-pattern opacity-30 pointer-events-none"></div>
+<div class="absolute -top-32 -left-32 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-secondary-container/10 rounded-full blur-3xl"></div>
+<div class="relative w-full max-w-md z-10">
+<!-- Login Card -->
+<div class="bg-surface-container-lowest rounded-[1.5rem] shadow-xl border-2 border-outline-variant overflow-hidden">
+<!-- Branding Header -->
+<div class="bg-primary p-lg text-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[url('placeholder')] bg-cover bg-center" data-alt="Close-up abstract shot of toasted artisan bread textures, warm golden lighting, high contrast, creating a subtle textured background pattern for a high-end sandwich championship interface."></div>
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-5xl text-on-primary mb-sm" data-weight="fill">gavel</span>
+<h1 class="font-headline-lg text-headline-lg text-on-primary">Judge Access</h1>
+<p class="font-body-md text-body-md text-primary-fixed mt-xs">Sandwich Championship 2024</p>
+</div>
+</div>
+<!-- Form Section -->
+<div class="p-lg">
+<form action="#" class="space-y-md" method="POST">
+<div class="space-y-sm relative">
+<label class="block font-label-bold text-label-bold text-on-surface" for="judge_id">Panelist ID</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-sm pointer-events-none">
+<span class="material-symbols-outlined text-outline">badge</span>
+</span>
+<input class="w-full pl-xl pr-sm py-sm bg-surface rounded-lg border-2 border-outline focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all font-body-md text-body-md text-on-surface placeholder-on-surface-variant outline-none" id="judge_id" name="judge_id" placeholder="Enter your unique ID" required="" type="text"/>
+</div>
+</div>
+<div class="space-y-sm relative">
+<label class="block font-label-bold text-label-bold text-on-surface" for="access_code">Secure Access Code</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-sm pointer-events-none">
+<span class="material-symbols-outlined text-outline">lock</span>
+</span>
+<input class="w-full pl-xl pr-sm py-sm bg-surface rounded-lg border-2 border-outline focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all font-body-md text-body-md text-on-surface placeholder-on-surface-variant outline-none" id="access_code" name="access_code" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 flex items-center pr-sm text-outline hover:text-primary transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between pt-sm">
+<div class="flex items-center">
+<input class="h-5 w-5 rounded border-2 border-outline text-primary focus:ring-primary bg-surface cursor-pointer" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-sm block font-body-md text-body-md text-on-surface-variant cursor-pointer" for="remember-me">
+                                    Keep session active
+                                </label>
+</div>
+<div class="text-sm">
+<a class="font-label-bold text-label-bold text-primary hover:text-secondary underline transition-colors" href="#">Support</a>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-headline-md text-headline-md py-sm px-md rounded-xl hover:bg-on-primary-container hover:text-primary-fixed focus:outline-none focus:ring-4 focus:ring-primary/30 transition-all active:translate-y-0.5 flex justify-center items-center gap-xs" type="submit">
+                            Authenticate <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</form>
+<div class="mt-lg pt-md border-t-2 border-outline-variant text-center">
+<p class="font-label-bold text-label-bold text-error flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined" data-weight="fill">warning</span>
+                            NO BURGERS ALLOWED.
+                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs text-sm">
+                            Authorized judging panel members only. Violators will be expelled.
+                        </p>
+</div>
+</div>
+</div>
+<div class="mt-lg text-center font-body-md text-body-md text-on-surface-variant opacity-70">
+                © 2024 International Sandwich Championship
+            </div>
+</div>
+</main>
+</body></html>

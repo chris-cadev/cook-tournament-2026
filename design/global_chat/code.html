@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Global Chat - SNDWCH CHAMP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary-fixed-variant": "#76330d",
+                        "on-primary-container": "#613b00",
+                        "background": "#fdf9e9",
+                        "tertiary-container": "#30c88f",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#855300",
+                        "surface-container-high": "#ece8d9",
+                        "surface": "#fdf9e9",
+                        "outline-variant": "#d8c3ad",
+                        "outline": "#867461",
+                        "on-surface": "#1c1c13",
+                        "inverse-on-surface": "#f5f1e1",
+                        "secondary-fixed": "#ffdbcc",
+                        "on-secondary-fixed": "#351000",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#323126",
+                        "on-secondary-container": "#76340e",
+                        "inverse-primary": "#ffb95f",
+                        "on-tertiary-container": "#004e34",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006c49",
+                        "surface-container-low": "#f8f4e4",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#002113",
+                        "primary-container": "#f59e0b",
+                        "surface-container-highest": "#e6e3d3",
+                        "secondary-fixed-dim": "#ffb693",
+                        "secondary": "#944a23",
+                        "on-surface-variant": "#534434",
+                        "primary-fixed": "#ffddb8",
+                        "on-primary-fixed-variant": "#653e00",
+                        "on-background": "#1c1c13",
+                        "primary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#fd9e70",
+                        "surface-container": "#f2eede",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-variant": "#e6e3d3",
+                        "surface-dim": "#dedacb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-tint": "#855300",
+                        "surface-bright": "#fdf9e9",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "margin-desktop": "32px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "stats-number": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-bold": ["Inter"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "stats-number": ["40px", { "lineHeight": "40px", "fontWeight": "900" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .tactile-button:active { transform: translateY(2px); }
+        .crust-border { border: 2px solid #867461; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background h-full flex flex-col antialiased">
+<!-- Desktop Drawer Nav (Hidden on Mobile) -->
+<div aria-label="Desktop Navigation" class="hidden md:flex fixed left-0 top-0 h-full w-80 rounded-r-xl bg-surface shadow-xl z-40 flex-col py-lg">
+<div class="px-margin-desktop mb-xl">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tighter">CHAMPIONSHIP MENU</h1>
+</div>
+<nav class="flex-1 space-y-sm px-margin-desktop">
+<a class="flex items-center space-x-md text-on-surface-variant hover:bg-surface-variant rounded-lg p-sm transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">restaurant</span>
+<span class="font-body-lg text-body-lg">Feed</span>
+</a>
+<a class="flex items-center space-x-md text-on-surface-variant hover:bg-surface-variant rounded-lg p-sm transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">emoji_events</span>
+<span class="font-body-lg text-body-lg">Bracket</span>
+</a>
+<a class="flex items-center space-x-md bg-secondary-container text-on-secondary-container font-bold rounded-lg p-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-body-lg text-body-lg">Chat</span>
+</a>
+<a class="flex items-center space-x-md text-on-surface-variant hover:bg-surface-variant rounded-lg p-sm transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">analytics</span>
+<span class="font-body-lg text-body-lg">Scoring</span>
+</a>
+<a class="flex items-center space-x-md text-on-surface-variant hover:bg-surface-variant rounded-lg p-sm transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings_suggest</span>
+<span class="font-body-lg text-body-lg">Admin</span>
+</a>
+</nav>
+</div>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-80 flex flex-col h-full bg-surface-container-lowest">
+<!-- TopAppBar (Mobile & Desktop) -->
+<header class="fixed top-0 md:left-80 right-0 z-50 bg-surface text-primary border-b-2 border-outline-variant shadow-sm flex justify-between items-center px-margin-mobile h-16">
+<div class="flex items-center space-x-md">
+<button class="md:hidden p-xs active:translate-y-0.5 transition-transform duration-100 text-primary">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<div class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary text-2xl">forum</span>
+<h1 class="font-headline-md text-headline-md font-black text-primary tracking-tighter">SNDWCH CHAMP</h1>
+</div>
+</div>
+<div class="flex items-center space-x-sm">
+<div class="hidden sm:flex items-center bg-surface-container-high rounded-full px-sm py-xs space-x-xs crust-border">
+<div class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></div>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase">342 Live</span>
+</div>
+<button class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center crust-border tactile-button">
+<span class="font-headline-md text-headline-md text-on-primary-container">J</span>
+</button>
+</div>
+</header>
+<!-- Chat Container -->
+<main class="flex-1 mt-16 mb-20 md:mb-24 overflow-hidden flex flex-col max-w-5xl mx-auto w-full relative">
+<!-- Message List -->
+<div class="flex-1 overflow-y-auto p-margin-mobile space-y-md hide-scrollbar flex flex-col" id="chat-messages">
+<!-- System Message -->
+<div class="flex justify-center my-sm">
+<span class="bg-surface-container rounded-full px-sm py-xs font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-xs border border-outline-variant shadow-sm">
+                        Round 2 Voting Open
+                    </span>
+</div>
+<!-- Guest Message -->
+<div class="flex flex-col items-start max-w-[85%] self-start group">
+<div class="flex items-baseline space-x-xs mb-1 ml-1">
+<span class="font-label-bold text-label-bold text-on-surface-variant">Guest User 89</span>
+<span class="text-xs text-outline font-body-md">10:42 AM</span>
+<span class="bg-surface-variant text-on-surface-variant text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-sm ml-2">Guest</span>
+</div>
+<div class="bg-surface-container-high text-on-surface p-sm rounded-xl rounded-tl-sm crust-border relative shadow-sm">
+<p class="font-body-md text-body-md">Did anyone else see the size of that Pastrami? Absolute unit.</p>
+<!-- Admin Delete UI (Hover) -->
+<button class="absolute -right-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-error hover:bg-error-container rounded-full p-1">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</div>
+<!-- Verified User Message with Image (MinIO Style) -->
+<div class="flex flex-col items-start max-w-[90%] self-start group">
+<div class="flex items-baseline space-x-xs mb-1 ml-1">
+<span class="font-label-bold text-label-bold text-on-surface">DeliMaster_Flex</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-xs text-outline font-body-md">10:45 AM</span>
+</div>
+<div class="bg-surface-container-high p-2 rounded-xl rounded-tl-sm crust-border shadow-sm transform -rotate-1 relative">
+<!-- Simulated MinIO Media Card -->
+<div class="relative w-full sm:w-80 h-48 rounded-lg overflow-hidden border border-outline-variant mb-2">
+<img class="w-full h-full object-cover" data-alt="A highly detailed close-up of a massive, mouth-watering pastrami sandwich stacked high on fresh rye bread. The meat is glistening with heat, and melted Swiss cheese oozes down the sides. Shot in bright, high-contrast deli lighting against a clean white background. High energy, appetizing food photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAPiIE7mqYihCpuwmKr-rhmICuZyZpkOF7iGMnRa58jXYica-A3l0A_BdP6WTyx3wIWIel3Sg2duSr25FGIAQoK2W18jzZlUEa7OtXgpZAAEKXumf7WBtWvAAWxi_1dvSjrbMbQsucTv6Sv8sj297LeJ-GoNKRctpFcijRRXRlY9PJxQTL5_e_Qb-GrUhkhVJYJLLXUR4iPzkjmfQ-gls5A4zQ0HL6r7eNUkY4doxX_puV0aEfbmkI"/>
+<!-- 'No Burgers' Badge Example -->
+<div class="absolute top-2 right-2 bg-error text-on-error font-label-bold text-xs uppercase px-2 py-1 rounded-sm shadow-md transform rotate-3">
+                                100% Beef
+                            </div>
+</div>
+<p class="font-body-md text-body-md px-1 text-on-surface">Look at this cross-section. The judging rubric says we need structural integrity, and this has it in spades.</p>
+<!-- Admin Delete UI -->
+<button class="absolute -right-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-error hover:bg-error-container rounded-full p-1">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</div>
+<!-- Current User Message -->
+<div class="flex flex-col items-end max-w-[85%] self-end">
+<div class="flex items-baseline space-x-xs mb-1 mr-1">
+<span class="text-xs text-outline font-body-md">10:48 AM</span>
+<span class="font-label-bold text-label-bold text-on-surface">You</span>
+</div>
+<div class="bg-primary text-on-primary p-sm rounded-xl rounded-tr-sm shadow-md border border-primary-fixed-dim">
+<p class="font-body-md text-body-md">I gave it an 8 for presentation. The mustard drip was a bit sloppy.</p>
+</div>
+</div>
+<!-- Audio Note Message -->
+<div class="flex flex-col items-start max-w-[85%] self-start group">
+<div class="flex items-baseline space-x-xs mb-1 ml-1">
+<span class="font-label-bold text-label-bold text-on-surface">Chef_Roy</span>
+<span class="text-xs text-outline font-body-md">10:51 AM</span>
+</div>
+<div class="bg-surface-container-high p-sm rounded-xl rounded-tl-sm crust-border flex items-center space-x-sm shadow-sm relative">
+<button class="w-10 h-10 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center tactile-button shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<div class="flex-1 w-32 sm:w-48">
+<!-- Pseudo audio waveform -->
+<div class="h-6 flex items-center space-x-1 opacity-70">
+<div class="w-1 bg-outline rounded-full h-2"></div>
+<div class="w-1 bg-outline rounded-full h-4"></div>
+<div class="w-1 bg-outline rounded-full h-6"></div>
+<div class="w-1 bg-outline rounded-full h-3"></div>
+<div class="w-1 bg-outline rounded-full h-5"></div>
+<div class="w-1 bg-outline rounded-full h-2"></div>
+<div class="w-1 bg-outline rounded-full h-4"></div>
+<div class="w-1 bg-outline rounded-full h-6"></div>
+<div class="w-1 bg-outline rounded-full h-3"></div>
+</div>
+</div>
+<span class="text-xs text-on-surface-variant font-label-bold">0:12</span>
+<!-- Admin Delete UI -->
+<button class="absolute -right-8 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-error hover:bg-error-container rounded-full p-1">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</div>
+<!-- Admin Notification (Visual Indicator) -->
+<div class="flex justify-center my-sm">
+<div class="bg-error-container border border-error text-on-error-container rounded-xl px-sm py-xs flex items-center space-x-xs shadow-sm max-w-sm w-full">
+<span class="material-symbols-outlined text-error text-sm">warning</span>
+<span class="font-body-md text-sm">Message deleted by Admin (Rule 3: No Burger Talk)</span>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="absolute bottom-0 left-0 right-0 bg-surface-container border-t-2 border-outline-variant p-margin-mobile">
+<div class="flex items-end space-x-xs sm:space-x-sm max-w-4xl mx-auto bg-surface p-1 rounded-xl crust-border focus-within:ring-2 focus-within:ring-primary-container transition-shadow">
+<!-- Attachment Buttons -->
+<div class="flex space-x-1 pb-1">
+<button aria-label="Upload Image" class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-lg transition-colors">
+<span class="material-symbols-outlined">image</span>
+</button>
+<button aria-label="Record Audio" class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-lg transition-colors hidden sm:block">
+<span class="material-symbols-outlined">mic</span>
+</button>
+</div>
+<!-- Text Input -->
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 resize-none font-body-md text-on-surface py-3 px-2 max-h-32 min-h-[48px] hide-scrollbar" placeholder="Talk some smack (or sandwich praise)..." rows="1"></textarea>
+<!-- Send Button -->
+<div class="pb-1 pr-1">
+<button class="bg-primary text-on-primary w-10 h-10 rounded-lg flex items-center justify-center tactile-button shadow-sm hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface-container rounded-t-xl shadow-[0_-4px_10px_rgba(133,83,0,0.1)] border-t-2 border-outline-variant pb-safe">
+<div class="flex justify-around items-center px-2 py-3">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">restaurant</span>
+<span class="font-label-bold text-xs mt-1">Feed</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">emoji_events</span>
+<span class="font-label-bold text-xs mt-1">Bracket</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-label-bold text-xs mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">analytics</span>
+<span class="font-label-bold text-xs mt-1">Scoring</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings_suggest</span>
+<span class="font-label-bold text-xs mt-1">Admin</span>
+</a>
+</div>
+</nav>
+</div>
+<script>
+        // Simple script to auto-scroll chat to bottom on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    </script>
+</body></html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Register Team - Sandwich Championship</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#ffddb8",
+                        "surface-container": "#f2eede",
+                        "primary-fixed-dim": "#ffb95f",
+                        "on-background": "#1c1c13",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dedacb",
+                        "on-secondary-fixed": "#351000",
+                        "inverse-on-surface": "#f5f1e1",
+                        "primary": "#855300",
+                        "on-surface": "#1c1c13",
+                        "on-secondary-container": "#76340e",
+                        "on-primary-container": "#613b00",
+                        "inverse-surface": "#323126",
+                        "inverse-primary": "#ffb95f",
+                        "primary-container": "#f59e0b",
+                        "outline": "#867461",
+                        "on-primary-fixed-variant": "#653e00",
+                        "surface-bright": "#fdf9e9",
+                        "tertiary": "#006c49",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#534434",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#004e34",
+                        "surface-container-high": "#ece8d9",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-container-low": "#f8f4e4",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#30c88f",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-tint": "#855300",
+                        "surface-variant": "#e6e3d3",
+                        "on-primary": "#ffffff",
+                        "secondary": "#944a23",
+                        "on-secondary-fixed-variant": "#76330d",
+                        "outline-variant": "#d8c3ad",
+                        "secondary-fixed-dim": "#ffb693",
+                        "tertiary-fixed": "#6ffbbe",
+                        "secondary-container": "#fd9e70",
+                        "surface": "#fdf9e9",
+                        "on-tertiary-fixed": "#002113",
+                        "background": "#fdf9e9",
+                        "secondary-fixed": "#ffdbcc",
+                        "surface-container-highest": "#e6e3d3",
+                        "on-tertiary-fixed-variant": "#005236"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "margin-desktop": "32px",
+                        "base": "8px",
+                        "md": "24px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "stats-number": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "label-bold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "stats-number": ["40px", { "lineHeight": "40px", "fontWeight": "900" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        /* Component shapes based on brand anchor */
+        .card-shape { border-radius: 1.5rem; }
+        .input-style { border: 2px solid theme('colors.outline'); background-color: theme('colors.surface-container-lowest'); transition: all 0.2s ease-in-out; }
+        .input-style:focus { outline: none; border-color: theme('colors.primary'); box-shadow: 0 0 0 4px theme('colors.primary-fixed'); }
+        .primary-btn { background-color: theme('colors.primary-container'); color: theme('colors.on-primary-container'); border-radius: theme('borderRadius.xl'); transition: transform 0.15s ease-in-out, box-shadow 0.15s; }
+        .primary-btn:active { transform: translateY(2px); }
+        .secondary-btn { background-color: theme('colors.surface-container-lowest'); border: 2px solid theme('colors.outline'); border-radius: theme('borderRadius.xl'); transition: transform 0.15s; }
+        .secondary-btn:active { transform: translateY(2px); }
+    </style>
+</head>
+<body class="font-body-md text-body-md min-h-screen flex flex-col antialiased">
+<!-- TopNavBar: Suppressed because this is a transactional flow (Registration) -->
+<main class="flex-grow flex flex-col items-center justify-center py-xl px-margin-desktop w-full max-w-7xl mx-auto">
+<div class="w-full max-w-4xl card-shape bg-surface p-xl shadow-lg border-2 border-outline/20 relative overflow-hidden">
+<!-- Decorative Background Element -->
+<div class="absolute -top-32 -right-32 w-96 h-96 bg-primary-fixed/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+<div class="mb-lg text-center">
+<h1 class="font-headline-xl text-headline-xl text-primary mb-sm">Cook Registration</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Enter the arena. Remember, NO BURGERS ALLOWED. Strictly sandwiches.</p>
+</div>
+<!-- Progress Indicator -->
+<div class="flex items-center justify-between mb-xl relative">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-surface-variant -z-10"></div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/3 h-1 bg-primary -z-10"></div>
+<div class="flex flex-col items-center gap-base">
+<div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-bold text-label-bold shadow-md">1</div>
+<span class="font-label-bold text-label-bold text-primary">Team Details</span>
+</div>
+<div class="flex flex-col items-center gap-base">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest text-on-surface-variant border-2 border-outline-variant flex items-center justify-center font-label-bold text-label-bold">2</div>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Sandwich Concept</span>
+</div>
+<div class="flex flex-col items-center gap-base">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest text-on-surface-variant border-2 border-outline-variant flex items-center justify-center font-label-bold text-label-bold">3</div>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Review</span>
+</div>
+</div>
+<!-- Registration Form -->
+<form class="space-y-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Column 1: Team Info -->
+<div class="space-y-md">
+<h2 class="font-headline-md text-headline-md text-on-surface border-b-2 border-outline-variant pb-sm">Team Identity</h2>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-xs" for="teamName">Team Name</label>
+<input class="w-full input-style px-sm py-sm rounded-lg font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50" id="teamName" placeholder="e.g., The Pastrami Prophets" type="text"/>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-xs" for="captainName">Captain's Name</label>
+<input class="w-full input-style px-sm py-sm rounded-lg font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50" id="captainName" placeholder="First and Last Name" type="text"/>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-xs" for="email">Contact Email</label>
+<input class="w-full input-style px-sm py-sm rounded-lg font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50" id="email" placeholder="captain@pastramiprophets.com" type="email"/>
+</div>
+</div>
+<!-- Column 2: Initial Concept -->
+<div class="space-y-md bg-surface-container p-md card-shape border border-outline/10">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-sm flex items-center gap-base">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+                            Primary Entry
+                        </h2>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-xs" for="category">Competition Category</label>
+<select class="w-full input-style px-sm py-sm rounded-lg font-body-md text-body-md text-on-surface appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%24%2024%22%20fill%3D%22none%22%20stroke%3D%22%23867461%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_12px_center] pr-10" id="category">
+<option>Select a category</option>
+<option>Classic Deli (Cold)</option>
+<option>Melt Mastery (Hot)</option>
+<option>Avant-Garde</option>
+<option>Vegan Vengeance</option>
+</select>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-xs">Signature Ingredient</label>
+<input class="w-full input-style px-sm py-sm rounded-lg font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50" placeholder="e.g., 24-hour smoked brisket" type="text"/>
+</div>
+<div class="mt-sm p-sm bg-error-container/30 border border-error/50 rounded-lg flex items-start gap-sm">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">By proceeding, you agree that your entry contains NO ground meat patties. Violators will be disqualified immediately.</p>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex justify-between items-center pt-md border-t-2 border-outline-variant mt-xl">
+<button class="secondary-btn px-lg py-sm font-label-bold text-label-bold text-on-surface flex items-center gap-xs" type="button">
+<span class="material-symbols-outlined">arrow_back</span>
+                        Cancel
+                    </button>
+<button class="primary-btn px-lg py-sm font-label-bold text-label-bold flex items-center gap-xs" type="button">
+                        Next Step
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</main>
+<!-- Footer: Suppressed as part of transactional flow to keep user focused -->
+</body></html>

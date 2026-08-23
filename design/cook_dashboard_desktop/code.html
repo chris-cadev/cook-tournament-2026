@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Desktop Cook Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Montserrat:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#ffddb8",
+                    "surface-container": "#f2eede",
+                    "primary-fixed-dim": "#ffb95f",
+                    "on-background": "#1c1c13",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#dedacb",
+                    "on-secondary-fixed": "#351000",
+                    "inverse-on-surface": "#f5f1e1",
+                    "primary": "#855300",
+                    "on-surface": "#1c1c13",
+                    "on-secondary-container": "#76340e",
+                    "on-primary-container": "#613b00",
+                    "inverse-surface": "#323126",
+                    "inverse-primary": "#ffb95f",
+                    "primary-container": "#f59e0b",
+                    "outline": "#867461",
+                    "on-primary-fixed-variant": "#653e00",
+                    "surface-bright": "#fdf9e9",
+                    "tertiary": "#006c49",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#534434",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#004e34",
+                    "surface-container-high": "#ece8d9",
+                    "on-primary-fixed": "#2a1700",
+                    "surface-container-low": "#f8f4e4",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#30c88f",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-tint": "#855300",
+                    "surface-variant": "#e6e3d3",
+                    "on-primary": "#ffffff",
+                    "secondary": "#944a23",
+                    "on-secondary-fixed-variant": "#76330d",
+                    "outline-variant": "#d8c3ad",
+                    "secondary-fixed-dim": "#ffb693",
+                    "tertiary-fixed": "#6ffbbe",
+                    "secondary-container": "#fd9e70",
+                    "surface": "#fdf9e9",
+                    "on-tertiary-fixed": "#002113",
+                    "background": "#fdf9e9",
+                    "secondary-fixed": "#ffdbcc",
+                    "surface-container-highest": "#e6e3d3",
+                    "on-tertiary-fixed-variant": "#005236"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "lg": "40px",
+                    "xl": "64px",
+                    "margin-desktop": "32px",
+                    "base": "8px",
+                    "md": "24px",
+                    "sm": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "Montserrat"
+                    ],
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "stats-number": [
+                            "Montserrat"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-xl": [
+                            "Montserrat"
+                    ],
+                    "label-bold": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "36px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "stats-number": [
+                            "40px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-xl": [
+                            "48px",
+                            {
+                                    "lineHeight": "52px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "label-bold": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- TopNavBar (Shared Component) -->
+<nav class="bg-surface w-full h-16 border-b-2 border-outline-variant shadow-sm flex justify-between items-center px-margin-desktop w-full max-w-7xl mx-auto z-50 sticky top-0">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Sandwich Championship</span>
+<div class="hidden md:flex gap-gutter items-center h-full">
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary-container/10 rounded-lg px-3 py-2 font-body-md text-body-md active:translate-y-0.5 transition-all duration-150 flex items-center h-full" href="#">Bracket</a>
+<a class="text-primary border-b-2 border-primary font-bold pb-1 px-3 py-2 font-body-md text-body-md active:translate-y-0.5 transition-all duration-150 h-full flex items-center" href="#">Teams</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary-container/10 rounded-lg px-3 py-2 font-body-md text-body-md active:translate-y-0.5 transition-all duration-150 h-full flex items-center" href="#">Live Stream</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary-container/10 rounded-lg px-3 py-2 font-body-md text-body-md active:translate-y-0.5 transition-all duration-150 h-full flex items-center" href="#">History</a>
+</div>
+</div>
+<div class="flex items-center gap-base">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container rounded-full border-2 border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-container/50 outline-none text-body-md font-body-md w-48 lg:w-64" placeholder="Search..." type="text"/>
+</div>
+<button class="font-label-bold text-label-bold bg-surface-container text-on-surface hover:bg-surface-variant px-4 py-2 rounded-xl border-2 border-outline transition-all duration-150 active:translate-y-0.5">Login</button>
+<button class="font-label-bold text-label-bold bg-primary text-on-primary hover:bg-primary/90 px-4 py-2 rounded-xl border-2 border-primary transition-all duration-150 active:translate-y-0.5 flex items-center gap-xs shadow-[0_4px_0_0_#653e00] hover:shadow-[0_2px_0_0_#653e00] hover:translate-y-[2px]">
+                Register Team
+            </button>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden border-2 border-outline">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A detailed headshot of a user profile. High quality, well lit, professional, subtle sandwich motif in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChJak1eNrJCKnOWjtpEHVVWIyhJ13REI73LxDqYH2OOH1ZXZAkpKAWIe6A4PdQXUp2c_Lv4LBJmkTgGVNr096KQjMnk2coNEfLE0SBJKc9kLaMLDO34CjaeFuNrgvt4ONKnms60QxU3c3L89yP9iFjdSDyVRYdEMdhTbuKhrGvyV4vXDlHrpIVGQosJgQ6haTcInF6O9cQZIQ5Saf6YWGAid_IlGySmUvPOEtXPrrlOjfR5tb7_4F3"/>
+</div>
+</div>
+</nav>
+<div class="flex flex-1 w-full max-w-7xl mx-auto px-margin-desktop py-xl gap-lg">
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col gap-xl w-full">
+<header class="flex flex-col gap-sm">
+<h1 class="font-headline-xl text-headline-xl text-primary">Team Dashboard</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage your crew, track prep progress, and aim for sandwich perfection.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Hero / Target Perfection (Spans full width on mobile, 8 cols on desktop) -->
+<section class="lg:col-span-8 bg-surface-container rounded-xl overflow-hidden border-2 border-outline flex flex-col relative h-96 group">
+<img alt="Target: Perfection" class="w-full h-full object-cover absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-105" data-alt="A spectacular, high-resolution, perfectly constructed multi-layered deli sandwich on artisan bread. Extreme close-up showing juicy meats, fresh crisp lettuce, dripping artisanal sauce. Masterpiece food photography, warm cinematic lighting emphasizing texture and freshness. High contrast bold aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtfXZWcv2kMN8Q7SotbAecjaX25y2RZFIOAJ3Hz21SJ5IEPdw_z6qoJk-v1UnCw0ay1U9T3rbRHIG9V4ytVFpt0dEaMZsRxV5jNI3PhQSLBIJMncLAd1SU4znXFCkWQh-brz1m9TQzaZ7cpSTI4ZT1aqofmp-VqmUXwwD4dSdAhaIcFJwdAaLFOL7QncG_OurAtOA2eMfJXyyz7KVrP7JHBJcTGim6fBn4oo9Ba4oCZhmbgHG-mLiG"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent z-10"></div>
+<div class="z-20 mt-auto p-md flex flex-col gap-sm">
+<span class="bg-error text-on-error font-label-bold text-label-bold px-3 py-1 rounded-full w-fit border-2 border-error-container uppercase tracking-wider">No Burgers</span>
+<h2 class="font-headline-lg text-headline-lg text-on-background drop-shadow-md">Target: The Grand BLT Maestro</h2>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container" data-icon="timer">timer</span>
+<span class="font-body-md text-body-md text-on-background font-bold">45m Prep Time</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container" data-icon="restaurant">restaurant</span>
+<span class="font-body-md text-body-md text-on-background font-bold">Difficulty: Master</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Prep Countdown (Spans 4 cols on desktop) -->
+<section class="lg:col-span-4 bg-primary text-on-primary rounded-xl border-2 border-on-primary-fixed-variant p-md flex flex-col justify-center items-center shadow-[4px_4px_0_0_#653e00]">
+<h3 class="font-headline-md text-headline-md mb-xs text-primary-fixed">Match Starts In</h3>
+<div class="font-stats-number text-stats-number text-6xl text-on-primary tracking-tighter my-md">02:14:59</div>
+<p class="font-body-md text-body-md text-primary-fixed-dim text-center">Ensure all stations are prepped and ready for inspection.</p>
+</section>
+<!-- Team Crew List -->
+<section class="lg:col-span-6 bg-surface-container rounded-xl border-2 border-outline p-md flex flex-col gap-md">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-sm border-b-2 border-outline-variant pb-xs">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                        Crew Roster
+                    </h3>
+<ul class="flex flex-col gap-sm">
+<li class="flex items-center justify-between bg-surface p-sm rounded-lg border-2 border-outline-variant hover:border-primary-container transition-colors">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-headline-md text-headline-md text-on-secondary-container">CM</div>
+<div>
+<div class="font-label-bold text-label-bold text-on-surface">Chef Mario</div>
+<div class="font-body-md text-body-md text-on-surface-variant text-sm">Lead Assembler</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-tertiary-container" data-icon="check_circle">check_circle</span>
+</li>
+<li class="flex items-center justify-between bg-surface p-sm rounded-lg border-2 border-outline-variant hover:border-primary-container transition-colors">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-headline-md text-headline-md text-on-secondary-container">SJ</div>
+<div>
+<div class="font-label-bold text-label-bold text-on-surface">Sous Chef Jane</div>
+<div class="font-body-md text-body-md text-on-surface-variant text-sm">Sauce Specialist</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-tertiary-container" data-icon="check_circle">check_circle</span>
+</li>
+<li class="flex items-center justify-between bg-surface p-sm rounded-lg border-2 border-error-container hover:border-error transition-colors">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">BP</div>
+<div>
+<div class="font-label-bold text-label-bold text-on-surface">Baker Pete</div>
+<div class="font-body-md text-body-md text-error text-sm">Bread Station (MIA)</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</li>
+</ul>
+</section>
+<!-- Ingredient Manifest -->
+<section class="lg:col-span-6 bg-surface-container rounded-xl border-2 border-outline p-md flex flex-col gap-md">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-sm border-b-2 border-outline-variant pb-xs">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+                        Ingredient Manifest
+                    </h3>
+<div class="grid grid-cols-2 gap-sm">
+<!-- Ingredient Items -->
+<div class="bg-surface rounded-lg p-sm border-2 border-outline-variant flex items-center gap-xs">
+<div class="w-10 h-10 rounded-md bg-tertiary/10 flex items-center justify-center text-tertiary font-bold">1kg</div>
+<div class="flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface">Artisan Sourdough</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-xs">Sourced: Local</span>
+</div>
+</div>
+<div class="bg-surface rounded-lg p-sm border-2 border-outline-variant flex items-center gap-xs">
+<div class="w-10 h-10 rounded-md bg-tertiary/10 flex items-center justify-center text-tertiary font-bold">500g</div>
+<div class="flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface">Heirloom Tomatoes</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-xs">Sliced 5mm</span>
+</div>
+</div>
+<div class="bg-surface rounded-lg p-sm border-2 border-outline-variant flex items-center gap-xs">
+<div class="w-10 h-10 rounded-md bg-tertiary/10 flex items-center justify-center text-tertiary font-bold">200g</div>
+<div class="flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface">Thick-cut Bacon</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-xs">Maple Glazed</span>
+</div>
+</div>
+<div class="bg-surface rounded-lg p-sm border-2 border-outline-variant flex items-center gap-xs">
+<div class="w-10 h-10 rounded-md bg-tertiary/10 flex items-center justify-center text-tertiary font-bold">1btl</div>
+<div class="flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface">Secret Sauce</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-xs">Chilled</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Station Prep Progress -->
+<section class="lg:col-span-12 bg-surface rounded-xl border-2 border-outline p-md flex flex-col gap-md shadow-sm">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-sm">
+<span class="material-symbols-outlined" data-icon="kitchen">kitchen</span>
+                        Station Prep Progress
+                    </h3>
+<div class="flex flex-col gap-sm">
+<!-- Progress Bar 1 -->
+<div>
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-bold text-label-bold text-on-surface">Meat Slicing Station</span>
+<span class="font-body-md text-body-md text-tertiary font-bold">100%</span>
+</div>
+<div class="w-full h-4 bg-surface-variant rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-tertiary-container rounded-full" style="width: 100%"></div>
+</div>
+</div>
+<!-- Progress Bar 2 -->
+<div>
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-bold text-label-bold text-on-surface">Veggie Wash &amp; Chop</span>
+<span class="font-body-md text-body-md text-primary-container font-bold">65%</span>
+</div>
+<div class="w-full h-4 bg-surface-variant rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-primary-container rounded-full" style="width: 65%"></div>
+</div>
+</div>
+<!-- Progress Bar 3 -->
+<div>
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-bold text-label-bold text-on-surface">Sauce Emulsification</span>
+<span class="font-body-md text-body-md text-secondary font-bold">20%</span>
+</div>
+<div class="w-full h-4 bg-surface-variant rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-secondary rounded-full" style="width: 20%"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Footer (Shared Component) -->
+<footer class="bg-surface-container-lowest w-full py-xl mt-xl border-t-2 border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-7xl mx-auto gap-md">
+<div class="font-headline-md text-headline-md text-primary">Sandwich Championship</div>
+<div class="flex flex-wrap justify-center gap-md">
+<a class="text-on-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80 font-label-bold text-label-bold" href="#">Rules of Entry</a>
+<a class="text-on-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80 font-label-bold text-label-bold" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80 font-label-bold text-label-bold" href="#">Contact Host</a>
+<a class="text-on-surface-variant hover:text-primary hover:underline transition-all opacity-100 hover:opacity-80 font-label-bold text-label-bold" href="#">MinIO Assets</a>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant text-center md:text-right">
+                © 2024 International Sandwich Championship. NO BURGERS ALLOWED.
+            </div>
+</div>
+</footer>
+</body></html>

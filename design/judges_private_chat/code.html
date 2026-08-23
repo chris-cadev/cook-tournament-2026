@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Judges Private Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary-fixed-variant": "#76330d",
+                        "on-primary-container": "#613b00",
+                        "background": "#fdf9e9",
+                        "tertiary-container": "#30c88f",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#855300",
+                        "surface-container-high": "#ece8d9",
+                        "surface": "#fdf9e9",
+                        "outline-variant": "#d8c3ad",
+                        "outline": "#867461",
+                        "on-surface": "#1c1c13",
+                        "inverse-on-surface": "#f5f1e1",
+                        "secondary-fixed": "#ffdbcc",
+                        "on-secondary-fixed": "#351000",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#323126",
+                        "on-secondary-container": "#76340e",
+                        "inverse-primary": "#ffb95f",
+                        "on-tertiary-container": "#004e34",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006c49",
+                        "surface-container-low": "#f8f4e4",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#002113",
+                        "primary-container": "#f59e0b",
+                        "surface-container-highest": "#e6e3d3",
+                        "secondary-fixed-dim": "#ffb693",
+                        "secondary": "#944a23",
+                        "on-surface-variant": "#534434",
+                        "primary-fixed": "#ffddb8",
+                        "on-primary-fixed-variant": "#653e00",
+                        "on-background": "#1c1c13",
+                        "primary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#fd9e70",
+                        "surface-container": "#f2eede",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-variant": "#e6e3d3",
+                        "surface-dim": "#dedacb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-tint": "#855300",
+                        "surface-bright": "#fdf9e9",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "margin-desktop": "32px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "stats-number": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-bold": ["Inter"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "stats-number": ["40px", { "lineHeight": "40px", "fontWeight": "900" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        body { -webkit-tap-highlight-color: transparent; }
+        .message-in { transform-origin: left bottom; animation: messagePopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .message-out { transform-origin: right bottom; animation: messagePopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes messagePopIn { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md selection:bg-primary-container selection:text-on-primary-container flex flex-col md:flex-row">
+<!-- Navigation Drawer (Desktop) -->
+<nav class="hidden md:flex flex-col py-lg bg-surface dark:bg-surface-dim h-screen w-80 rounded-r-xl bg-surface-container-low dark:bg-surface-container-lowest shadow-xl sticky top-0">
+<div class="px-md mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-primary">CHAMPIONSHIP MENU</h2>
+</div>
+<div class="flex-1 overflow-y-auto">
+<a class="flex items-center gap-md py-sm px-md mx-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors mb-base" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">app_registration</span>
+<span class="font-body-lg text-body-lg">Team Registration</span>
+</a>
+<a class="flex items-center gap-md py-sm px-md mx-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors mb-base" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">fact_check</span>
+<span class="font-body-lg text-body-lg">Judge Rubrics</span>
+</a>
+<a class="flex items-center gap-md py-sm px-md mx-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors mb-base" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">insights</span>
+<span class="font-body-lg text-body-lg">Umami Analytics</span>
+</a>
+<a class="flex items-center gap-md py-sm px-md mx-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors mb-base" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">fastfood</span>
+<span class="font-body-lg text-body-lg">Media Gallery</span>
+</a>
+<div class="mt-lg pt-lg border-t-2 border-outline-variant px-md mx-2">
+<h3 class="font-label-bold text-label-bold text-outline uppercase tracking-wider mb-sm">Active Channels</h3>
+<a class="flex items-center gap-md py-sm px-md -mx-md rounded-lg bg-secondary-container text-on-secondary-container font-bold mb-base" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-body-lg text-body-lg">Judges Private Chat</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-[100dvh] md:h-screen bg-surface relative overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed md:absolute top-0 w-full z-50 border-b-2 border-outline-variant dark:border-outline shadow-sm bg-surface dark:bg-surface-dim pt-safe">
+<div class="flex justify-between items-center px-margin-mobile h-16 max-w-5xl mx-auto w-full">
+<div class="flex items-center gap-sm">
+<button class="md:hidden text-primary hover:bg-primary-container/20 transition-colors p-2 rounded-full active:translate-y-0.5 transition-transform duration-100">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">timer</span>
+<h1 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed-dim tracking-tighter md:font-headline-lg">JUDGES SECURE COMMS</h1>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-label-bold text-label-bold text-tertiary hidden sm:inline-block">ENCRYPTED</span>
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden ml-sm border-2 border-outline">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A macro photography shot of an artisan pastrami sandwich with dripping melted Swiss cheese and whole grain mustard on perfectly toasted rye bread, captured in bright high-key lighting to emphasize texture, warm appealing light mode color palette, highly detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcF2pevOZuSu5bjPvlHxqu8-FyzkO8HfPyROWS5an94rYxODfH9vVuAWr2QMKY-ibDJGJxBG_5q3sTJuX3UE6rnUQ1Mgpi99ft1KrNfSM5bEccqP4rqDmpB4VkgUs2SbsAo7R3EWEsVy5WVD_OuI5ihX1TSBDuVcrF_qz_C2myrpuCFjk1DTNMkaWzUwB-PFlwcW1o2ht9QjiVP5ohmLkD3eQG1zF_lEhsnQdXq9iZx80fzFSFtVtS"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Chat Container -->
+<div class="flex-1 overflow-y-auto pt-[calc(64px+env(safe-area-inset-top))] pb-[140px] md:pb-[90px] px-margin-mobile md:px-margin-desktop bg-surface-container-lowest" id="chat-container">
+<div class="max-w-4xl mx-auto py-md flex flex-col gap-md">
+<!-- Date Divider -->
+<div class="flex justify-center my-sm">
+<span class="bg-surface-container-high text-on-surface-variant font-label-bold text-label-bold px-4 py-1 rounded-full text-xs">TODAY</span>
+</div>
+<!-- System Message (Score Update) -->
+<div class="flex justify-center message-in">
+<div class="bg-tertiary-container/20 border-2 border-tertiary-container rounded-xl p-sm flex items-center gap-sm max-w-sm w-full shadow-sm">
+<div class="bg-tertiary text-on-tertiary w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+</div>
+<div>
+<p class="font-label-bold text-label-bold text-on-tertiary-container">Score Submitted!</p>
+<p class="font-body-md text-body-md text-on-surface text-sm">Judge Gordon awarded <strong>9.5/10</strong> to "The Salty Pig".</p>
+</div>
+</div>
+</div>
+<!-- Chat Message - Incoming (Text) -->
+<div class="flex flex-col items-start gap-xs message-in max-w-[85%] sm:max-w-[70%]">
+<div class="flex items-center gap-2 ml-2">
+<span class="font-label-bold text-label-bold text-on-surface-variant text-xs">Judge Gordon</span>
+<span class="font-body-md text-body-md text-outline text-xs">10:42 AM</span>
+</div>
+<div class="bg-surface-container border-2 border-outline/30 rounded-2xl rounded-tl-sm p-sm text-on-surface shadow-sm">
+<p class="font-body-md text-body-md">The structural integrity on that last pork belly entry was questionable. The slaw immediately compromised the bottom bun.</p>
+</div>
+</div>
+<!-- Chat Message - Outgoing (Text) -->
+<div class="flex flex-col items-end gap-xs message-out self-end max-w-[85%] sm:max-w-[70%]">
+<div class="flex items-center gap-2 mr-2">
+<span class="font-body-md text-body-md text-outline text-xs">10:44 AM</span>
+<span class="font-label-bold text-label-bold text-primary text-xs">You</span>
+</div>
+<div class="bg-primary-container text-on-primary-container border-2 border-primary-container rounded-2xl rounded-tr-sm p-sm shadow-[0_4px_10px_rgba(133,83,0,0.2)]">
+<p class="font-body-md text-body-md">Agreed. Flavor profile was excellent, but we can't ignore the structural collapse. Deducting 2 points for presentation.</p>
+</div>
+</div>
+<!-- Chat Message - Incoming (Image) -->
+<div class="flex flex-col items-start gap-xs message-in max-w-[90%] sm:max-w-[75%] mt-sm">
+<div class="flex items-center gap-2 ml-2">
+<span class="font-label-bold text-label-bold text-on-surface-variant text-xs">Head Judge Maria</span>
+<span class="font-body-md text-body-md text-outline text-xs">10:47 AM</span>
+</div>
+<div class="bg-surface-container border-2 border-outline/30 rounded-2xl rounded-tl-sm p-2 text-on-surface shadow-sm overflow-hidden group relative">
+<div class="aspect-[4/3] rounded-xl overflow-hidden relative cursor-pointer">
+<div class="bg-cover bg-center w-full h-full group-hover:scale-105 transition-transform duration-500" data-alt="A close up shot of a perfectly grilled cubano sandwich, showing the layers of roast pork, ham, swiss cheese, and pickles pressed flat, glowing under warm overhead directional lighting in a high contrast style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAjTov_AKyEQq8xaiDxcFWCLpV_RAeqbKaDqYceTzrTYS-joPC2UvbedyT_4ONPcAq0Ps7cHhe98e-QFdStczi4hSiAGOzQKhyULJqZTlMjdsoBX9VCddgdD7ifWyM7cGytDg_FLgaBKPQW2VQwf-jZLl-_Dx91Szh5Sqs-pYi5yImZMI9FT2a2H8YIFiygRJ3BMXvPg384exTL8SEjO83wKyhXHci3nG6a9HaOkJVGVbpKBgb9pohX')"></div>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-4xl">zoom_in</span>
+</div>
+</div>
+<p class="font-body-md text-body-md mt-sm px-2 pb-1">Look at this cross-section from Team Alpha. Incredible lamination on the bread.</p>
+</div>
+</div>
+<!-- Chat Message - Incoming (Audio) -->
+<div class="flex flex-col items-start gap-xs message-in max-w-[85%] sm:max-w-[60%]">
+<div class="flex items-center gap-2 ml-2">
+<span class="font-label-bold text-label-bold text-on-surface-variant text-xs">Admin Team</span>
+<span class="font-body-md text-body-md text-outline text-xs">10:50 AM</span>
+</div>
+<div class="bg-inverse-surface text-inverse-on-surface rounded-2xl rounded-tl-sm p-sm shadow-sm flex items-center gap-md w-full">
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<div class="flex-1 flex flex-col gap-1">
+<div class="h-6 w-full flex items-center gap-[2px]">
+<!-- Faux Audio Waveform -->
+<div class="w-1 bg-outline-variant h-[30%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[60%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[100%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[40%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[80%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[50%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[20%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[90%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[30%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[10%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[40%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[70%] rounded-full"></div>
+<div class="w-1 bg-outline-variant h-[50%] rounded-full"></div>
+</div>
+<div class="flex justify-between text-xs font-label-bold text-label-bold text-outline-variant">
+<span>0:00</span>
+<span>0:14</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Badge (No Burgers) -->
+<div class="flex justify-center message-in my-md">
+<div class="bg-error-container text-on-error-container border-2 border-error rounded-xl py-2 px-md flex items-center gap-sm shadow-sm font-label-bold text-label-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+                        ALERT: ENTRY #4 DISQUALIFIED (BURGER DETECTED)
+                    </div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="fixed md:absolute bottom-[80px] md:bottom-0 left-0 md:left-auto w-full md:w-[calc(100%-20rem)] z-40 bg-surface-container/90 backdrop-blur-md border-t-2 border-outline-variant px-margin-mobile py-sm">
+<div class="max-w-4xl mx-auto flex items-end gap-sm relative">
+<button class="w-12 h-12 rounded-xl bg-surface border-2 border-outline text-on-surface flex items-center justify-center shrink-0 hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">add_photo_alternate</span>
+</button>
+<div class="flex-1 relative">
+<textarea class="w-full bg-surface border-2 border-outline rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary-container/30 transition-all font-body-lg text-body-lg text-on-surface resize-none min-h-[48px] max-h-[120px]" placeholder="Discuss entry with judges..." rows="1"></textarea>
+<button class="absolute right-2 bottom-2 w-8 h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+</div>
+<button class="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-[0_4px_10px_rgba(133,83,0,0.3)] hover:bg-primary/90 active:translate-y-[2px] transition-all group">
+<span class="material-symbols-outlined group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl border-t-2 border-outline-variant dark:border-outline shadow-[0_-4px_10px_rgba(133,83,0,0.1)] bg-surface-container dark:bg-surface-container-highest">
+<div class="fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 pb-safe bg-surface-container">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">restaurant</span>
+<span class="font-label-bold text-label-bold text-[10px]">Feed</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">emoji_events</span>
+<span class="font-label-bold text-label-bold text-[10px]">Bracket</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-on-primary-container text-on-primary-container dark:text-primary-fixed rounded-xl px-3 py-1 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-label-bold text-label-bold text-[10px]">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">analytics</span>
+<span class="font-label-bold text-label-bold text-[10px]">Scoring</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:text-primary dark:hover:text-primary-fixed active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">settings_suggest</span>
+<span class="font-label-bold text-label-bold text-[10px]">Admin</span>
+</a>
+</div>
+</nav>
+</main>
+<script>
+        // Auto-scroll to bottom of chat
+        const chatContainer = document.getElementById('chat-container');
+        if(chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Auto-resize textarea
+        const textarea = document.querySelector('textarea');
+        if(textarea) {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        }
+    </script>
+</body></html>

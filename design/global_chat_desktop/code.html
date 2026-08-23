@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Global Chat - Sandwich Championship</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Montserrat:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffddb8",
+                      "surface-container": "#f2eede",
+                      "primary-fixed-dim": "#ffb95f",
+                      "on-background": "#1c1c13",
+                      "on-secondary": "#ffffff",
+                      "surface-dim": "#dedacb",
+                      "on-secondary-fixed": "#351000",
+                      "inverse-on-surface": "#f5f1e1",
+                      "primary": "#855300",
+                      "on-surface": "#1c1c13",
+                      "on-secondary-container": "#76340e",
+                      "on-primary-container": "#613b00",
+                      "inverse-surface": "#323126",
+                      "inverse-primary": "#ffb95f",
+                      "primary-container": "#f59e0b",
+                      "outline": "#867461",
+                      "on-primary-fixed-variant": "#653e00",
+                      "surface-bright": "#fdf9e9",
+                      "tertiary": "#006c49",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#534434",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#004e34",
+                      "surface-container-high": "#ece8d9",
+                      "on-primary-fixed": "#2a1700",
+                      "surface-container-low": "#f8f4e4",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#30c88f",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface-tint": "#855300",
+                      "surface-variant": "#e6e3d3",
+                      "on-primary": "#ffffff",
+                      "secondary": "#944a23",
+                      "on-secondary-fixed-variant": "#76330d",
+                      "outline-variant": "#d8c3ad",
+                      "secondary-fixed-dim": "#ffb693",
+                      "tertiary-fixed": "#6ffbbe",
+                      "secondary-container": "#fd9e70",
+                      "surface": "#fdf9e9",
+                      "on-tertiary-fixed": "#002113",
+                      "background": "#fdf9e9",
+                      "secondary-fixed": "#ffdbcc",
+                      "surface-container-highest": "#e6e3d3",
+                      "on-tertiary-fixed-variant": "#005236"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "margin-mobile": "16px",
+                      "gutter": "16px",
+                      "lg": "40px",
+                      "xl": "64px",
+                      "margin-desktop": "32px",
+                      "base": "8px",
+                      "md": "24px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Montserrat"],
+                      "headline-lg-mobile": ["Montserrat"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Montserrat"],
+                      "stats-number": ["Montserrat"],
+                      "body-lg": ["Inter"],
+                      "headline-xl": ["Montserrat"],
+                      "label-bold": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "28px", "fontWeight": "700"}],
+                      "stats-number": ["40px", {"lineHeight": "40px", "fontWeight": "900"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900"}],
+                      "label-bold": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .tactile-btn {
+            transition: transform 0.1s ease-in-out;
+        }
+        .tactile-btn:active {
+            transform: translateY(2px);
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: var(--tw-colors-outline-variant);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-high h-screen w-64 fixed left-0 top-0 border-r-2 border-outline-variant dark:border-outline flex flex-col h-full py-md z-50">
+<div class="px-margin-desktop mb-lg flex items-center gap-sm">
+<img alt="Championship Logo" class="w-12 h-12 rounded-xl object-cover" data-alt="A stylized logo for the International Sandwich Championship featuring crossed deli knives and a golden layered sandwich. The color palette is rich crust brown and primary orange. The style is bold, graphic, and suitable for a high-energy sports event or culinary competition branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARNB3zLbeylMl5A8FI34gfTmuHxegwfjOwep4nHXUPBrmjvTnJSThuKb4syRHL4Hl1kZTvcWsbRthzumrNI4QniussAG9GnVFi1LoSY1WvW7KUxknLeybaledjeoPweVcNfjxMOyOdFgzcAI4LOAmEbOW9LhigzutSKVH1tu4t0mnzitfF0j-rPuQyUap_D8k7oJKrzvURfvpIqCIMF5CFRByH3cWK0UehZOCBtcZTkuoEiEMUQSmo"/>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-secondary dark:text-secondary-fixed-dim tracking-tight leading-none">Host Panel</h1>
+<p class="font-label-bold text-label-bold text-on-surface-variant opacity-80">Season 2024</p>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-xs overflow-y-auto custom-scrollbar">
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200 flex items-center gap-md px-4 py-3" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-bold text-label-bold">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200 flex items-center gap-md px-4 py-3" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-bold text-label-bold">Global Chat</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200 flex items-center gap-md px-4 py-3" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-bold text-label-bold">Team Hub</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200 flex items-center gap-md px-4 py-3" href="#">
+<span class="material-symbols-outlined" data-icon="star_rate">star_rate</span>
+<span class="font-label-bold text-label-bold">Scoring</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200 flex items-center gap-md px-4 py-3" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-bold text-label-bold">Analytics</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 rounded-xl mx-2 my-1 hover:bg-primary-container dark:hover:bg-primary-fixed-dim hover:text-on-primary-container active:scale-95 transition-transform duration-200 flex items-center gap-md px-4 py-3" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span class="font-label-bold text-label-bold">Management</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto px-4 pt-md flex flex-col gap-sm">
+<button class="w-full bg-tertiary-container text-on-tertiary-container font-label-bold text-label-bold py-3 rounded-xl flex items-center justify-center gap-2 tactile-btn shadow-[0_2px_10px_rgba(48,200,143,0.3)]">
+<span class="material-symbols-outlined" data-icon="stream">stream</span> Live Status
+            </button>
+<ul class="flex flex-col gap-xs mt-sm border-t-2 border-outline-variant pt-sm">
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-xl px-4 py-2 flex items-center gap-md transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-bold text-label-bold">Support</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-xl px-4 py-2 flex items-center gap-md transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-bold text-label-bold">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col h-screen overflow-hidden">
+<!-- Top App Bar (Content Specific) -->
+<header class="h-20 bg-surface-bright border-b-2 border-outline-variant flex items-center justify-between px-margin-desktop shrink-0">
+<div class="flex items-center gap-md">
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Global Chat</h2>
+<div class="flex items-center gap-2 bg-error-container text-on-error-container px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[18px]" data-icon="warning">warning</span>
+<span class="font-label-bold text-label-bold uppercase text-[10px]">No Burgers Allowed</span>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative">
+<input class="bg-surface-container rounded-xl border-2 border-outline-variant focus:border-primary focus:ring-primary focus:ring-2 pl-10 pr-4 py-2 font-body-md w-64 placeholder-on-surface-variant/50" placeholder="Search chatter..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-variant transition-colors tactile-btn border-2 border-outline-variant relative">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-3 h-3 bg-error rounded-full border-2 border-surface-bright"></span>
+</button>
+</div>
+</header>
+<!-- Chat Layout Split -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Message List -->
+<section class="flex-1 flex flex-col min-w-0 bg-surface">
+<!-- Messages Scroll Area -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-margin-desktop flex flex-col gap-lg">
+<!-- Date Divider -->
+<div class="flex items-center gap-4 my-sm">
+<div class="h-[2px] bg-outline-variant flex-1"></div>
+<span class="font-label-bold text-label-bold text-on-surface-variant px-2 bg-surface">Today</span>
+<div class="h-[2px] bg-outline-variant flex-1"></div>
+</div>
+<!-- Message Received (Text) -->
+<div class="flex gap-md max-w-[80%]">
+<img alt="Chef Mario" class="w-12 h-12 rounded-full border-2 border-primary object-cover shrink-0" data-alt="A portrait of a male chef with a determined expression, wearing a black apron. High-contrast lighting, bold primary orange accents in the background. Cinematic, high-energy sports style photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMteGqaRiDzRcMJakX_dVfjzuxlcoBvqSOaUJ-09IhoWGq7OPbID1xdJDsyFhpbEcy2vBsniBIWhvjC5F68na918ET3D9g38x3edARcDCyfo9MLrOX2aia5OZtqCgC3OKhS-yAuPh2ikl5OTFzMOZdivimH4Y6NZhyKryW8oPoAYj6L9jp8mWuIS4gAzRtkaVPX6T_s9CiH7YkARwSoP2uxSAxCcmx6kc_jOcE2ahr2RalY-vfPHKe"/>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-2">
+<span class="font-label-bold text-label-bold text-on-surface">Chef Mario (Team Italy)</span>
+<span class="text-[12px] text-on-surface-variant">10:42 AM</span>
+</div>
+<div class="bg-surface-container-high text-on-surface p-4 rounded-2xl rounded-tl-none border border-outline-variant shadow-sm">
+<p class="font-body-md text-body-md">The sourdough is resting. We are bringing the heat for the semi-finals. Anyone else struggling with the humidity today?</p>
+</div>
+</div>
+</div>
+<!-- Message Sent (Image) -->
+<div class="flex gap-md max-w-[80%] self-end flex-row-reverse">
+<img alt="Host Admin" class="w-12 h-12 rounded-full border-2 border-secondary object-cover shrink-0" data-alt="A close-up portrait of a female event organizer wearing a headset, looking focused. Bright, clear lighting, modern setting. Secondary brown and warm paper white tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaniObgYe-eTD1oiJWDSpTvgFL6fKYLFCM1NNQh_TEIgEHOy50R8MEyMh1nuTi36JGovt-Yg1vDPruF6-wshJ7QCLkalgvZgaxTAndWkpxTO2QHAk94-v-RlE0ZRb78lS72WjenkUGjksGdbPlV086BCdG3w7Uxq8V5XQumr4qlpDfXCZUmzdwnwgmmkxv5PkWFYD05Sx_R07xsfOJNVF4uRxqKnW8_cApLZ2K7K9eSEPlwz7sFgWQ"/>
+<div class="flex flex-col gap-1 items-end">
+<div class="flex items-baseline gap-2 flex-row-reverse">
+<span class="font-label-bold text-label-bold text-on-surface">Host Admin (You)</span>
+<span class="text-[12px] text-on-surface-variant">10:45 AM</span>
+</div>
+<div class="bg-primary-container text-on-primary-container p-2 rounded-2xl rounded-tr-none shadow-sm relative group">
+<img alt="Sandwich Prep" class="w-64 h-48 object-cover rounded-xl" data-alt="A high-quality, mouth-watering photograph of an enormous, multi-layered deli sandwich stacked with pastrami, swiss cheese, and mustard on rye bread. Shot from a low angle to emphasize height. Bright, festive lighting, high saturation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWJoug54kFJn4O8jBtwf7vfjXw0SVvkskTB-i4JZIbRPxY7rRBdmaPeXsSAaJ2QJ-BFz3KXNKgL1yt6XoPmpUKGxwq4SYWevENJ5YMSBKrfQhw_oQFoRa6IpLJaV_Nj5Z9_mezMr_pFjav6fTWkd0BdMRcQX9JaLslcZDrqzjcLdpNtogTvMTTsb1XRvbJAyeCeaCs4BHiwnb9vrd9dCAzBjDPRMdEH6Hu9UdQDH-LgTunyJl_NpeC"/>
+<div class="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+<button class="bg-surface text-primary w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"><span class="material-symbols-outlined" data-icon="zoom_in">zoom_in</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- System Message (Warning) -->
+<div class="flex justify-center my-md">
+<div class="bg-error-container text-on-error-container px-6 py-3 rounded-xl border-2 border-error/50 flex items-center gap-3 max-w-lg shadow-[0_4px_15px_rgba(186,26,26,0.15)]">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<p class="font-label-bold text-label-bold text-center">Rule Clarification: A hotdog is technically a sandwich, but a hamburger is an immediate disqualification. No appeals.</p>
+</div>
+</div>
+<!-- Message Received (Audio) -->
+<div class="flex gap-md max-w-[80%]">
+<img alt="Critic Sarah" class="w-12 h-12 rounded-full border-2 border-outline-variant object-cover shrink-0" data-alt="A portrait of a young female food critic with stylish glasses, holding a notebook. Bright, modern lighting, primary orange background. Energetic and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeUxNNK7xJJI8yjvwJPlnGVsGuKouQpFX3q3Cy2fMxt4pNMbNU5AtZU7k6npLTlpkKAZk1k8WX8zS8mQqGA0zKp05n-VHPIrsJeF-Q4k1eZXatxjgoTvF77b2b4PB4FqA9POfxyyR3Hz0_LQo7-9edHymSc72Crs-M4wVddC8xym26vb0Y07-Sh0IA95rnIUf4ldNM41fRS7xR5H98zi6GzIQycqpNcDXM5x645xV2pAmlGKc9zS6C"/>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-2">
+<span class="font-label-bold text-label-bold text-on-surface">Critic Sarah</span>
+<span class="text-[12px] text-on-surface-variant">11:02 AM</span>
+</div>
+<div class="bg-surface-container-high text-on-surface p-3 rounded-2xl rounded-tl-none border border-outline-variant shadow-sm flex items-center gap-4 w-72">
+<button class="w-10 h-10 bg-primary text-on-primary rounded-full flex items-center justify-center shrink-0 tactile-btn">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+</button>
+<div class="flex-1 flex flex-col gap-1">
+<div class="h-6 w-full flex items-center gap-[2px]">
+<!-- Fake waveform -->
+<div class="w-1 bg-primary rounded-full h-2"></div>
+<div class="w-1 bg-primary rounded-full h-4"></div>
+<div class="w-1 bg-primary rounded-full h-3"></div>
+<div class="w-1 bg-primary rounded-full h-5"></div>
+<div class="w-1 bg-outline-variant rounded-full h-2"></div>
+<div class="w-1 bg-outline-variant rounded-full h-3"></div>
+<div class="w-1 bg-outline-variant rounded-full h-1"></div>
+<div class="w-1 bg-outline-variant rounded-full h-4"></div>
+<div class="w-1 bg-outline-variant rounded-full h-2"></div>
+</div>
+<span class="text-[10px] font-label-bold text-on-surface-variant">0:14</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-margin-desktop bg-surface-bright border-t-2 border-outline-variant shrink-0">
+<div class="bg-surface-container rounded-2xl border-2 border-outline-variant p-2 flex flex-col focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<textarea class="bg-transparent border-none focus:ring-0 resize-none font-body-md text-body-md text-on-surface placeholder-on-surface-variant w-full p-2 custom-scrollbar" placeholder="Type your message to the global chat..." rows="3"></textarea>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-outline-variant/50 px-2">
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-xl hover:bg-surface-variant flex items-center justify-center text-on-surface-variant transition-colors tooltip-trigger" title="Attach Media">
+<span class="material-symbols-outlined" data-icon="attach_file">attach_file</span>
+</button>
+<button class="w-10 h-10 rounded-xl hover:bg-surface-variant flex items-center justify-center text-on-surface-variant transition-colors" title="Voice Memo">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+</button>
+<button class="w-10 h-10 rounded-xl hover:bg-surface-variant flex items-center justify-center text-on-surface-variant transition-colors" title="Format Text">
+<span class="material-symbols-outlined" data-icon="format_bold">format_bold</span>
+</button>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-label-bold text-label-bold text-on-surface-variant/60 text-sm hidden md:inline-block">Press Enter to send</span>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-xl font-label-bold text-label-bold flex items-center gap-2 tactile-btn hover:bg-primary/90">
+                                    Send <span class="material-symbols-outlined text-[20px]" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Media Preview / Context Pane (Right Sidebar) -->
+<aside class="w-80 border-l-2 border-outline-variant bg-surface-container-low flex flex-col hidden lg:flex shrink-0">
+<div class="p-4 border-b-2 border-outline-variant bg-surface-bright flex items-center justify-between">
+<h3 class="font-headline-md text-[20px] font-bold text-on-surface">Live Gallery</h3>
+<button class="w-8 h-8 rounded-full hover:bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
+<!-- Media Item -->
+<div class="group relative rounded-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Ingredients Flatlay" class="w-full h-40 object-cover" data-alt="A top-down, high-contrast flat lay photograph of various sandwich ingredients: sliced tomatoes, artisan bread, lettuce, and premium deli meats arranged neatly on a dark wooden butcher block. Vibrant colors, high saturation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH4ebeACYWMwK8yjQGwUORkEeRj3X2b0l7mqLLv8u99f5BxpFf18Pi6OWpQ3XZA_M08Gi1XJaeqZV9Fi1OqV8znFy_SxE0ikid8VMP5fLJChDCMkOMQ35fKz0ciYcolkK70XuAAvnnwEo4w-sScKMO2K43Ft-P9dwguf5KpY66uQ5HiHjHpQ-Z8f6qjGpG8DdPdLJCQXtWKhFlUnqsX0UFpDJCb18UMlXsu4xhPJVOpVd9Vv0bvQZ6"/>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform">
+<p class="font-label-bold text-white text-[12px]">Shared by Chef Mario</p>
+<p class="text-white/80 text-[10px]">10:15 AM</p>
+</div>
+</div>
+<!-- Media Item -->
+<div class="group relative rounded-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Grilling Action" class="w-full h-40 object-cover" data-alt="A dynamic action shot of a chef flipping a large slice of grilled cheese sandwich in a pan. Fire and sparks visible in the background, creating a high-energy, dramatic culinary scene. Deep espresso and primary orange tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4SO9aVDBqXHLSjklmp55mpyPseDzMWi1_X1o67yNOsx2_m_qCY85U6cy9bXtg4LOX54JL9Kzg_xh8yc0XprJwxw-FcfVkuHBBq36dcxaYgEyU3p_OQ7iC4ytd_JZJO0n4OYufq8GuuVAknnqmSdBhmk1a6ehXDsShl9U5XGovQMXs6QOtpCRP3rM-gQGpZWlWDEWilMwp8VBouhqRIz_rK2fZEmXT9aNNLAcmyMN8ZO1YDV2Chh_U"/>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform">
+<p class="font-label-bold text-white text-[12px]">Shared by Team USA</p>
+<p class="text-white/80 text-[10px]">09:30 AM</p>
+</div>
+</div>
+<!-- Stats Card instead of media -->
+<div class="bg-surface-container-high rounded-xl p-4 border border-outline-variant">
+<h4 class="font-label-bold text-on-surface-variant mb-2 uppercase text-[12px]">Current Leader</h4>
+<div class="flex items-center gap-3">
+<span class="font-stats-number text-[32px] text-tertiary">98.5</span>
+<div class="flex flex-col">
+<span class="font-label-bold text-on-surface">The Reuben-ator</span>
+<span class="text-[12px] text-on-surface-variant">Team Germany</span>
+</div>
+</div>
+</div>
+<!-- Media Item -->
+<div class="group relative rounded-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Baguette Sandwich" class="w-full h-40 object-cover" data-alt="A close up shot of a perfectly toasted baguette sandwich, overflowing with fresh greens, prosciutto, and mozzarella. Soft background blur, focus on the textures of the crust and ingredients. Warm, inviting lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEDQ2cEMnBwV0kAKn_-JFyKPYgj5KuBwapO4svSFxJgXeTwiJJYDNj0Lc8Qal__8iZDwSMIOUsaANlXjfdwpvB9HgCCkFcvXtOs1Q7d3dOJyo0wxGjvAtsRGrPeJqN-dHyatZnBOi6dgQInWqLeDw5Slz0NUXUUWzrBvUB69hhDBitqKVBIxEKbCRWzK2EuVWBwd8x4pEm_aUqOA0vj769Xe9JHrxf57WJcAdoABJVsdKjVOehiw-E"/>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform">
+<p class="font-label-bold text-white text-[12px]">Shared by Critic Sarah</p>
+<p class="text-white/80 text-[10px]">Yesterday</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

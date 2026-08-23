@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SNDWCH CHAMP - Admin Host Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary-fixed-variant": "#76330d",
+                        "on-primary-container": "#613b00",
+                        "background": "#fdf9e9",
+                        "tertiary-container": "#30c88f",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#855300",
+                        "surface-container-high": "#ece8d9",
+                        "surface": "#fdf9e9",
+                        "outline-variant": "#d8c3ad",
+                        "outline": "#867461",
+                        "on-surface": "#1c1c13",
+                        "inverse-on-surface": "#f5f1e1",
+                        "secondary-fixed": "#ffdbcc",
+                        "on-secondary-fixed": "#351000",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#323126",
+                        "on-secondary-container": "#76340e",
+                        "inverse-primary": "#ffb95f",
+                        "on-tertiary-container": "#004e34",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006c49",
+                        "surface-container-low": "#f8f4e4",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#002113",
+                        "primary-container": "#f59e0b",
+                        "surface-container-highest": "#e6e3d3",
+                        "secondary-fixed-dim": "#ffb693",
+                        "secondary": "#944a23",
+                        "on-surface-variant": "#534434",
+                        "primary-fixed": "#ffddb8",
+                        "on-primary-fixed-variant": "#653e00",
+                        "on-background": "#1c1c13",
+                        "primary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#fd9e70",
+                        "surface-container": "#f2eede",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#2a1700",
+                        "surface-variant": "#e6e3d3",
+                        "surface-dim": "#dedacb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-tint": "#855300",
+                        "surface-bright": "#fdf9e9",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "margin-desktop": "32px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "stats-number": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-bold": ["Inter"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "stats-number": ["40px", { "lineHeight": "40px", "fontWeight": "900" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "900" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pt-16 pb-24 md:pb-0 md:flex-row">
+<!-- TopAppBar (Mobile & Desktop Header) -->
+<header class="bg-surface text-primary font-headline-md fixed top-0 w-full z-50 border-b-2 border-outline-variant shadow-sm flex justify-between items-center px-margin-mobile h-16 md:hidden">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<h1 class="font-headline-md font-black text-primary tracking-tighter">SNDWCH CHAMP</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline">
+<img class="w-full h-full object-cover" data-alt="A stylized, flat-vector avatar of a user profile. The aesthetic is clean, modern, and light-themed, using warm tones like orange and brown to match a deli or food competition style. Simple shapes, minimal detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrw8WaDuWPLAnwqYC6ONiYMS64mnoUsygvGPEgrQVnYABEDGT9fvOr622JXw0_yiu7BtNiJummWp5lFspyVJYBvNN5aMGKGkVc6zT9-_NZ864Qbw4XN_dvHbjOk45WXgyNBF56San10D5lKMc-adS2AQ9DP7p0ZRqQMTWUbymkhkF9wzVKgHLTHYOekl5vkYTvs9lW6DlezggcYDyoSBCVb8LiLSvBDByoR5weulSPJl70e_shHqnu"/>
+</div>
+</header>
+<!-- Side Navigation (Desktop) -->
+<aside class="hidden md:flex flex-col bg-surface-container text-on-surface-variant border-r-2 border-outline-variant h-screen w-64 fixed left-0 top-0 pt-16 z-40">
+<div class="px-margin-desktop py-lg">
+<h2 class="font-headline-lg text-primary mb-xl">CHAMPIONSHIP MENU</h2>
+<nav class="flex flex-col gap-sm">
+<a class="flex items-center gap-sm px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="restaurant">restaurant</span>
+<span class="font-label-bold group-hover:text-primary transition-colors">Feed</span>
+</a>
+<a class="flex items-center gap-sm px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="emoji_events">emoji_events</span>
+<span class="font-label-bold group-hover:text-primary transition-colors">Bracket</span>
+</a>
+<a class="flex items-center gap-sm px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="forum">forum</span>
+<span class="font-label-bold group-hover:text-primary transition-colors">Chat</span>
+</a>
+<a class="flex items-center gap-sm px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="analytics">analytics</span>
+<span class="font-label-bold group-hover:text-primary transition-colors">Scoring</span>
+</a>
+<a class="flex items-center gap-sm px-3 py-2 rounded-lg bg-primary-container text-on-primary-container font-bold shadow-[0_-4px_10px_rgba(133,83,0,0.1)] group" href="#">
+<span class="material-symbols-outlined filled" data-icon="settings_suggest">settings_suggest</span>
+<span class="font-label-bold">Admin</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-lg md:ml-64 relative">
+<!-- Dashboard Header & Status Toggle -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-xl gap-sm">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-on-surface">Host Dashboard</h1>
+<p class="font-body-md text-on-surface-variant mt-xs">Manage the championship, monitor activity, and configure event settings.</p>
+</div>
+<div class="flex items-center gap-sm bg-surface-container p-2 rounded-xl border border-outline-variant shadow-sm">
+<span class="font-label-bold text-on-surface-variant">Event Status:</span>
+<button class="relative inline-flex h-8 w-14 items-center rounded-full bg-tertiary-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<span class="inline-block h-6 w-6 translate-x-7 transform rounded-full bg-on-primary transition-transform"></span>
+</button>
+<span class="font-label-bold text-on-tertiary-container">LIVE</span>
+</div>
+</div>
+<!-- Overview Cards (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-xl">
+<!-- Teams Card -->
+<div class="bg-surface-container-lowest border-2 border-outline rounded-xl p-md shadow-sm relative overflow-hidden group hover:-translate-y-0.5 transition-transform duration-150">
+<div class="flex justify-between items-start mb-sm relative z-10">
+<span class="font-label-bold text-on-surface-variant">Registered Teams</span>
+<div class="bg-secondary-container text-on-secondary-container p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</div>
+</div>
+<div class="font-stats-number text-primary mb-xs relative z-10">24</div>
+<div class="font-body-md text-on-surface-variant relative z-10 flex items-center gap-xs">
+<span class="material-symbols-outlined text-tertiary text-[16px]" data-icon="trending_up">trending_up</span>
+<span class="text-tertiary font-bold">+3</span> since yesterday
+                </div>
+</div>
+<!-- Scores Card -->
+<div class="bg-surface-container-lowest border-2 border-outline rounded-xl p-md shadow-sm relative overflow-hidden group hover:-translate-y-0.5 transition-transform duration-150">
+<div class="flex justify-between items-start mb-sm relative z-10">
+<span class="font-label-bold text-on-surface-variant">Scores Submitted</span>
+<div class="bg-tertiary-container text-on-tertiary-container p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+</div>
+</div>
+<div class="font-stats-number text-tertiary mb-xs relative z-10">156</div>
+<div class="font-body-md text-on-surface-variant relative z-10">
+<div class="w-full bg-surface-variant rounded-full h-2.5 mt-2">
+<div class="bg-tertiary h-2.5 rounded-full" style="width: 45%"></div>
+</div>
+<span class="text-xs mt-1 block">45% Completion</span>
+</div>
+</div>
+<!-- Chat Card -->
+<div class="bg-surface-container-lowest border-2 border-outline rounded-xl p-md shadow-sm relative overflow-hidden group hover:-translate-y-0.5 transition-transform duration-150">
+<div class="flex justify-between items-start mb-sm relative z-10">
+<span class="font-label-bold text-on-surface-variant">Chat Activity</span>
+<div class="bg-error-container text-on-error-container p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+</div>
+</div>
+<div class="font-stats-number text-error mb-xs relative z-10">892</div>
+<div class="font-body-md text-on-surface-variant relative z-10 flex items-center gap-xs">
+<span class="material-symbols-outlined text-error text-[16px]" data-icon="local_fire_department">local_fire_department</span>
+<span>High Engagement</span>
+</div>
+</div>
+</div>
+<!-- Integrated Umami Analytics -->
+<section class="mb-xl">
+<h2 class="font-headline-md text-on-surface mb-md">Engagement Analytics</h2>
+<div class="bg-surface-container-lowest border-2 border-outline rounded-xl p-md shadow-sm min-h-[300px] flex flex-col justify-center items-center relative overflow-hidden">
+<!-- Decorative background pattern for analytics area -->
+<div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#867461 2px, transparent 2px); background-size: 24px 24px;"></div>
+<div class="relative z-10 text-center w-full max-w-2xl">
+<!-- Placeholder for chart area -->
+<div class="h-48 flex items-end justify-between gap-2 border-b-2 border-outline-variant pb-2 px-4">
+<div class="w-1/12 bg-primary-container rounded-t-sm h-12 transition-all duration-500 hover:bg-primary cursor-pointer"></div>
+<div class="w-1/12 bg-primary-container rounded-t-sm h-24 transition-all duration-500 hover:bg-primary cursor-pointer"></div>
+<div class="w-1/12 bg-primary-container rounded-t-sm h-32 transition-all duration-500 hover:bg-primary cursor-pointer"></div>
+<div class="w-1/12 bg-primary-container rounded-t-sm h-16 transition-all duration-500 hover:bg-primary cursor-pointer"></div>
+<div class="w-1/12 bg-tertiary-container rounded-t-sm h-40 transition-all duration-500 hover:bg-tertiary cursor-pointer relative group">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">Peak</div>
+</div>
+<div class="w-1/12 bg-primary-container rounded-t-sm h-28 transition-all duration-500 hover:bg-primary cursor-pointer"></div>
+<div class="w-1/12 bg-primary-container rounded-t-sm h-20 transition-all duration-500 hover:bg-primary cursor-pointer"></div>
+</div>
+<div class="flex justify-between text-xs font-label-bold text-on-surface-variant mt-2 px-4">
+<span>10am</span>
+<span>12pm</span>
+<span>2pm</span>
+<span>4pm</span>
+<span>6pm</span>
+<span>8pm</span>
+<span>10pm</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Deep Management Tools Grid -->
+<section>
+<h2 class="font-headline-md text-on-surface mb-md">Management Tools</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter">
+<a class="bg-surface-container border-2 border-outline-variant hover:border-primary rounded-xl p-md flex flex-col items-center justify-center gap-sm text-center group transition-all duration-150 shadow-sm hover:shadow-[0_4px_12px_rgba(133,83,0,0.15)] active:translate-y-0.5" href="#">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="app_registration">app_registration</span>
+</div>
+<span class="font-label-bold text-on-surface">Team Registration</span>
+</a>
+<a class="bg-surface-container border-2 border-outline-variant hover:border-primary rounded-xl p-md flex flex-col items-center justify-center gap-sm text-center group transition-all duration-150 shadow-sm hover:shadow-[0_4px_12px_rgba(133,83,0,0.15)] active:translate-y-0.5" href="#">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+</div>
+<span class="font-label-bold text-on-surface">Judge Rubrics</span>
+</a>
+<a class="bg-surface-container border-2 border-outline-variant hover:border-primary rounded-xl p-md flex flex-col items-center justify-center gap-sm text-center group transition-all duration-150 shadow-sm hover:shadow-[0_4px_12px_rgba(133,83,0,0.15)] active:translate-y-0.5" href="#">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="fastfood">fastfood</span>
+</div>
+<span class="font-label-bold text-on-surface">Media Gallery</span>
+</a>
+<a class="bg-surface-container border-2 border-outline-variant hover:border-primary rounded-xl p-md flex flex-col items-center justify-center gap-sm text-center group transition-all duration-150 shadow-sm hover:shadow-[0_4px_12px_rgba(133,83,0,0.15)] active:translate-y-0.5" href="#">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-error group-hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined" data-icon="block">block</span>
+</div>
+<span class="font-label-bold text-error">Moderation Queue</span>
+</a>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="bg-surface-container fixed bottom-0 w-full z-50 rounded-t-xl border-t-2 border-outline-variant shadow-[0_-4px_10px_rgba(133,83,0,0.1)] md:hidden">
+<ul class="fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 pb-safe">
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+<span class="font-label-bold text-[10px] mt-1">Feed</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="font-label-bold text-[10px] mt-1">Bracket</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-bold text-[10px] mt-1">Chat</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-bold text-[10px] mt-1">Scoring</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 active:scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined filled" data-icon="settings_suggest">settings_suggest</span>
+<span class="font-label-bold text-[10px] mt-1">Admin</span>
+</a>
+</li>
+</ul>
+</nav>
+</body></html>
