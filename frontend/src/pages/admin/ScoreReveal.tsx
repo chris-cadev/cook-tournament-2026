@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
+import { useToastStore } from '../../stores/toastStore'
 
 interface CategoryStatus {
   category: string
@@ -8,6 +9,7 @@ interface CategoryStatus {
 
 export default function ScoreReveal() {
   const { token } = useAuthStore()
+  const show = useToastStore(s => s.show)
   const [categories, setCategories] = useState<CategoryStatus[]>([])
   const [revealedCount, setRevealedCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -55,6 +57,7 @@ export default function ScoreReveal() {
         prev.map(c => (c.category === category ? { ...c, revealed: true } : c))
       )
       setRevealedCount(prev => prev + 1)
+      show(`¡Puntuaciones reveladas: ${category}!`, 'success')
     } catch (err) {
       console.error('Failed to reveal category:', err)
       alert('Network error — try again')

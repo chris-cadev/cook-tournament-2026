@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useToastStore } from '../stores/toastStore'
 
 interface FormData {
   name: string
@@ -12,6 +13,7 @@ interface FormData {
 
 export default function Registration() {
   const navigate = useNavigate()
+  const show = useToastStore(s => s.show)
   const [form, setForm] = useState<FormData>({
     name: '',
     sandwich_name: '',
@@ -77,6 +79,7 @@ export default function Registration() {
       }
 
       navigate('/team/login')
+      show('¡Equipo registrado!', 'success')
     } catch {
       setError('Error de red — intenta de nuevo')
     } finally {

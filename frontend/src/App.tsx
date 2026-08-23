@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom'
+import ToastContainer from './components/Toast'
 import Landing from './pages/Landing'
 import Results from './pages/Results'
 import Registration from './pages/Registration'
@@ -19,6 +20,7 @@ import { useAuthStore } from './stores/authStore'
 export default function App() {
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/results" element={<Results />} />

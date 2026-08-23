@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { socket } from '../lib/socket'
+import Tooltip from '../components/Tooltip'
 
 interface ChatMessage {
   id: number
@@ -17,7 +18,9 @@ export default function Chat() {
   const [senderName, setSenderName] = useState(() => localStorage.getItem('chat_name') || '')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -29,6 +32,7 @@ export default function Chat() {
       if (res.ok) {
         const data = await res.json()
         setMessages(data.messages)
+        setHasMore(data.messages.length === 50)
       }
     } catch (err) {
       console.error('Failed to fetch messages:', err)
@@ -36,6 +40,25 @@ export default function Chat() {
       setLoading(false)
     }
   }, [])
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || messages.length === 0) return
+    const oldestId = messages[0].id
+    try {
+      const res = await fetch(`/api/chat/global/messages?limit=50&before=${oldestId}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.messages.length > 0) {
+          setMessages(prev => [...data.messages, ...prev])
+          setHasMore(data.messages.length === 50)
+        } else {
+          setHasMore(false)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load more messages:', err)
+    }
+  }, [hasMore, messages])
 
   useEffect(() => {
     fetchMessages()
@@ -112,9 +135,11 @@ export default function Chat() {
       guest: 'bg-gray-100 text-gray-600',
     }
     return (
-      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${colors[role] || colors.guest}`}>
-        {role}
-      </span>
+      <Tooltip content={role.charAt(0).toUpperCase() + role.slice(1)}>
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full cursor-help ${colors[role] || colors.guest}`}>
+          {role}
+        </span>
+      </Tooltip>
     )
   }
 
@@ -149,6 +174,14 @@ export default function Chat() {
             <div className="text-center text-gray-400 py-8">No messages yet. Start the conversation!</div>
           ) : (
             <div className="flex flex-col gap-3">
+              {hasMore && (
+                <button
+                  onClick={loadMore}
+                  className="text-center text-sm text-primary hover:text-primary-dark py-2 transition-colors"
+                >
+                  Cargar mensajes anteriores
+                </button>
+              )}
               {messages.map((msg) => (
                 <div key={msg.id} className="flex gap-3 items-start">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -174,6 +207,22 @@ export default function Chat() {
         {/* Input */}
         <div className="sticky bottom-0 bg-surface border-t border-gray-200 px-4 py-3">
           <div className="flex items-end gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,audio/*"
+              className="hidden"
+              onChange={() => {/* upload handled by backend when ready */}}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 text-gray-500 transition-colors"
+              title="Adjuntar imagen o audio"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+            </button>
             <textarea
               className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[40px] max-h-[120px]"
               placeholder="Type a message..."

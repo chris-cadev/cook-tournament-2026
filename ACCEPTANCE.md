@@ -197,7 +197,7 @@
 - [x] Navbar displays site title and nav links (Rules, Register, Chat)
 - [x] Hero shows event title, date, and countdown timer
 - [x] Card displays event rules summary and schedule overview
-- [ ] Breadcrumb shows Home → Rules / Register / Chat
+- [x] Breadcrumb shows Home → Rules / Register / Chat
 - [x] Button displays "Register Your Team" CTA and "Join Global Chat"
 - [x] Footer shows host info and event date
 
@@ -208,7 +208,7 @@
 - [x] Textarea for optional equipment needs
 - [x] Submit registration button
 - [x] Alert shows success/error feedback after submission
-- [ ] Toast displays "Team registered!" confirmation
+- [x] Toast displays "Team registered!" confirmation
 
 ### Judge Access
 
@@ -229,7 +229,7 @@
 - [x] Send message button
 - [x] Avatar displays sender name + role badge
 - [x] Badge shows role indicator (Admin, Team, Judge, Guest)
-- [ ] Button attaches image/audio (opens file picker)
+- [x] Button attaches image/audio (opens file picker)
 - [x] Spinner shows loading indicator for message history
 - [x] Tabs switch between chat channels (admin view)
 
@@ -247,23 +247,23 @@
 - [x] Button deletes message (moderation)
 - [x] Accordion opens event config editor (rules, schedule, categories)
 - [x] Textarea provides markdown editor for event content
-- [ ] Toast displays "Scores revealed!" notification broadcast
+- [x] Toast displays "Scores revealed!" notification broadcast
 
 ### Results / Ceremony
 
 - [x] Table displays final leaderboard with all scores
-- [ ] Badge shows rank (1st, 2nd, 3rd)
+- [x] Badge shows rank (1st, 2nd, 3rd)
 - [x] Card shows winner spotlight (team name, sandwich, total score)
-- [ ] ProgressBar visualizes score per category
-- [ ] Alert displays "Scores being revealed live" banner
+- [x] ProgressBar visualizes score per category
+- [x] Alert displays "Scores being revealed live" banner
 
 ### Shared
 
 - [x] Spinner shows loading state for all async operations
-- [ ] Toast provides global notifications (new message, score reveal)
-- [ ] Tooltip shows hover info on score categories and team details
-- [ ] Dropdown provides admin action menu (edit, delete, assign)
-- [ ] Pagination handles team list and message history (if >50 items)
+- [x] Toast provides global notifications (new message, score reveal)
+- [x] Tooltip shows hover info on score categories and team details
+- [x] Dropdown provides admin action menu (edit, delete, assign)
+- [x] Pagination handles team list and message history (if >50 items)
 
 ---
 

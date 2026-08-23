@@ -66,6 +66,13 @@ export default function Landing() {
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
 
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-sm text-gray-500">
+          <Link to="/" className="hover:text-secondary transition-colors">Inicio</Link>
+          <span>/</span>
+          <span className="text-secondary font-medium">Reglas</span>
+        </nav>
+
         {/* Hero */}
         <section className="text-center space-y-4">
           <h1 className="font-headline text-5xl md:text-7xl font-black text-secondary leading-tight">
