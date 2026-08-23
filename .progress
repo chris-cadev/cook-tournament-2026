@@ -1,0 +1,41 @@
+Implement all three auth flows (admin, team, judge) with JWT. This gates every subsequent feature.
+
+### Implement admin login endpoint
+
+`POST /api/auth/admin/login` — validate email+password against seeded admin row using bcrypt. Return JWT with `{ id, email, role: "admin" }` payload, 24h expiry.
+
+### Implement team login endpoint
+
+`POST /api/auth/team/login` — validate captain_email + team password against Team row. Return JWT with `{ team_id, name, role: "team" }`.
+
+### Implement judge login endpoint
+
+`POST /api/auth/judge/login` — validate against single `judge_password` from EventConfig. On first login, generate `anonymous_id` (e.g., "judge_1"), store in DB, include in JWT. Return JWT with `{ anonymous_id, role: "judge" }`.
+
+### Create JWT auth middleware
+
+`backend/src/middleware/auth.ts` — extract and verify JWT from `Authorization: Bearer` header. Attach decoded payload to `req.user`. Create `requireRole(...roles)` higher-order middleware.
+
+### Build admin login page
+
+`frontend/src/pages/LoginAdmin.tsx` — email + password form. Store JWT in localStorage, redirect to admin dashboard on success.
+
+### Build team login page
+
+`frontend/src/pages/LoginTeam.tsx` — email + password form. Store JWT in localStorage, redirect to team dashboard on success.
+
+### Build judge login page
+
+`frontend/src/pages/LoginJudge.tsx` — password-only form. Store JWT in localStorage, redirect to judge panel on success.
+
+### Create Zustand auth store
+
+`frontend/src/stores/authStore.ts` — manage current user state (token, role, user info). Persist to localStorage. Provide `login`, `logout`, `isAuthenticated` actions.
+
+### Create protected route component
+
+`frontend/src/components/ProtectedRoute.tsx` — checks JWT existence and role, redirects to appropriate login if unauthorized. Wrap all dashboard/judge routes in router config.
+
+**Deliverable:** All three roles can log in, receive JWTs, and are redirected to role-appropriate pages. Unauthorized access redirects to login.
+
+---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:40:58Z
