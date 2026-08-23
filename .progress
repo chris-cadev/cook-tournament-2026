@@ -205,3 +205,33 @@ Create message in judge channel. Same access rules as GET.
 **Deliverable:** Teams have private chat. Judges have private chat. Admin can view and moderate all channels.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:59:42Z
+
+Judges access rubric, score sandwiches, view submitted scores.
+
+### Implement GET /api/judges/rubric
+
+Return `scoring_categories` from EventConfig. Judge auth required.
+
+### Implement POST /api/judges/scores
+
+Validate team_id exists, category is in rubric, value is 1–10. Enforce unique constraint (team_id + judge_anonymous_id + category). Return 409 if already scored. Judge auth required.
+
+### Implement GET /api/judges/scores/:teamId
+
+Return scores for a team. Admin sees all judge scores with anonymous_id; judge sees only own scores. Auth required.
+
+### Build judge access gate page
+
+`frontend/src/pages/JudgeAccess.tsx` — password input, submit, store JWT, redirect to scoring panel. Skip gate if already authenticated.
+
+### Build judge scoring UI
+
+`frontend/src/pages/JudgePanel.tsx` — rubric display card, score entry table (teams as rows, categories as columns, 1–10 input per cell), optional notes textarea, submit button. "Already scored" alert on duplicate attempt.
+
+### Build judge score history view
+
+Extend JudgePanel with read-only view of scores already submitted by this judge. Shows per-team, per-category breakdown with notes.
+
+**Deliverable:** Judges can enter, submit, and view their scores. Duplicate submissions are prevented.
+
+---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:46:16Z
