@@ -15,10 +15,8 @@ function rowsToObject(rows: any[]): Record<string, any> | null {
   return obj
 }
 
-function validateChannelAccess(user: AuthUser | null, channel: string): boolean {
+function validateChannelAccess(user: AuthUser, channel: string): boolean {
   if (channel === 'global') return true
-
-  if (!user) return false
 
   if (channel.startsWith('team:')) {
     const channelId = parseInt(channel.split(':')[1], 10)
@@ -46,7 +44,7 @@ export function initSocket(httpServer: HttpServer) {
   io.use((socket, next) => {
     const token = socket.handshake.auth.token
     if (!token) {
-      socket.data.user = null
+      socket.data.user = { role: 'guest' } as AuthUser
       return next()
     }
     try {
@@ -54,13 +52,14 @@ export function initSocket(httpServer: HttpServer) {
       socket.data.user = decoded
       next()
     } catch {
-      next(new Error('Invalid token'))
+      socket.data.user = { role: 'guest' } as AuthUser
+      next()
     }
   })
 
   io.on('connection', (socket) => {
-    const user = socket.data.user as AuthUser | null
-    console.log(`Socket connected: ${user?.role || 'anonymous'} (${user?.anonymous_id || user?.team_id || user?.email || 'global'})`)
+    const user = socket.data.user as AuthUser
+    console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email || 'guest'})`)
 
     socket.on('chat:join', (data: { channel: string }) => {
       if (!validateChannelAccess(user, data.channel)) {
@@ -69,27 +68,13 @@ export function initSocket(httpServer: HttpServer) {
       }
       socket.join(`chat:${data.channel}`)
       socket.emit('chat:joined', { channel: data.channel })
-
-      const db = getDb()
-      const rows = db.exec(
-        'SELECT * FROM chat_messages WHERE channel = ? ORDER BY created_at DESC LIMIT 50',
-        [data.channel]
-      )
-      const messages = rows.length > 0
-        ? rows[0].values.map((vals: any[]) => {
-            const obj: Record<string, any> = {}
-            rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
-            return obj
-          }).reverse()
-        : []
-      socket.emit('chat:history', { channel: data.channel, messages })
     })
 
     socket.on('chat:leave', (data: { channel: string }) => {
       socket.leave(`chat:${data.channel}`)
     })
 
-    socket.on('chat:message', (data: { channel: string; content: string; sender_name?: string }) => {
+    socket.on('chat:send', (data: { channel: string; content: string }) => {
       if (!validateChannelAccess(user, data.channel)) {
         socket.emit('chat:error', { error: 'Access denied to this channel' })
         return
@@ -106,19 +91,14 @@ export function initSocket(httpServer: HttpServer) {
       }
 
       const db = getDb()
-      const senderName = user
-        ? (user.name || user.email || user.anonymous_id || 'Unknown')
-        : (data.sender_name || 'Guest')
-      const senderRole = user ? user.role : 'guest'
 
       db.run(
-        'INSERT INTO chat_messages (channel, sender_id, sender_anonymous_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)',
         [
           data.channel,
-          user?.id || user?.team_id || null,
-          user?.role === 'judge' ? (user.anonymous_id || null) : null,
-          senderName,
-          senderRole,
+          user.id || user.team_id || user.anonymous_id || null,
+          user.name || user.email || user.anonymous_id || 'Unknown',
+          user.role,
           data.content.trim(),
         ]
       )
@@ -128,11 +108,11 @@ export function initSocket(httpServer: HttpServer) {
       const messageId = idRows[0].values[0][0]
       const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [messageId]))
 
-      io.to(`chat:${data.channel}`).emit('chat:new', { message })
+      io.to(`chat:${data.channel}`).emit('chat:message', { message })
     })
 
     socket.on('disconnect', () => {
-      console.log(`Socket disconnected: ${user?.role || 'anonymous'}`)
+      console.log(`Socket disconnected: ${user.role}`)
     })
   })
 

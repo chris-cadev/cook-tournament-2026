@@ -36,16 +36,16 @@ router.get('/global/messages', (req, res) => {
 });
 // POST /api/chat/global/messages (public)
 router.post('/global/messages', (req, res) => {
-    const { sender_name, content } = req.body;
-    if (!content || typeof content !== 'string' || content.trim().length === 0) {
-        return res.status(400).json({ error: 'Message content is required' });
+    const { sender_name, content, attachment_url, attachment_type } = req.body;
+    if ((!content || typeof content !== 'string' || content.trim().length === 0) && !attachment_url) {
+        return res.status(400).json({ error: 'Message content or attachment is required' });
     }
-    if (content.length > 2000) {
+    if (content && content.length > 2000) {
         return res.status(400).json({ error: 'Message too long (max 2000 characters)' });
     }
     const name = (sender_name && typeof sender_name === 'string' && sender_name.trim()) || 'Anonymous';
     const db = getDb();
-    db.run('INSERT INTO chat_messages (channel, sender_name, sender_role, content) VALUES (?, ?, ?, ?)', ['global', name, 'guest', content.trim()]);
+    db.run('INSERT INTO chat_messages (channel, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?)', ['global', name, 'guest', (content || '').trim(), attachment_url || null, attachment_type || null]);
     saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];

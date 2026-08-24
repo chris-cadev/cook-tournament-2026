@@ -38,7 +38,8 @@ export function initSocket(httpServer) {
     io.use((socket, next) => {
         const token = socket.handshake.auth.token;
         if (!token) {
-            return next(new Error('Authentication required'));
+            socket.data.user = { role: 'guest' };
+            return next();
         }
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
@@ -46,12 +47,13 @@ export function initSocket(httpServer) {
             next();
         }
         catch {
-            next(new Error('Invalid token'));
+            socket.data.user = { role: 'guest' };
+            next();
         }
     });
     io.on('connection', (socket) => {
         const user = socket.data.user;
-        console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email})`);
+        console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email || 'guest'})`);
         socket.on('chat:join', (data) => {
             if (!validateChannelAccess(user, data.channel)) {
                 socket.emit('chat:error', { error: 'Access denied to this channel' });
@@ -59,16 +61,6 @@ export function initSocket(httpServer) {
             }
             socket.join(`chat:${data.channel}`);
             socket.emit('chat:joined', { channel: data.channel });
-            const db = getDb();
-            const rows = db.exec('SELECT * FROM chat_messages WHERE channel = ? ORDER BY created_at DESC LIMIT 50', [data.channel]);
-            const messages = rows.length > 0
-                ? rows[0].values.map((vals) => {
-                    const obj = {};
-                    rows[0].columns.forEach((c, i) => (obj[c] = vals[i]));
-                    return obj;
-                }).reverse()
-                : [];
-            socket.emit('chat:history', { channel: data.channel, messages });
         });
         socket.on('chat:leave', (data) => {
             socket.leave(`chat:${data.channel}`);
@@ -98,7 +90,7 @@ export function initSocket(httpServer) {
             const idRows = db.exec('SELECT last_insert_rowid() as id');
             const messageId = idRows[0].values[0][0];
             const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [messageId]));
-            io.to(`chat:${data.channel}`).emit('chat:new', { message });
+            io.to(`chat:${data.channel}`).emit('chat:message', { message });
         });
         socket.on('disconnect', () => {
             console.log(`Socket disconnected: ${user.role}`);

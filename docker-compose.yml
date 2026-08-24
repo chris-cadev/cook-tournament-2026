@@ -1,33 +1,28 @@
-version: '3.8'
-
 services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
-
   backend:
     build: ./backend
     ports:
-      - "3001:3001"
+      - "${BACKEND_PORT:-3001}:3001"
     environment:
+      - NODE_ENV=production
+      - BACKEND_PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-minio:9000}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
-      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASS=${SMTP_PASS}
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
     volumes:
-      - backend-data:/app/backend/data
+      - backend-data:/app/data
     depends_on:
       - minio
-    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${PORT:-3000}:80"
+    depends_on:
+      - backend
 
   minio:
     image: minio/minio:latest
@@ -40,7 +35,6 @@ services:
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
-    restart: unless-stopped
 
 volumes:
   backend-data:

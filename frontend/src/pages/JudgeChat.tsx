@@ -23,45 +23,49 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const channel = 'judge'
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
-  useEffect(() => {
+  const fetchMessages = useCallback(async () => {
     if (!token) return
-
-    socket.auth = { token }
-    socket.connect()
-
-    socket.emit('chat:join', { channel })
-
-    socket.on('chat:history', (data: { channel: string; messages: ChatMessage[] }) => {
-      if (data.channel === channel) {
+    try {
+      const res = await fetch('/api/chat/judge/messages?limit=50', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
         setMessages(data.messages)
-        setLoading(false)
       }
-    })
-
-    socket.on('chat:new', (data: { message: ChatMessage }) => {
-      if (data.message.channel === channel) {
-        setMessages(prev => [...prev, data.message])
-      }
-    })
-
-    socket.on('chat:error', (data: { error: string }) => {
-      console.error('Chat error:', data.error)
-    })
-
-    return () => {
-      socket.emit('chat:leave', { channel })
-      socket.off('chat:history')
-      socket.off('chat:new')
-      socket.off('chat:error')
-      socket.disconnect()
+    } catch (err) {
+      console.error('Failed to fetch messages:', err)
+    } finally {
+      setLoading(false)
     }
-  }, [token, channel])
+  }, [token])
+
+  useEffect(() => {
+    fetchMessages()
+
+    if (token) {
+      socket.auth = { token }
+      socket.connect()
+      socket.emit('chat:join', { channel: 'judge' })
+
+      socket.on('chat:message', (data: { message: ChatMessage }) => {
+        if (data.message.channel === 'judge') {
+          setMessages((prev) => [...prev, data.message])
+        }
+      })
+
+      return () => {
+        socket.off('chat:message')
+        socket.emit('chat:leave', { channel: 'judge' })
+        socket.disconnect()
+      }
+    }
+  }, [fetchMessages, token])
 
   useEffect(() => {
     scrollToBottom()
@@ -71,8 +75,19 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
     if (!newMessage.trim() || sending || !token) return
     setSending(true)
     try {
-      socket.emit('chat:send', { channel, content: newMessage.trim() })
-      setNewMessage('')
+      const res = await fetch('/api/chat/judge/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newMessage.trim() }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages((prev) => [...prev, data.message])
+        setNewMessage('')
+      }
     } catch (err) {
       console.error('Failed to send message:', err)
     } finally {
@@ -114,15 +129,16 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
       {/* Messages */}
       <main className="flex-1 overflow-y-auto px-4 py-4">
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent mx-auto" />
+          <div className="text-center text-gray-400 py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent mx-auto mb-2" />
+            Loading messages...
           </div>
         ) : messages.length === 0 ? (
           <div className="text-center text-gray-400 py-8">No messages yet. Start the conversation!</div>
         ) : (
           <div className="max-w-4xl mx-auto flex flex-col gap-3">
             {messages.map((msg) => {
-              const isOwn = msg.sender_name === user?.anonymous_id
+              const isOwn = msg.sender_id?.toString() === user?.anonymous_id
               return (
                 <div key={msg.id} className={`flex gap-2 items-end ${isOwn ? 'justify-end' : 'justify-start'}`}>
                   {!isOwn && (

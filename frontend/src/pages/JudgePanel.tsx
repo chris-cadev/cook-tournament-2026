@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '../stores/authStore'
+import { useToastStore } from '../stores/toastStore'
+import Navbar from '../components/Navbar'
 
 interface Team {
   id: number
@@ -7,87 +9,109 @@ interface Team {
   sandwich_name: string
 }
 
-interface Category {
-  category: string
-  weight: string
-  max: number | string
-  desc: string
-}
-
-interface ScoredCategory {
+interface ScoreEntry {
   category: string
   value: number
   notes: string
 }
 
+interface ExistingScore {
+  team_id: number
+  category: string
+  value: number
+  notes: string | null
+}
+
 export default function JudgePanel() {
-  const { token } = useAuthStore()
+  const { token, user } = useAuthStore()
+  const addToast = useToastStore((s) => s.addToast)
   const [teams, setTeams] = useState<Team[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null)
-  const [scores, setScores] = useState<ScoredCategory[]>([])
-  const [submitting, setSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [scores, setScores] = useState<ScoreEntry[]>([])
+  const [existingScores, setExistingScores] = useState<ExistingScore[]>([])
   const [loading, setLoading] = useState(true)
-  const [submittedScores, setSubmittedScores] = useState<Record<number, Record<string, { value: number; notes: string }>>>()
+  const [submitting, setSubmitting] = useState(false)
+
+  const fetchData = useCallback(async () => {
+    if (!token) return
+    try {
+      const [teamsRes, rubricRes] = await Promise.all([
+        fetch('/api/teams', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/judges/rubric', { headers: { Authorization: `Bearer ${token}` } }),
+      ])
+      if (teamsRes.ok) setTeams(await teamsRes.json())
+      if (rubricRes.ok) {
+        const data = await rubricRes.json()
+        setCategories(data.categories || [])
+      }
+    } catch {
+      addToast('Error al cargar datos', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [token, addToast])
+
+  useEffect(() => { fetchData() }, [fetchData])
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/teams', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/judges/rubric', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-    ]).then(([teamsData, rubricData]) => {
-      setTeams(teamsData)
-      setCategories(rubricData.categories || [])
-    }).finally(() => setLoading(false))
-  }, [token])
-
-  useEffect(() => {
-    if (!selectedTeam) return
+    if (!selectedTeam || !token) return
     fetch(`/api/judges/scores/${selectedTeam}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then((data: any[]) => {
-        const map: Record<number, Record<string, { value: number; notes: string }>> = {}
-        for (const s of data) {
-          if (!map[s.team_id]) map[s.team_id] = {}
-          map[s.team_id][s.category] = { value: s.value, notes: s.notes || '' }
-        }
-        setSubmittedScores(map)
-        setScores(categories.map(c => ({ category: c, value: 5, notes: '' })))
-      })
-  }, [selectedTeam, token, categories])
+      .then((r) => r.json())
+      .then((data) => setExistingScores(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [selectedTeam, token])
 
-  const handleScoreChange = (category: string, field: 'value' | 'notes', val: string | number) => {
-    setScores(prev => prev.map(s =>
-      s.category === category ? { ...s, [field]: val } : s
-    ))
+  useEffect(() => {
+    if (categories.length > 0 && selectedTeam) {
+      const existing = existingScores.filter((s) => s.team_id === selectedTeam)
+      setScores(
+        categories.map((cat) => {
+          const ex = existing.find((e) => e.category === cat)
+          return { category: cat, value: ex?.value || 5, notes: ex?.notes || '' }
+        })
+      )
+    }
+  }, [categories, selectedTeam, existingScores])
+
+  const updateScore = (category: string, field: 'value' | 'notes', val: number | string) => {
+    setScores((prev) =>
+      prev.map((s) => (s.category === category ? { ...s, [field]: val } : s))
+    )
+  }
+
+  const isAlreadyScored = (category: string) => {
+    return existingScores.some((s) => s.team_id === selectedTeam && s.category === category)
   }
 
   const handleSubmit = async () => {
-    if (!selectedTeam) return
+    if (!selectedTeam || !token) return
+    const unscored = scores.filter((s) => !isAlreadyScored(s.category))
+    if (unscored.length === 0) {
+      addToast('Ya puntuaste este equipo', 'info')
+      return
+    }
+
     setSubmitting(true)
-    setMessage(null)
     try {
       const res = await fetch('/api/judges/scores', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          team_id: selectedTeam,
-          scores: scores.map(s => ({ category: s.category, value: s.value, notes: s.notes || undefined })),
-        }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ team_id: selectedTeam, scores: unscored }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setMessage({ type: 'error', text: data.error || 'Error al enviar puntuaciones' })
+        addToast(data.error || 'Error al enviar puntuaciones', 'error')
         return
       }
-      setMessage({ type: 'success', text: '¡Puntuaciones enviadas!' })
-      setSelectedTeam(null)
-      setScores([])
+      addToast('Puntuaciones enviadas!', 'success')
+      // Refresh existing scores
+      const refresh = await fetch(`/api/judges/scores/${selectedTeam}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (refresh.ok) setExistingScores(await refresh.json())
     } catch {
-      setMessage({ type: 'error', text: 'Error de conexión' })
+      addToast('Error de red', 'error')
     } finally {
       setSubmitting(false)
     }
@@ -95,116 +119,96 @@ export default function JudgePanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
       </div>
     )
   }
 
-  const alreadyScored = selectedTeam && submittedScores?.[selectedTeam]
-
   return (
     <div className="min-h-screen bg-surface">
+      <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="font-headline text-3xl font-black text-secondary mb-2">Panel de Juez</h1>
-        <p className="text-gray-500 mb-6">Selecciona un equipo y puntúa cada categoría.</p>
-
-        {message && (
-          <div className={`mb-4 p-3 rounded-xl text-sm text-center ${
-            message.type === 'success' ? 'bg-tertiary/10 text-tertiary' : 'bg-error/10 text-error'
-          }`}>
-            {message.text}
-          </div>
-        )}
+        <p className="text-gray-500 mb-6">Selecciona un equipo y puntúa cada categoría del 1 al 10</p>
 
         {/* Team selector */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona equipo</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Seleccionar Equipo</label>
           <select
-            value={selectedTeam ?? ''}
-            onChange={e => setSelectedTeam(Number(e.target.value) || null)}
-            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            value={selectedTeam || ''}
+            onChange={(e) => setSelectedTeam(parseInt(e.target.value, 10))}
+            className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
-            <option value="">— Seleccionar equipo —</option>
-            {teams.map(t => (
-              <option key={t.id} value={t.id}>{t.name} ({t.sandwich_name})</option>
+            <option value="">-- Selecciona un equipo --</option>
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} — {t.sandwich_name}
+              </option>
             ))}
           </select>
         </div>
 
         {selectedTeam && (
           <>
-            {alreadyScored ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h2 className="font-headline text-xl font-bold text-secondary mb-4">Puntuaciones ya enviadas para este equipo</h2>
-                <div className="space-y-2">
-                  {categories.map(cat => {
-                    const s = alreadyScored[cat]
-                    return (
-                      <div key={cat} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                        <span className="font-medium">{cat}</span>
-                        <span className="text-lg font-bold text-secondary">{s?.value ?? '—'}</span>
-                      </div>
-                    )
-                  })}
-                </div>
+            {/* Scoring grid */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="font-headline text-lg font-bold text-secondary">Puntuación</h2>
               </div>
-            ) : (
-              <>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-secondary/5 border-b border-gray-200">
-                        <th className="text-left px-4 py-3 font-headline font-bold text-secondary">Categoría</th>
-                        <th className="text-center px-4 py-3 font-headline font-bold text-secondary w-24">Puntuación (1-10)</th>
-                        <th className="text-left px-4 py-3 font-headline font-bold text-secondary hidden sm:table-cell">Notas</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {scores.map(s => (
-                        <tr key={s.category} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-semibold">{s.category}</td>
-                          <td className="px-4 py-3 text-center">
-                            <input
-                              type="number"
-                              min={1}
-                              max={10}
-                              value={s.value}
-                              onChange={e => handleScoreChange(s.category, 'value', Number(e.target.value))}
-                              className="w-16 border border-gray-300 rounded-lg px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            />
-                          </td>
-                          <td className="px-4 py-3 hidden sm:table-cell">
-                            <input
-                              type="text"
-                              value={s.notes}
-                              onChange={e => handleScoreChange(s.category, 'notes', e.target.value)}
-                              placeholder="Opcional"
-                              className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="divide-y divide-gray-100">
+                {scores.map((score) => {
+                  const alreadyScored = isAlreadyScored(score.category)
+                  return (
+                    <div key={score.category} className="px-6 py-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-secondary">{score.category}</span>
+                        {alreadyScored && (
+                          <span className="text-xs font-medium text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full">
+                            Ya puntuado
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="range"
+                          min={1}
+                          max={10}
+                          value={score.value}
+                          onChange={(e) => updateScore(score.category, 'value', parseInt(e.target.value))}
+                          disabled={alreadyScored}
+                          className="flex-1 accent-primary"
+                        />
+                        <span className="font-headline text-2xl font-black text-primary w-8 text-center">
+                          {score.value}
+                        </span>
+                      </div>
+                      <textarea
+                        value={score.notes}
+                        onChange={(e) => updateScore(score.category, 'notes', e.target.value)}
+                        disabled={alreadyScored}
+                        placeholder="Notas opcionales..."
+                        rows={1}
+                        className="w-full mt-2 border border-gray-200 rounded-xl px-3 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:bg-gray-50"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
 
-                <div className="mt-4 flex justify-end">
-                  <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors disabled:opacity-50"
-                  >
-                    {submitting ? 'Enviando...' : 'Enviar Puntuaciones'}
-                  </button>
-                </div>
-              </>
-            )}
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || scores.every((s) => isAlreadyScored(s.category))}
+              className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? 'Enviando...' : 'Enviar Puntuaciones'}
+            </button>
           </>
         )}
 
         {teams.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 bg-white rounded-2xl">
             No hay equipos registrados aún.
           </div>
         )}

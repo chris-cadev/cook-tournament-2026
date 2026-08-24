@@ -23,9 +23,12 @@ router.get('/leaderboard', (_req, res) => {
     const db = getDb();
     const configRows = db.exec('SELECT scoring_categories, revealed_categories FROM event_config WHERE id = 1');
     const config = rowsToObject(configRows);
-    const rawCats = config.scoring_categories ? JSON.parse(config.scoring_categories) : [];
-    const categories = rawCats.map((c) => typeof c === 'string' ? c : c.name);
+    const categories = config.scoring_categories ? JSON.parse(config.scoring_categories) : [];
     const revealed = config.revealed_categories ? JSON.parse(config.revealed_categories) : [];
+    const revealedMap = {};
+    for (const cat of categories) {
+        revealedMap[cat] = revealed.includes(cat);
+    }
     const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'disqualified' ORDER BY name");
     const teams = rowsToArray(teamRows);
     const scoreRows = db.exec(`
@@ -40,12 +43,10 @@ router.get('/leaderboard', (_req, res) => {
     }
     const leaderboard = teams.map(team => {
         const categoryScores = {};
-        const revealedFlags = {};
         let totalScore = 0;
         for (const cat of categories) {
             const avg = scoreMap.get(`${team.id}:${cat}`) || 0;
             categoryScores[cat] = Math.round(avg * 100) / 100;
-            revealedFlags[cat] = revealed.includes(cat);
             totalScore += avg;
         }
         return {
@@ -54,15 +55,11 @@ router.get('/leaderboard', (_req, res) => {
             sandwich_name: team.sandwich_name,
             total_score: Math.round(totalScore * 100) / 100,
             category_scores: categoryScores,
-            revealed: revealedFlags,
+            revealed: { ...revealedMap },
         };
     });
     leaderboard.sort((a, b) => b.total_score - a.total_score);
-    res.json({
-        leaderboard,
-        categories,
-        revealed,
-    });
+    res.json(leaderboard);
 });
 router.post('/reveal', authMiddleware, requireRole('admin'), (req, res) => {
     const { category } = req.body;
@@ -75,8 +72,7 @@ router.post('/reveal', authMiddleware, requireRole('admin'), (req, res) => {
     if (!config.scoring_categories) {
         return res.status(404).json({ error: 'Event config not found' });
     }
-    const rawCats = JSON.parse(config.scoring_categories);
-    const categories = rawCats.map((c) => typeof c === 'string' ? c : c.name);
+    const categories = JSON.parse(config.scoring_categories);
     if (!categories.includes(category)) {
         return res.status(400).json({ error: 'Invalid category' });
     }

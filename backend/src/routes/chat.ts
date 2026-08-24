@@ -46,13 +46,13 @@ router.get('/global/messages', (req: Request, res: Response) => {
 
 // POST /api/chat/global/messages (public)
 router.post('/global/messages', (req: Request, res: Response) => {
-  const { sender_name, content } = req.body
+  const { sender_name, content, attachment_url, attachment_type } = req.body
 
-  if (!content || typeof content !== 'string' || content.trim().length === 0) {
-    return res.status(400).json({ error: 'Message content is required' })
+  if ((!content || typeof content !== 'string' || content.trim().length === 0) && !attachment_url) {
+    return res.status(400).json({ error: 'Message content or attachment is required' })
   }
 
-  if (content.length > 2000) {
+  if (content && content.length > 2000) {
     return res.status(400).json({ error: 'Message too long (max 2000 characters)' })
   }
 
@@ -60,8 +60,8 @@ router.post('/global/messages', (req: Request, res: Response) => {
   const db = getDb()
 
   db.run(
-    'INSERT INTO chat_messages (channel, sender_name, sender_role, content) VALUES (?, ?, ?, ?)',
-    ['global', name, 'guest', content.trim()]
+    'INSERT INTO chat_messages (channel, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?)',
+    ['global', name, 'guest', (content || '').trim(), attachment_url || null, attachment_type || null]
   )
   saveDb()
 

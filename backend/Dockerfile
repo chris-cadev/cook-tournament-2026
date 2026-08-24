@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 FROM node:20-alpine
 
 WORKDIR /app
@@ -34,3 +35,20 @@ COPY backend/migrations /app/backend/migrations
 EXPOSE 3001
 CMD ["node", "backend/dist/index.js"]
 >>>>>>> orchestrator/task-3-milestone-3-team-dashboard
+=======
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+COPY --from=builder /app/dist ./dist
+RUN mkdir -p data
+EXPOSE 3001
+CMD ["node", "dist/index.js"]
+>>>>>>> orchestrator/task-6-milestone-6-score-reveal-ux

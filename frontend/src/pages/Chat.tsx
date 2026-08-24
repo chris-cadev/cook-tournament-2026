@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { connectSocket, getSocket } from '../lib/socket'
-import { useAuthStore } from '../stores/authStore'
+import { socket } from '../lib/socket'
 
 interface ChatMessage {
   id: number
@@ -9,8 +8,8 @@ interface ChatMessage {
   sender_name: string
   sender_role: string
   content: string
-  attachment_url: string | null
-  attachment_type: string | null
+  attachment_url?: string
+  attachment_type?: string
   created_at: string
 }
 
@@ -20,11 +19,9 @@ export default function Chat() {
   const [senderName, setSenderName] = useState(() => localStorage.getItem('chat_name') || '')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [loadingOlder, setLoadingOlder] = useState(false)
-  const [hasOlder, setHasOlder] = useState(true)
   const [uploading, setUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const token = useAuthStore(s => s.token)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -36,7 +33,6 @@ export default function Chat() {
       if (res.ok) {
         const data = await res.json()
         setMessages(data.messages)
-        setHasOlder(data.messages.length === 50)
       }
     } catch (err) {
       console.error('Failed to fetch messages:', err)
@@ -45,47 +41,24 @@ export default function Chat() {
     }
   }, [])
 
-  const loadOlder = useCallback(async () => {
-    if (loadingOlder || !hasOlder || messages.length === 0) return
-    setLoadingOlder(true)
-    try {
-      const oldestId = messages[0].id
-      const res = await fetch(`/api/chat/global/messages?limit=50&before=${oldestId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setMessages(prev => [...data.messages, ...prev])
-        setHasOlder(data.messages.length === 50)
-      }
-    } catch (err) {
-      console.error('Failed to load older messages:', err)
-    } finally {
-      setLoadingOlder(false)
-    }
-  }, [loadingOlder, hasOlder, messages])
-
   useEffect(() => {
     fetchMessages()
-
-    const socket = connectSocket(token || undefined)
     socket.connect()
 
-    socket.on('chat:new', (data: { message: ChatMessage }) => {
+    socket.on('chat:message', (data: { message: ChatMessage }) => {
       if (data.message.channel === 'global') {
-        setMessages(prev => {
-          if (prev.some(m => m.id === data.message.id)) return prev
-          return [...prev, data.message]
-        })
+        setMessages(prev => [...prev, data.message])
       }
     })
 
     socket.emit('chat:join', { channel: 'global' })
 
     return () => {
-      socket.off('chat:new')
+      socket.off('chat:message')
       socket.emit('chat:leave', { channel: 'global' })
       socket.disconnect()
     }
-  }, [fetchMessages, token])
+  }, [fetchMessages])
 
   useEffect(() => {
     scrollToBottom()
@@ -96,8 +69,8 @@ export default function Chat() {
     return () => clearInterval(interval)
   }, [fetchMessages])
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || sending) return
+  const sendMessage = async (attachmentUrl?: string, attachmentType?: string) => {
+    if ((!newMessage.trim() && !attachmentUrl) || sending) return
     if (!senderName.trim()) {
       alert('Please enter your name first.')
       return
@@ -105,27 +78,21 @@ export default function Chat() {
 
     setSending(true)
     try {
-      const socket = getSocket()
-      if (socket?.connected) {
-        socket.emit('chat:message', {
-          channel: 'global',
-          content: newMessage.trim(),
-          sender_name: senderName.trim(),
-        })
+      const body: Record<string, string> = { sender_name: senderName.trim(), content: newMessage.trim() }
+      if (attachmentUrl) {
+        body.attachment_url = attachmentUrl
+        body.attachment_type = attachmentType || 'image'
+      }
+      const res = await fetch('/api/chat/global/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(prev => [...prev, data.message])
         setNewMessage('')
         localStorage.setItem('chat_name', senderName.trim())
-      } else {
-        const res = await fetch('/api/chat/global/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sender_name: senderName.trim(), content: newMessage.trim() }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setMessages(prev => [...prev, data.message])
-          setNewMessage('')
-          localStorage.setItem('chat_name', senderName.trim())
-        }
       }
     } catch (err) {
       console.error('Failed to send message:', err)
@@ -134,17 +101,17 @@ export default function Chat() {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
-  }
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     e.target.value = ''
+
+    const isImage = file.type.startsWith('image/')
+    const isAudio = file.type.startsWith('audio/')
+    if (!isImage && !isAudio) {
+      alert('Solo se permiten archivos de imagen o audio.')
+      return
+    }
 
     setUploading(true)
     try {
@@ -155,27 +122,29 @@ export default function Chat() {
       })
       if (!presignRes.ok) {
         const err = await presignRes.json()
-        alert(err.error || 'Upload failed')
+        alert(err.error || 'Error al obtener URL de subida')
         return
       }
       const { upload_url, file_url } = await presignRes.json()
-      await fetch(upload_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
 
-      const attachmentType = file.type.startsWith('image/') ? 'image' : file.type.startsWith('audio/') ? 'audio' : null
-      const name = senderName.trim() || 'Anonymous'
-      const res = await fetch('/api/chat/global/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender_name: name, content: '', attachment_url: file_url, attachment_type: attachmentType }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setMessages(prev => [...prev, data.message])
+      const uploadRes = await fetch(upload_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+      if (!uploadRes.ok) {
+        alert('Error al subir archivo')
+        return
       }
+
+      await sendMessage(file_url, isImage ? 'image' : 'audio')
     } catch {
-      alert('Upload failed')
+      alert('Error al subir archivo')
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
     }
   }
 
@@ -229,15 +198,6 @@ export default function Chat() {
             <div className="text-center text-gray-400 py-8">No messages yet. Start the conversation!</div>
           ) : (
             <div className="flex flex-col gap-3">
-              {hasOlder && (
-                <button
-                  onClick={loadOlder}
-                  disabled={loadingOlder}
-                  className="text-sm text-primary hover:underline disabled:opacity-50 self-center"
-                >
-                  {loadingOlder ? 'Loading...' : 'Load older messages'}
-                </button>
-              )}
               {messages.map((msg) => (
                 <div key={msg.id} className="flex gap-3 items-start">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -269,21 +229,32 @@ export default function Chat() {
         {/* Input */}
         <div className="sticky bottom-0 bg-surface border-t border-gray-200 px-4 py-3">
           <div className="flex items-end gap-2">
-            <label className={`flex items-center justify-center w-10 h-10 rounded-xl border border-gray-300 cursor-pointer hover:bg-gray-50 transition-colors ${uploading ? 'opacity-50' : ''}`}>
-              <span className="material-symbols-outlined text-gray-500 text-xl">attach_file</span>
-              <input type="file" accept="image/*,audio/*" onChange={handleFileUpload} className="hidden" disabled={uploading || !senderName.trim()} />
-            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,audio/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-50"
+              title="Adjuntar imagen o audio"
+            >
+              <span className="material-symbols-outlined">attach_file</span>
+            </button>
             <textarea
               className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[40px] max-h-[120px]"
-              placeholder="Type a message..."
+              placeholder={uploading ? 'Subiendo archivo...' : 'Type a message...'}
               rows={1}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={sending}
+              disabled={sending || uploading}
             />
             <button
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
               disabled={!newMessage.trim() || sending || !senderName.trim()}
               className="px-4 py-2 bg-primary text-white rounded-xl font-medium text-sm hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >

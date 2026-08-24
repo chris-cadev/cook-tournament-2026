@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
+import Navbar from '../../components/Navbar'
 
 interface ChatMessage {
   id: number
@@ -83,14 +84,10 @@ export default function ChatModeration() {
     return () => clearInterval(interval)
   }, [fetchMessages])
 
-  const deleteMessage = async (messageId: number) => {
+  const deleteMessage = async (messageId: number, channel: string) => {
     if (!token || !confirm('Delete this message?')) return
-    let channelPath: string = activeTab
-    if (activeTab === 'team' && selectedTeamId) {
-      channelPath = `team:${selectedTeamId}`
-    }
     try {
-      const res = await fetch(`/api/chat/${channelPath}/messages/${messageId}`, {
+      const res = await fetch(`/api/chat/${channel}/messages/${messageId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -124,8 +121,9 @@ export default function ChatModeration() {
   ]
 
   return (
-    <div>
-      <div className="max-w-[1200px]">
+    <div className="min-h-screen bg-surface">
+      <Navbar />
+      <div className="max-w-[1200px] mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
           <h1 className="font-headline text-3xl font-black text-secondary mb-2">Chat Moderation</h1>
@@ -198,7 +196,7 @@ export default function ChatModeration() {
                       <p className="text-gray-800 text-sm break-words">{msg.content}</p>
                     </div>
                     <button
-                      onClick={() => deleteMessage(msg.id)}
+                      onClick={() => deleteMessage(msg.id, msg.channel)}
                       className="opacity-0 group-hover:opacity-100 p-1 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                       title="Delete message"
                     >

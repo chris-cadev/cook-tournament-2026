@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { connectSocket } from '../lib/socket'
-import { useAuthStore } from '../stores/authStore'
+import { socket } from '../lib/socket'
+import { useToastStore } from '../stores/toastStore'
+import Navbar from '../components/Navbar'
 
 interface LeaderboardEntry {
   team_id: number
@@ -8,18 +9,35 @@ interface LeaderboardEntry {
   sandwich_name: string
   total_score: number
   category_scores: Record<string, number>
+  revealed: Record<string, boolean>
 }
 
-interface LeaderboardData {
-  leaderboard: LeaderboardEntry[]
-  categories: string[]
-  revealed: string[]
+function rankBadge(idx: number) {
+  if (idx === 0) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-white">1st</span>
+  if (idx === 1) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-gray-400 text-white">2nd</span>
+  if (idx === 2) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-700 text-white">3rd</span>
+  return <span className="text-gray-400 font-bold">{idx + 1}th</span>
+}
+
+function CategoryBar({ value, max = 10 }: { value: number; max?: number }) {
+  const pct = Math.min(100, (value / max) * 100)
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-tertiary rounded-full transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-xs font-medium text-gray-600">{value.toFixed(1)}</span>
+    </div>
+  )
 }
 
 export default function Results() {
-  const [data, setData] = useState<LeaderboardData | null>(null)
+  const [data, setData] = useState<LeaderboardEntry[] | null>(null)
   const [loading, setLoading] = useState(true)
-  const token = useAuthStore(s => s.token)
+  const addToast = useToastStore((s) => s.addToast)
 
   const fetchLeaderboard = useCallback(async () => {
     try {
@@ -38,18 +56,18 @@ export default function Results() {
   }, [fetchLeaderboard])
 
   useEffect(() => {
-    const socket = connectSocket(token || undefined)
     socket.connect()
 
-    socket.on('score:reveal', () => {
+    socket.on('score:reveal', (payload: { category: string }) => {
       fetchLeaderboard()
+      addToast(`Puntuación revelada: ${payload.category}`, 'success')
     })
 
     return () => {
       socket.off('score:reveal')
       socket.disconnect()
     }
-  }, [fetchLeaderboard, token])
+  }, [fetchLeaderboard, addToast])
 
   // Fallback: poll every 30s
   useEffect(() => {
@@ -68,37 +86,47 @@ export default function Results() {
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Failed to load leaderboard.
+        Error al cargar la clasificación.
       </div>
     )
   }
 
-  const { leaderboard, categories, revealed } = data
-  const revealedCats = categories.filter(c => revealed.includes(c))
+  const leaderboard = data ?? []
+  const allCategories = leaderboard.length > 0 ? Object.keys(leaderboard[0].category_scores) : []
+  const revealedMap = leaderboard.length > 0 ? leaderboard[0].revealed : {}
+  const revealedCats = allCategories.filter(c => revealedMap[c])
+  const allRevealed = revealedCats.length === allCategories.length
 
   return (
     <div className="min-h-screen bg-surface">
+      <Navbar />
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="font-headline text-4xl font-black text-secondary mb-2 text-center">
-          El Campeonato de Sandwiches
+          The Crust Competition 2026
         </h1>
         <p className="text-gray-500 text-center mb-8">Live Leaderboard</p>
 
-        {/* Live reveal banner */}
-        {revealedCats.length > 0 && revealedCats.length < categories.length && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-center gap-3">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
-            <p className="text-sm font-medium text-blue-700">
-              Scores being revealed live — {revealedCats.length} of {categories.length} categories shown
-            </p>
+        {/* Scores being revealed live banner */}
+        {!allRevealed && leaderboard.length > 0 && (
+          <div className="mb-6 p-4 bg-primary/10 border-2 border-primary/30 rounded-2xl flex items-center justify-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
+            </span>
+              <span className="font-headline font-bold text-secondary">
+              Puntuaciones siendo reveladas en vivo
+            </span>
+            <span className="text-sm text-gray-500">
+              ({revealedCats.length}/{allCategories.length} categorías)
+            </span>
           </div>
         )}
 
         {/* Winner spotlight */}
-        {leaderboard.length > 0 && revealedCats.length === categories.length && (
+        {leaderboard.length > 0 && allRevealed && (
           <div className="mb-8 p-6 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border-2 border-primary/30 text-center">
             <p className="text-sm font-medium text-primary-dark uppercase tracking-wide mb-1">
-              🏆 Champion
+              Champion
             </p>
             <h2 className="font-headline text-3xl font-black text-secondary">
               {leaderboard[0].team_name}
@@ -123,7 +151,7 @@ export default function Results() {
                   <th className="text-left px-4 py-3 font-headline font-bold text-secondary hidden sm:table-cell">Sandwich</th>
                   <th className="text-right px-4 py-3 font-headline font-bold text-secondary">Total</th>
                   {revealedCats.map(cat => (
-                    <th key={cat} className="text-right px-4 py-3 font-headline font-bold text-secondary text-sm" title={`Score average for "${cat}"`}>
+                    <th key={cat} className="text-right px-4 py-3 font-headline font-bold text-secondary text-sm">
                       {cat}
                     </th>
                   ))}
@@ -134,49 +162,25 @@ export default function Results() {
                   <tr
                     key={entry.team_id}
                     className={`border-b border-gray-100 last:border-0 ${
-                      idx === 0 && revealedCats.length === categories.length
+                      idx === 0 && allRevealed
                         ? 'bg-primary/5'
                         : 'hover:bg-gray-50'
                     }`}
                   >
-                    <td className="px-4 py-3 font-bold">
-                      {idx < 3 ? (
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
-                          idx === 0 ? 'bg-yellow-400 text-yellow-900' :
-                          idx === 1 ? 'bg-gray-300 text-gray-700' :
-                          'bg-amber-600 text-amber-100'
-                        }`}>
-                          {idx + 1}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">{idx + 1}</span>
-                      )}
-                    </td>
+                    <td className="px-4 py-3">{rankBadge(idx)}</td>
                     <td className="px-4 py-3">
-                      <div className="font-semibold" title={`${entry.team_name} — "${entry.sandwich_name}"`}>{entry.team_name}</div>
+                      <div className="font-semibold">{entry.team_name}</div>
                       <div className="text-sm text-gray-500 sm:hidden">{entry.sandwich_name}</div>
                     </td>
                     <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">{entry.sandwich_name}</td>
                     <td className="px-4 py-3 text-right font-bold text-lg">
                       {entry.total_score.toFixed(2)}
                     </td>
-                    {revealedCats.map(cat => {
-                      const score = entry.category_scores[cat]
-                      const maxScore = 10
-                      const pct = score != null ? Math.min((score / maxScore) * 100, 100) : 0
-                      return (
-                        <td key={cat} className="px-4 py-3 text-right text-sm">
-                          {score != null ? (
-                            <div className="flex flex-col items-end gap-1">
-                              <span className="font-medium">{score.toFixed(1)}</span>
-                              <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
-                              </div>
-                            </div>
-                          ) : '—'}
-                        </td>
-                      )
-                    })}
+                    {revealedCats.map(cat => (
+                      <td key={cat} className="px-4 py-3 text-right">
+                        <CategoryBar value={entry.category_scores[cat] ?? 0} />
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
@@ -184,13 +188,13 @@ export default function Results() {
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500 bg-white rounded-2xl">
-            No teams registered yet.
+            Aun no hay puntuaciones
           </div>
         )}
 
-        {revealedCats.length < categories.length && (
+        {!allRevealed && (
           <p className="text-center text-sm text-gray-400 mt-6">
-            {categories.length - revealedCats.length} categories yet to be revealed
+            {allCategories.length - revealedCats.length} categorías por revelar
           </p>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom'
 import Landing from './pages/Landing'
+import Login from './pages/Login'
 import Registration from './pages/Registration'
 import Results from './pages/Results'
 import Chat from './pages/Chat'
@@ -7,16 +8,15 @@ import TeamChat from './pages/TeamChat'
 import JudgeChat from './pages/JudgeChat'
 import JudgeAccess from './pages/JudgeAccess'
 import JudgePanel from './pages/JudgePanel'
-import LoginAdmin from './pages/LoginAdmin'
-import LoginTeam from './pages/LoginTeam'
-import LoginJudge from './pages/LoginJudge'
 import Dashboard from './pages/admin/Dashboard'
 import Teams from './pages/admin/Teams'
+import Reveal from './pages/admin/Reveal'
 import EventSettings from './pages/admin/EventSettings'
-import Emails from './pages/admin/Emails'
-import ScoreReveal from './pages/admin/ScoreReveal'
 import ChatModeration from './pages/admin/ChatModeration'
-import Todo from './pages/admin/Todo'
+import EmailReminders from './pages/admin/EmailReminders'
+import ToDo from './pages/admin/ToDo'
+import Invite from './pages/Invite'
+import TeamChecklist from './pages/TeamChecklist'
 import ProtectedRoute from './components/ProtectedRoute'
 import Toast from './components/Toast'
 import { useAuthStore } from './stores/authStore'
@@ -27,21 +27,10 @@ export default function App() {
       <Toast />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />
         <Route path="/results" element={<Results />} />
         <Route path="/chat" element={<Chat />} />
-        <Route path="/login/admin" element={<LoginAdmin />} />
-        <Route path="/login/team" element={<LoginTeam />} />
-        <Route path="/login/judge" element={<LoginJudge />} />
-        <Route path="/judge" element={<JudgeAccess />} />
-        <Route
-          path="/judge/panel"
-          element={
-            <ProtectedRoute allowedRoles={['judge']}>
-              <JudgePanel />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/chat/team/:teamId"
           element={
@@ -58,6 +47,15 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/judge" element={<JudgeAccess />} />
+        <Route
+          path="/judge/score"
+          element={
+            <ProtectedRoute allowedRoles={['judge']}>
+              <JudgePanel />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin"
           element={
@@ -65,15 +63,64 @@ export default function App() {
               <Dashboard />
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Teams />} />
-          <Route path="teams" element={<Teams />} />
-          <Route path="settings" element={<EventSettings />} />
-          <Route path="emails" element={<Emails />} />
-          <Route path="chat" element={<ChatModeration />} />
-          <Route path="score-reveal" element={<ScoreReveal />} />
-          <Route path="todo" element={<Todo />} />
-        </Route>
+        />
+        <Route
+          path="/admin/teams"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Teams />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reveal"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Reveal />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <EventSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/chat"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <ChatModeration />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/email"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <EmailReminders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/todo"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <ToDo />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/invite" element={<Invite />} />
+        <Route
+          path="/team/checklist"
+          element={
+            <ProtectedRoute allowedRoles={['team']}>
+              <TeamChecklist />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Results />} />
       </Routes>
     </BrowserRouter>

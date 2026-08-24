@@ -1,86 +1,83 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useToastStore } from '../stores/toastStore'
+import Navbar from '../components/Navbar'
 
 export default function Invite() {
-  const { code } = useParams<{ code: string }>()
-  const [invite, setInvite] = useState<{ code: string; message: string | null; uses: number } | null>(null)
-  const [error, setError] = useState(false)
-  const [tracked, setTracked] = useState(false)
+  const { addToast } = useToastStore()
+  const [name, setName] = useState('')
+  const [inviteUrl, setInviteUrl] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (!code) return
-    fetch(`/api/invites/${code}`)
-      .then(r => {
-        if (!r.ok) throw new Error()
-        return r.json()
+  const createInvite = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/invite/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referrer_name: name.trim() || 'Guest' }),
       })
-      .then(data => {
-        setInvite(data)
-        fetch(`/api/invites/${code}/track`, { method: 'POST' })
-          .then(() => setTracked(true))
-          .catch(() => {})
-      })
-      .catch(() => setError(true))
-  }, [code])
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="font-headline text-4xl font-black text-secondary">Invitación no válida</h1>
-          <p className="text-gray-600">Este enlace de invitación no existe o ha expirado.</p>
-          <Link to="/" className="inline-block bg-primary text-white font-bold px-6 py-3 rounded-2xl">
-            Ir al inicio
-          </Link>
-        </div>
-      </div>
-    )
+      const data = await res.json()
+      setInviteUrl(data.url)
+    } catch {
+      addToast('Error al crear enlace', 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (!invite) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-gray-500">Cargando...</p>
-      </div>
-    )
+  const copyLink = () => {
+    navigator.clipboard.writeText(inviteUrl)
+    addToast('¡Enlace copiado!', 'success')
   }
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
-      <div className="max-w-md w-full mx-4 bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center space-y-6">
-        <div className="text-5xl">🥪</div>
-        <h1 className="font-headline text-3xl font-black text-secondary">
-          ¡Te invitamos!
-        </h1>
-        {invite.message && (
-          <p className="text-gray-600">{invite.message}</p>
-        )}
-        <p className="text-sm text-gray-500">
-          Has sido invitado al Campeonato de Sándwiches 2026
-        </p>
-        <div className="space-y-3">
-          <Link
-            to="/"
-            className="block bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors"
-          >
-            Ver el evento
-          </Link>
-          <Link
-            to="/register"
-            className="block bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors"
-          >
-            Registrar tu equipo
-          </Link>
-          <Link
-            to="/chat"
-            className="block bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors"
-          >
-            Unirse al chat
-          </Link>
+    <div className="min-h-screen bg-surface">
+      <Navbar />
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <h1 className="font-headline text-3xl font-black text-secondary mb-6">Invitar Amigos</h1>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <p className="text-gray-500 text-sm mb-4">
+            Crea un enlace único para invitar a otros al evento. Cada clic es registrado.
+          </p>
+
+          <div className="flex gap-2 mb-6">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Tu nombre (opcional)"
+              className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <button
+              onClick={createInvite}
+              disabled={loading}
+              className="px-4 py-2 bg-primary text-white rounded-xl font-medium text-sm hover:bg-primary-dark transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Creando...' : 'Crear Enlace'}
+            </button>
+          </div>
+
+          {inviteUrl && (
+            <div className="p-4 rounded-xl bg-tertiary/10 border border-tertiary/20">
+              <p className="text-sm font-medium text-secondary mb-2">Tu enlace de invitación:</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={inviteUrl}
+                  className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600"
+                />
+                <button
+                  onClick={copyLink}
+                  className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-secondary/90 transition-colors"
+                >
+                  Copiar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-        {tracked && (
-          <p className="text-xs text-gray-400">¡Gracias por venir!</p>
-        )}
       </div>
     </div>
   )

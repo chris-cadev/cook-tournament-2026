@@ -261,18 +261,18 @@ Mark a category as revealed in EventConfig (store revealed categories as JSON). 
 **Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:56:44Z
-Deliverable: Admin can manage teams, view email config, and navigate to moderation/reveal pages.
+Deliverable: Admin can reveal scoring categories one-by-one with dramatic animation.
 
-### admin-dashboard-layout
-Create protected admin layout at `/admin` with Sidebar (desktop) and Drawer (mobile). Navigation sections: Equipos, Emails, Chat Moderation, Score Reveal, To-Do. Use Tabs within sections. Files: new `src/pages/admin/Dashboard.tsx` with sidebar/drawer, update routes.
+### score-reveal-admin-page
+Create admin reveal page at `/admin/reveal`. List categories with Badge (revealed/hidden). "Revelar" button on next unrevealed category. Fetch from `GET /api/config` for revealed_categories and `GET /api/scores/leaderboard`. Files: new `src/pages/admin/Reveal.tsx`, update routes.
 
-### admin-team-list
-Build team management table in admin dashboard. Columns: name, captain email, status badge (pending/confirmed/disqualified), station, action buttons. Fetch from `GET /api/teams`. Responsive: stacks on mobile. Files: new `src/components/admin/TeamTable.tsx`.
+### score-reveal-confirmation-modal
+Add confirmation Modal before reveal: "¿Revelar categoría [name]?" with confirm/cancel. Prevent accidental reveals. Files: update `src/pages/admin/Reveal.tsx`.
 
-### admin-team-edit
-Add edit modal for teams: fields for name, sandwich name, status, station. Submit to `PUT /api/teams/:id`. Refresh table on success. Files: new `src/components/admin/TeamEditModal.tsx`.
+### score-reveal-animation
+After confirmation, call `POST /api/scores/reveal`. Show ProgressBar animation (2-3s) filling from 0 to revealed score. Update leaderboard view in real time via Socket.io `score:reveal` event. Files: update `src/pages/admin/Reveal.tsx`, update `src/pages/Results.tsx`.
 
-### admin-team-delete
-Add delete button per team row with confirmation Modal. Submit to `DELETE /api/teams/:id`. Refresh table on success. Files: update `src/components/admin/TeamTable.tsx`, new `src/components/Modal.tsx`.
+### public-results-live-update
+Update Results page (`src/pages/Results.tsx`) to listen for Socket.io `score:reveal` events and update leaderboard in real time. Show "Aún no hay puntuaciones" when empty. Files: update `src/pages/Results.tsx`.
 
----|PASS|4|opencode-go/mimo-v2.5|2026-08-23T22:32:03Z
+---|PASS|10|opencode-go/mimo-v2.5|2026-08-23T23:09:13Z

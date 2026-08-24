@@ -1,119 +1,169 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '../stores/authStore'
-
-const CHECKLIST_KEY = 'team_checklist'
+import { useToastStore } from '../stores/toastStore'
+import Navbar from '../components/Navbar'
 
 interface CheckItem {
-  id: number
+  id: string
   text: string
   done: boolean
-  category: 'ingredients' | 'equipment' | 'timing'
+  category: string
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  ingredients: 'Ingredientes',
-  equipment: 'Equipo',
-  timing: 'Tiempos',
-}
-
-const DEFAULT_ITEMS: Omit<CheckItem, 'id'>[] = [
-  { text: 'Pan para sándwiches', done: false, category: 'ingredients' },
-  { text: 'Proteínas principales', done: false, category: 'ingredients' },
-  { text: 'Verduras y vegetales', done: false, category: 'ingredients' },
-  { text: 'Salsas y condimentos', done: false, category: 'ingredients' },
-  { text: 'Cuchillos y tablas de cortar', done: false, category: 'equipment' },
-  { text: 'Cocina portátil (plancha/hornilla)', done: false, category: 'equipment' },
-  { text: 'Ollas y sartenes', done: false, category: 'equipment' },
-  { text: 'Fuente para presentación', done: false, category: 'equipment' },
-  { text: 'Proteínas pre-marinadas (lista para cocinar)', done: false, category: 'timing' },
-  { text: 'Ingredientes pre-cortados', done: false, category: 'timing' },
-]
+const CATEGORIES = ['Ingredientes', 'Equipo', 'Tiempo', 'Otros']
 
 export default function TeamChecklist() {
-  const { user } = useAuthStore()
-  const [items, setItems] = useState<CheckItem[]>(() => {
+  const { token, user } = useAuthStore()
+  const { addToast } = useToastStore()
+  const [items, setItems] = useState<CheckItem[]>([])
+  const [newItem, setNewItem] = useState('')
+  const [newCategory, setNewCategory] = useState(CATEGORIES[0])
+  const [loading, setLoading] = useState(true)
+
+  const teamId = user?.team_id
+
+  const fetchChecklist = useCallback(async () => {
+    if (!token || !teamId) return
     try {
-      const stored = JSON.parse(localStorage.getItem(`${CHECKLIST_KEY}_${user?.team_id}`) || '[]')
-      if (stored.length > 0) return stored
-      return DEFAULT_ITEMS.map((item, i) => ({ ...item, id: i + 1 }))
+      const res = await fetch(`/api/teams/${teamId}/checklist`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setItems(data.checklist || [])
+      }
     } catch {
-      return DEFAULT_ITEMS.map((item, i) => ({ ...item, id: i + 1 }))
+      console.error('Failed to fetch checklist')
+    } finally {
+      setLoading(false)
     }
-  })
-  const [newText, setNewText] = useState('')
-  const [newCategory, setNewCategory] = useState<CheckItem['category']>('ingredients')
+  }, [token, teamId])
 
-  const save = (next: CheckItem[]) => {
-    setItems(next)
-    localStorage.setItem(`${CHECKLIST_KEY}_${user?.team_id}`, JSON.stringify(next))
-  }
+  useEffect(() => { fetchChecklist() }, [fetchChecklist])
 
-  const toggleItem = (id: number) => {
-    save(items.map(i => (i.id === id ? { ...i, done: !i.done } : i)))
-  }
-
-  const deleteItem = (id: number) => {
-    save(items.filter(i => i.id !== id))
+  const saveChecklist = async (updated: CheckItem[]) => {
+    if (!token || !teamId) return
+    setItems(updated)
+    try {
+      await fetch(`/api/teams/${teamId}/checklist`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ checklist: updated }),
+      })
+    } catch {
+      addToast('Error al guardar', 'error')
+    }
   }
 
   const addItem = () => {
-    if (!newText.trim()) return
-    save([...items, { id: Date.now(), text: newText.trim(), done: false, category: newCategory }])
-    setNewText('')
+    if (!newItem.trim()) return
+    const item: CheckItem = { id: crypto.randomUUID(), text: newItem.trim(), done: false, category: newCategory }
+    saveChecklist([...items, item])
+    setNewItem('')
   }
 
-  const categories = ['ingredients', 'equipment', 'timing'] as const
-  const doneCount = items.filter(i => i.done).length
-  const progress = items.length > 0 ? (doneCount / items.length) * 100 : 0
+  const toggleItem = (id: string) => {
+    saveChecklist(items.map(i => i.id === id ? { ...i, done: !i.done } : i))
+  }
+
+  const removeItem = (id: string) => {
+    saveChecklist(items.filter(i => i.id !== id))
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') { e.preventDefault(); addItem() }
+  }
+
+  const grouped = CATEGORIES.map(cat => ({
+    category: cat,
+    items: items.filter(i => i.category === cat),
+  })).filter(g => g.items.length > 0)
+
+  const progress = items.length > 0 ? Math.round((items.filter(i => i.done).length / items.length) * 100) : 0
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        <div className="text-center">
-          <h1 className="font-headline text-3xl font-black text-secondary">Lista de Preparación</h1>
-          <p className="text-gray-500 mt-2">{doneCount} de {items.length} completados</p>
-          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-3 max-w-md mx-auto">
-            <div className="h-full bg-tertiary rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+      <Navbar />
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Checklist del Equipo</h1>
+        <p className="text-gray-500 text-sm mb-6">Prepara todo para el día del evento.</p>
+
+        {items.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between text-sm mb-1">
+              <span className="text-gray-500">Progreso</span>
+              <span className="font-bold text-secondary">{progress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-tertiary h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div className="flex gap-2 mb-4">
+            <select
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <input
+              type="text"
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Agregar item..."
+              className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <button
+              onClick={addItem}
+              disabled={!newItem.trim()}
+              className="px-4 py-2 bg-primary text-white rounded-xl font-medium text-sm hover:bg-primary-dark transition-colors disabled:opacity-50"
+            >
+              Agregar
+            </button>
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newText}
-            onChange={e => setNewText(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addItem() } }}
-            placeholder="Agregar ítem..."
-            className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-          <select value={newCategory} onChange={e => setNewCategory(e.target.value as CheckItem['category'])} className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-            {categories.map(c => <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}
-          </select>
-          <button onClick={addItem} className="bg-primary hover:bg-primary-dark text-white font-bold px-5 py-2.5 rounded-xl transition-colors text-sm">
-            Agregar
-          </button>
-        </div>
-
-        {categories.map(cat => {
-          const catItems = items.filter(i => i.category === cat)
-          if (catItems.length === 0) return null
-          return (
-            <div key={cat} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="font-headline text-lg font-bold text-secondary">{CATEGORY_LABELS[cat]}</h2>
+        {loading ? (
+          <div className="text-center text-gray-400 py-8">Cargando...</div>
+        ) : items.length === 0 ? (
+          <div className="text-center text-gray-400 py-8">No hay items. ¡Agrega tu primer item!</div>
+        ) : (
+          <div className="space-y-4">
+            {grouped.map(group => (
+              <div key={group.category} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <h3 className="font-headline text-sm font-bold text-secondary mb-3">{group.category}</h3>
+                <div className="space-y-2">
+                  {group.items.map(item => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={item.done}
+                        onChange={() => toggleItem(item.id)}
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary/50 cursor-pointer"
+                      />
+                      <span className={`flex-1 text-sm ${item.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                        {item.text}
+                      </span>
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <span className="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <ul className="divide-y divide-gray-100">
-                {catItems.map(item => (
-                  <li key={item.id} className="flex items-center gap-3 px-6 py-3 group hover:bg-gray-50">
-                    <input type="checkbox" checked={item.done} onChange={() => toggleItem(item.id)} className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" />
-                    <span className={`flex-1 text-sm ${item.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>{item.text}</span>
-                    <button onClick={() => deleteItem(item.id)} className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 text-sm transition-all">✕</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )
-        })}
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

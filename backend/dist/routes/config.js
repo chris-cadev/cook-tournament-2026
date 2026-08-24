@@ -38,63 +38,45 @@ router.get('/', (_req, res) => {
 router.put('/', authMiddleware, requireRole('admin'), (req, res) => {
     const db = getDb();
     const { event_date, event_title, event_description, rules, scoring_categories, judge_password, team_password, landing_page_content, } = req.body;
-    const existing = db.exec('SELECT id FROM event_config WHERE id = 1');
-    const hasRow = existing.length > 0 && existing[0].values.length > 0;
-    if (!hasRow) {
-        const jp = judge_password ? bcrypt.hashSync(judge_password, 10) : null;
-        const tp = team_password ? bcrypt.hashSync(team_password, 10) : null;
-        db.run(`INSERT INTO event_config (id, event_date, event_title, event_description, rules, scoring_categories, judge_password, team_password, landing_page_content)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`, [
-            event_date || null,
-            event_title || 'The Crust Competition 2026',
-            event_description || '',
-            rules || '',
-            JSON.stringify(scoring_categories || []),
-            jp,
-            tp,
-            landing_page_content || '',
-        ]);
+    const fields = [];
+    const values = [];
+    if (event_date !== undefined) {
+        fields.push('event_date = ?');
+        values.push(event_date);
     }
-    else {
-        const sets = [];
-        const vals = [];
-        if (event_date !== undefined) {
-            sets.push('event_date = ?');
-            vals.push(event_date);
-        }
-        if (event_title !== undefined) {
-            sets.push('event_title = ?');
-            vals.push(event_title);
-        }
-        if (event_description !== undefined) {
-            sets.push('event_description = ?');
-            vals.push(event_description);
-        }
-        if (rules !== undefined) {
-            sets.push('rules = ?');
-            vals.push(rules);
-        }
-        if (scoring_categories !== undefined) {
-            sets.push('scoring_categories = ?');
-            vals.push(JSON.stringify(scoring_categories));
-        }
-        if (landing_page_content !== undefined) {
-            sets.push('landing_page_content = ?');
-            vals.push(landing_page_content);
-        }
-        if (judge_password) {
-            sets.push('judge_password = ?');
-            vals.push(bcrypt.hashSync(judge_password, 10));
-        }
-        if (team_password) {
-            sets.push('team_password = ?');
-            vals.push(bcrypt.hashSync(team_password, 10));
-        }
-        if (sets.length > 0) {
-            sets.push('updated_at = datetime("now")');
-            db.run(`UPDATE event_config SET ${sets.join(', ')} WHERE id = 1`, vals);
-        }
+    if (event_title !== undefined) {
+        fields.push('event_title = ?');
+        values.push(event_title);
     }
+    if (event_description !== undefined) {
+        fields.push('event_description = ?');
+        values.push(event_description);
+    }
+    if (rules !== undefined) {
+        fields.push('rules = ?');
+        values.push(rules);
+    }
+    if (scoring_categories !== undefined) {
+        fields.push('scoring_categories = ?');
+        values.push(JSON.stringify(scoring_categories));
+    }
+    if (landing_page_content !== undefined) {
+        fields.push('landing_page_content = ?');
+        values.push(landing_page_content);
+    }
+    if (judge_password !== undefined && judge_password !== '') {
+        fields.push('judge_password = ?');
+        values.push(bcrypt.hashSync(judge_password, 10));
+    }
+    if (team_password !== undefined && team_password !== '') {
+        fields.push('team_password = ?');
+        values.push(bcrypt.hashSync(team_password, 10));
+    }
+    if (fields.length === 0) {
+        return res.status(400).json({ error: 'No fields to update' });
+    }
+    fields.push("updated_at = datetime('now')");
+    db.run(`UPDATE event_config SET ${fields.join(', ')} WHERE id = 1`, values);
     saveDb();
     res.json({ ok: true });
 });
