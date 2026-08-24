@@ -9,7 +9,7 @@ import { createServer } from 'http'
 import { initSocket } from './socket.js'
 import { initDb } from './db.js'
 import { runMigrations } from './migrate.js'
-import { seedAdmin } from './seed.js'
+import { seedAdmin, seedEventConfig } from './seed.js'
 
 import authRoutes from './routes/auth.js'
 import configRoutes from './routes/config.js'
@@ -59,6 +59,7 @@ async function start() {
   await initDb()
   runMigrations()
   seedAdmin()
+  seedEventConfig()
 
   const PORT = process.env.BACKEND_PORT || 3001
   server.listen(PORT, () => {
