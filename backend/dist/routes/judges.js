@@ -38,6 +38,9 @@ router.post('/scores', authMiddleware, (req, res) => {
     }
     const db = getDb();
     for (const s of scores) {
+        if (typeof s.value !== 'number' || s.value < 1 || s.value > 10) {
+            return res.status(400).json({ error: `Invalid score value for category: ${s.category} (must be 1-10)` });
+        }
         try {
             db.run('INSERT INTO scores (team_id, judge_anonymous_id, category, value, notes) VALUES (?, ?, ?, ?, ?)', [team_id, req.user.anonymous_id, s.category, s.value, s.notes || null]);
         }
@@ -49,14 +52,20 @@ router.post('/scores', authMiddleware, (req, res) => {
         }
     }
     saveDb();
-    res.status(201).json({ success: true });
+    res.status(201).json({ ok: true });
 });
 router.get('/scores/:teamId', authMiddleware, (req, res) => {
     if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
         return res.status(403).json({ error: 'Judge or admin access required' });
     }
     const db = getDb();
-    const rows = db.exec('SELECT * FROM scores WHERE team_id = ? ORDER BY category, judge_anonymous_id', [req.params.teamId]);
-    res.json(rowsToArray(rows));
+    let rows;
+    if (req.user?.role === 'judge') {
+        rows = db.exec('SELECT * FROM scores WHERE team_id = ? AND judge_anonymous_id = ? ORDER BY category', [req.params.teamId, req.user.anonymous_id]);
+    }
+    else {
+        rows = db.exec('SELECT * FROM scores WHERE team_id = ? ORDER BY category, judge_anonymous_id', [req.params.teamId]);
+    }
+    res.json({ scores: rowsToArray(rows) });
 });
 export default router;

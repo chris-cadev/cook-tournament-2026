@@ -1,49 +1,72 @@
 import { Router, Request, Response } from 'express'
+import crypto from 'crypto'
+import * as Minio from 'minio'
 import { authMiddleware } from '../middleware/auth.js'
 
 const router = Router()
 
-const ALLOWED_TYPES = [
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-  'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4',
-]
+const ALLOWED_TYPES = /^(image|audio)\//
 
-function generatePresignedUrl(filename: string, contentType: string): { upload_url: string; file_url: string } {
-  const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || 'localhost:9000'
-  const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || 'minioadmin'
-  const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY || 'minioadmin'
-  const MINIO_BUCKET = 'chat-uploads'
+let minioClient: Minio.Client | null = null
 
-  const ext = filename.split('.').pop() || 'bin'
-  const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-  const expiry = 900
+function getMinioClient(): Minio.Client | null {
+  if (minioClient) return minioClient
 
-  const protocol = MINIO_ENDPOINT.includes('localhost') ? 'http' : 'https'
-  const file_url = `${protocol}://${MINIO_ENDPOINT}/${MINIO_BUCKET}/${key}`
+  const endpoint = process.env.MINIO_ENDPOINT
+  const accessKey = process.env.MINIO_ACCESS_KEY
+  const secretKey = process.env.MINIO_SECRET_KEY
 
-  const upload_url = `${file_url}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=${MINIO_ACCESS_KEY}&X-Amz-Date=${new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '')}&X-Amz-Expires=${expiry}&X-Amz-SignedHeaders=host&X-Amz-Signature=dummy`
+  if (!endpoint || !accessKey || !secretKey) return null
 
-  return { upload_url, file_url }
+  try {
+    const url = new URL(endpoint)
+    minioClient = new Minio.Client({
+      endPoint: url.hostname,
+      port: parseInt(url.port) || (url.protocol === 'https:' ? 443 : 9000),
+      useSSL: url.protocol === 'https:',
+      accessKey,
+      secretKey,
+    })
+    return minioClient
+  } catch {
+    return null
+  }
 }
 
-router.post('/presign', authMiddleware, (req: Request, res: Response) => {
+router.post('/presign', authMiddleware, async (req: Request, res: Response) => {
   const { filename, content_type } = req.body
-
   if (!filename || !content_type) {
     return res.status(400).json({ error: 'filename and content_type required' })
   }
 
-  if (!ALLOWED_TYPES.includes(content_type)) {
-    return res.status(400).json({ error: 'Content type not allowed. Allowed: images (jpeg, png, gif, webp) and audio (mpeg, wav, ogg, mp4)' })
+  if (!ALLOWED_TYPES.test(content_type)) {
+    return res.status(400).json({ error: 'Only image/* and audio/* content types allowed' })
   }
 
-  const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT
-  if (!MINIO_ENDPOINT) {
-    return res.status(503).json({ error: 'File upload not configured (MINIO_ENDPOINT not set)' })
+  const client = getMinioClient()
+  const bucket = process.env.MINIO_BUCKET || 'uploads'
+
+  if (!client) {
+    return res.status(503).json({ error: 'File upload not configured (MinIO unavailable)' })
   }
 
-  const { upload_url, file_url } = generatePresignedUrl(filename, content_type)
-  res.json({ upload_url, file_url })
+  const ext = filename.split('.').pop() || 'bin'
+  const key = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`
+
+  try {
+    const exists = await client.bucketExists(bucket)
+    if (!exists) {
+      await client.makeBucket(bucket)
+    }
+
+    const presignedUrl = await client.presignedPutObject(bucket, key, 15 * 60)
+    const fileUrl = `${process.env.MINIO_ENDPOINT}/${bucket}/${key}`
+
+    res.json({ upload_url: presignedUrl, file_url: fileUrl })
+  } catch (err) {
+    console.error('Failed to generate presigned URL:', err)
+    res.status(500).json({ error: 'Failed to generate upload URL' })
+  }
 })
 
 export default router

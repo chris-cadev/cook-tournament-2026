@@ -1,53 +1,49 @@
 import { Router } from 'express';
+import crypto from 'crypto';
 import { getDb, saveDb } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireRole } from '../middleware/auth.js';
 const router = Router();
-function generateCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    let code = '';
-    for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-}
-router.post('/create', authMiddleware, (req, res) => {
-    const db = getDb();
-    const code = generateCode();
-    const created_by = req.user?.email || req.user?.anonymous_id || 'unknown';
-    db.run('INSERT INTO invite_links (code, created_by) VALUES (?, ?)', [code, created_by]);
-    saveDb();
-    const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-    const invite_url = `${baseUrl}/register?invite=${code}`;
-    res.status(201).json({ code, invite_url });
-});
-router.get('/validate/:code', (req, res) => {
-    const db = getDb();
-    const rows = db.exec('SELECT code FROM invite_links WHERE code = ?', [req.params.code]);
-    if (rows.length === 0 || rows[0].values.length === 0) {
-        return res.status(404).json({ valid: false, error: 'Invalid invite code' });
-    }
-    db.run('UPDATE invite_links SET uses = uses + 1 WHERE code = ?', [req.params.code]);
-    saveDb();
-    res.json({ valid: true });
-});
-router.get('/', authMiddleware, (req, res) => {
-    if (req.user?.role !== 'admin') {
-        return res.status(403).json({ error: 'Admin access required' });
-    }
-    const db = getDb();
-    const rows = db.exec('SELECT * FROM invite_links ORDER BY created_at DESC');
+function rowsToArray(rows) {
     if (rows.length === 0)
-        return res.json([]);
-    const links = rows[0].values.map((vals) => {
+        return [];
+    return rows[0].values.map((vals) => {
         const obj = {};
         rows[0].columns.forEach((c, i) => (obj[c] = vals[i]));
         return obj;
     });
-    const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-    const result = links.map(link => ({
-        ...link,
-        invite_url: `${baseUrl}/register?invite=${link.code}`,
-    }));
-    res.json(result);
+}
+function generateCode() {
+    return crypto.randomBytes(4).toString('hex');
+}
+router.post('/generate', authMiddleware, requireRole('admin'), (req, res) => {
+    const { message, created_by } = req.body;
+    const code = generateCode();
+    const db = getDb();
+    db.run('INSERT INTO invites (code, message, created_by) VALUES (?, ?, ?)', [code, message || null, created_by || null]);
+    saveDb();
+    res.status(201).json({ code, message: message || null });
+});
+router.get('/', authMiddleware, requireRole('admin'), (_req, res) => {
+    const db = getDb();
+    const rows = db.exec('SELECT id, code, message, created_by, uses, created_at FROM invites ORDER BY created_at DESC');
+    res.json(rowsToArray(rows));
+});
+router.get('/:code', (req, res) => {
+    const db = getDb();
+    const rows = db.exec('SELECT id, code, message, uses FROM invites WHERE code = ?', [req.params.code]);
+    const invites = rowsToArray(rows);
+    if (invites.length === 0)
+        return res.status(404).json({ error: 'Invite not found' });
+    res.json(invites[0]);
+});
+router.post('/:code/track', (req, res) => {
+    const db = getDb();
+    const rows = db.exec('SELECT id FROM invites WHERE code = ?', [req.params.code]);
+    if (rows.length === 0 || rows[0].values.length === 0) {
+        return res.status(404).json({ error: 'Invite not found' });
+    }
+    db.run('UPDATE invites SET uses = uses + 1 WHERE code = ?', [req.params.code]);
+    saveDb();
+    res.json({ ok: true });
 });
 export default router;

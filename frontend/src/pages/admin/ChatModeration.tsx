@@ -86,7 +86,13 @@ export default function ChatModeration() {
   const deleteMessage = async (messageId: number) => {
     if (!token || !confirm('Delete this message?')) return
     try {
-      const res = await fetch(`/api/chat/global/messages/${messageId}`, {
+      let channel = 'global'
+      if (activeTab === 'team' && selectedTeamId) {
+        channel = `team:${selectedTeamId}`
+      } else if (activeTab === 'judge') {
+        channel = 'judge'
+      }
+      const res = await fetch(`/api/chat/${channel}/messages/${messageId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

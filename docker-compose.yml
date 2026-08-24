@@ -1,50 +1,49 @@
 services:
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - backend-data:/app/data
+    environment:
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@cook-tournament.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-production}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-http://minio:9000}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - BACKEND_PORT=3001
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      args:
+        - BACKEND_URL=http://localhost:3001
     ports:
-      - "${PORT:-3000}:80"
+      - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "${BACKEND_PORT:-3001}:3001"
-    volumes:
-      - db-data:/app/data
-      - minio-data:/data/minio
-    environment:
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@cook-tournament.com}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET:-changeme-to-a-random-string}
-      - BACKEND_PORT=3001
-      - PORT=3000
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-minio:9000}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
-      - SMTP_HOST=${SMTP_HOST:-}
-      - SMTP_USER=${SMTP_USER:-}
-      - SMTP_PASS=${SMTP_PASS:-}
-    restart: unless-stopped
-
   minio:
     image: minio/minio:latest
-    command: server /data --console-address ":9001"
     ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
     environment:
       - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
-    volumes:
-      - minio-data:/data
+    command: server /data --console-address ":9001"
     restart: unless-stopped
 
 volumes:
-  db-data:
+  backend-data:
   minio-data:

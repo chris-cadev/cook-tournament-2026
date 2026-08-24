@@ -29,7 +29,7 @@ router.get('/leaderboard', (_req: Request, res: Response) => {
   const categories: string[] = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
   const revealed: string[] = config.revealed_categories ? JSON.parse(config.revealed_categories as string) : []
 
-  const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'disordered' ORDER BY name")
+  const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'disqualified' ORDER BY name")
   const teams = rowsToArray(teamRows)
 
   const scoreRows = db.exec(`
@@ -113,7 +113,7 @@ router.post('/reveal', authMiddleware, requireRole('admin'), (req: Request, res:
   const io = getIO()
   io.emit('score:reveal', { category, scores })
 
-  res.json({ success: true, category, revealed: revealedList })
+  res.json({ ok: true, revealed_category: category })
 })
 
 export default router

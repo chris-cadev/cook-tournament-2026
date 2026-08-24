@@ -25,20 +25,21 @@ router.post('/register', (req, res) => {
     const hash = bcrypt.hashSync(password, 10);
     db.run(`INSERT INTO teams (name, sandwich_name, captain_email, password_hash, members, equipment_needs)
      VALUES (?, ?, ?, ?, ?, ?)`, [name, sandwich_name, captain_email, hash, JSON.stringify(members || []), equipment_needs || null]);
-    saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];
-    res.status(201).json({ id, name, sandwich_name });
+    saveDb();
+    res.status(201).json({ id, name, status: 'pending' });
 });
 router.get('/', authMiddleware, requireRole('admin'), (_req, res) => {
     const db = getDb();
-    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams ORDER BY name');
-    res.json(rowsToArray(rows));
+    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, equipment_needs, status, station, registered_at FROM teams ORDER BY name');
+    const teams = rowsToArray(rows).map(t => ({ ...t, members: JSON.parse(t.members || '[]') }));
+    res.json(teams);
 });
 router.get('/:id', authMiddleware, (req, res) => {
     const db = getDb();
-    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams WHERE id = ?', [req.params.id]);
-    const teams = rowsToArray(rows);
+    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, equipment_needs, status, station, registered_at FROM teams WHERE id = ?', [req.params.id]);
+    const teams = rowsToArray(rows).map(t => ({ ...t, members: JSON.parse(t.members || '[]') }));
     if (teams.length === 0)
         return res.status(404).json({ error: 'Team not found' });
     const team = teams[0];

@@ -1,29 +1,41 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
+import Spinner from '../../components/ui/Spinner'
 
 export default function EmailReminders() {
-  const { token } = useAuthStore()
+  const { token, logout } = useAuthStore()
   const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+  const [teams, setTeams] = useState<{ id: number; name: string; captain_email: string }[]>([])
+  const [loaded, setLoaded] = useState(false)
 
-  const handleSend = async () => {
-    if (!token || !confirm('¿Enviar recordatorios a todos los equipos confirmados?')) return
+  const fetchTeams = useCallback(async () => {
+    if (!token || loaded) return
+    try {
+      const res = await fetch('/api/teams', { headers: { Authorization: `Bearer ${token}` } })
+      if (res.ok) setTeams(await res.json())
+    } finally { setLoaded(true) }
+  }, [token, loaded])
+
+  useEffect(() => { fetchTeams() }, [fetchTeams])
+
+  const sendReminders = async () => {
     setSending(true)
     setResult(null)
     try {
-      const res = await fetch('/api/admin/email/send-reminders', {
+      const res = await fetch('/api/admin/send-reminders', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       })
-      const data = await res.json()
       if (res.ok) {
-        setResult(data)
+        setResult({ ok: true, message: 'Recordatorios enviados correctamente.' })
       } else {
-        setResult({ sent: 0, failed: 0, total: 0 })
-        alert(data.error || 'Error al enviar')
+        const err = await res.json()
+        setResult({ ok: false, message: err.error || 'Error al enviar.' })
       }
     } catch {
-      alert('Error de red')
+      setResult({ ok: false, message: 'Error de red.' })
     } finally {
       setSending(false)
     }
@@ -31,35 +43,53 @@ export default function EmailReminders() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Recordatorios por Email</h1>
-        <p className="text-gray-500 mb-6">Envía recordatorios automáticos a los capitanes de equipo.</p>
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+          <h1 className="font-headline text-xl font-black text-secondary">Panel de Admin</h1>
+          <div className="flex items-center gap-6">
+            <Link to="/admin/dashboard" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Equipos</Link>
+            <Link to="/admin/chat" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Chat</Link>
+            <Link to="/admin/score-reveal" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Puntuaciones</Link>
+            <Link to="/admin/settings" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Configuración</Link>
+            <button onClick={() => { logout() }} className="text-sm font-bold text-error hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </nav>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h2 className="font-headline text-lg font-bold text-secondary">Enviar Recordatorio</h2>
-          <p className="text-sm text-gray-600">
-            Se enviará un email a todos los capitanes de equipos confirmados con la fecha del evento, nombre del equipo y recordatorios de preparación.
-          </p>
-          <p className="text-xs text-gray-400">
-            Requiere que SMTP_HOST, SMTP_USER y SMTP_PASS estén configurados en las variables de entorno.
-          </p>
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 className="font-headline text-lg font-bold text-secondary mb-1">Recordatorios por Email</h2>
+          <p className="text-sm text-gray-500">Envía recordatorios a los capitanes de los equipos registrados.</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 className="font-headline text-base font-bold text-secondary mb-4">Equipos registrados ({teams.length})</h3>
+          {teams.length === 0 ? (
+            <p className="text-sm text-gray-500">No hay equipos registrados.</p>
+          ) : (
+            <ul className="space-y-2 mb-6">
+              {teams.map(t => (
+                <li key={t.id} className="flex items-center justify-between text-sm py-2 border-b border-gray-100 last:border-0">
+                  <span className="font-medium">{t.name}</span>
+                  <span className="text-gray-500">{t.captain_email}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <button
-            onClick={handleSend}
-            disabled={sending}
+            onClick={sendReminders}
+            disabled={sending || teams.length === 0}
             className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors disabled:opacity-50"
           >
-            {sending ? 'Enviando...' : 'Enviar a todos los equipos'}
+            {sending ? 'Enviando...' : 'Enviar recordatorios a todos'}
           </button>
 
           {result && (
-            <div className={`px-4 py-3 rounded-xl text-sm ${
-              result.sent > 0
-                ? 'bg-green-50 border border-green-200 text-green-700'
-                : 'bg-red-50 border border-red-200 text-red-700'
-            }`}>
-              {result.sent > 0
-                ? `Enviados: ${result.sent} de ${result.total} emails`
-                : 'No se pudo enviar ningún email. Verifica la configuración SMTP.'}
+            <div className={`mt-4 p-4 rounded-xl text-sm font-medium ${result.ok ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+              {result.message}
             </div>
           )}
         </div>

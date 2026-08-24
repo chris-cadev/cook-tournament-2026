@@ -18,12 +18,9 @@ import teamsRoutes from './routes/teams.js'
 import judgesRoutes from './routes/judges.js'
 import scoresRoutes from './routes/scores.js'
 import chatRoutes from './routes/chat.js'
-import todoRoutes from './routes/todos.js'
 import uploadRoutes from './routes/upload.js'
-import emailRoutes from './routes/email.js'
+import adminRoutes from './routes/admin.js'
 import inviteRoutes from './routes/invites.js'
-import stationRoutes from './routes/stations.js'
-import checklistRoutes from './routes/checklist.js'
 
 const app = express()
 const server = createServer(app)
@@ -40,12 +37,9 @@ app.use('/api/teams', teamsRoutes)
 app.use('/api/judges', judgesRoutes)
 app.use('/api/scores', scoresRoutes)
 app.use('/api/chat', chatRoutes)
-app.use('/api/admin/todos', todoRoutes)
 app.use('/api/upload', uploadRoutes)
-app.use('/api/admin/email', emailRoutes)
+app.use('/api/admin', adminRoutes)
 app.use('/api/invites', inviteRoutes)
-app.use('/api/admin/stations', stationRoutes)
-app.use('/api/checklist', checklistRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

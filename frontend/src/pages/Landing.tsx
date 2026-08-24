@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar'
 
-interface EventConfig {
+interface Config {
   event_date: string | null
   event_title: string
+  event_description: string
+  rules: string
+  scoring_categories: string[]
+  landing_page_content: string
 }
-
-const FALLBACK_DATE = '2026-10-10T14:00:00'
-const FALLBACK_TITLE = 'El Campeonato de Sándwiches'
 
 function useCountdown(target: string) {
   const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
@@ -49,40 +49,53 @@ const scoring = [
 ]
 
 export default function Landing() {
-  const [config, setConfig] = useState<EventConfig>({ event_date: null, event_title: FALLBACK_TITLE })
+  const [config, setConfig] = useState<Config | null>(null)
+  const eventDate = config?.event_date || '2026-10-10T14:00:00'
+  const { days, hours, minutes, seconds } = useCountdown(eventDate)
 
   useEffect(() => {
     fetch('/api/config')
-      .then((r) => r.json())
-      .then((data: EventConfig) => setConfig(data))
+      .then(r => r.json())
+      .then(setConfig)
       .catch(() => {})
   }, [])
 
-  const eventDate = config.event_date || FALLBACK_DATE
-  const { days, hours, minutes, seconds } = useCountdown(eventDate)
-
-  const eventTime = new Date(eventDate).getTime()
-  const diff = eventTime - Date.now()
-  const isApproaching = diff > 0 && diff < 86400000
-
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 bg-surface/95 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="font-headline text-xl font-black text-secondary">
+            {config?.event_title || 'El Campeonato de Sándwiches'}
+          </Link>
+          <div className="flex items-center gap-4">
+            <a href="#rules" className="text-sm font-medium text-gray-600 hover:text-secondary transition-colors">Reglas</a>
+            <Link to="/register" className="text-sm font-medium text-gray-600 hover:text-secondary transition-colors">Registro</Link>
+            <Link to="/chat" className="text-sm font-medium text-gray-600 hover:text-secondary transition-colors">Chat</Link>
+          </div>
+        </div>
+        <div className="max-w-4xl mx-auto px-4 pb-2">
+          <nav className="flex items-center gap-1.5 text-xs text-gray-400">
+            <Link to="/" className="hover:text-secondary transition-colors">Inicio</Link>
+            <span>→</span>
+            <span className="text-gray-600">Reglas</span>
+          </nav>
+        </div>
+      </nav>
 
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-sm text-gray-500">
-          <Link to="/" className="hover:text-secondary transition-colors">Inicio</Link>
-          <span>/</span>
-          <span className="text-secondary font-medium">Reglas</span>
-        </nav>
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
 
         {/* Hero */}
         <section className="text-center space-y-4">
           <h1 className="font-headline text-5xl md:text-7xl font-black text-secondary leading-tight">
-            {config.event_title || FALLBACK_TITLE}
+            {config?.event_title || 'El Campeonato de Sándwiches'}
           </h1>
-          <p className="text-xl text-gray-600">Competencia de cocina en vivo + Celebración de cumpleaños</p>
+          {config?.event_description && (
+            <p className="text-xl text-gray-600">{config.event_description}</p>
+          )}
+          {!config?.event_description && (
+            <p className="text-xl text-gray-600">Competencia de cocina en vivo + Celebración de cumpleaños</p>
+          )}
 
           <div className="flex justify-center gap-4 flex-wrap pt-2">
             {[
@@ -98,44 +111,18 @@ export default function Landing() {
             ))}
           </div>
 
-          <div className="flex justify-center gap-3 pt-4 flex-wrap">
-            <Link to="/results" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors">
+          <div className="flex justify-center gap-3 pt-4">
+            <Link to="/register" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors">
+              Registra Tu Equipo
+            </Link>
+            <Link to="/chat" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
+              Unirse al Chat
+            </Link>
+            <Link to="/results" className="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
               Ver Resultados
-            </Link>
-            <Link to="/admin/login" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">
-              Admin
-            </Link>
-            <Link to="/team/login" className="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">
-              Equipo
-            </Link>
-            <Link to="/register" className="text-sm text-gray-500 hover:text-tertiary font-medium px-3 py-3 transition-colors">
-              Registrar
-            </Link>
-            <Link to="/jueces/login" className="bg-primary/10 hover:bg-primary/20 text-primary-dark font-headline font-semibold px-5 py-3 rounded-2xl transition-colors">
-              Jueces
             </Link>
           </div>
         </section>
-
-        {/* Sticky countdown widget when approaching */}
-        {isApproaching && (
-          <div className="fixed bottom-4 right-4 z-50 bg-white rounded-2xl shadow-lg border border-primary/30 p-4">
-            <p className="text-xs font-bold text-primary-dark uppercase mb-2">Evento en:</p>
-            <div className="flex gap-2">
-              {[
-                { label: 'd', value: days },
-                { label: 'h', value: hours },
-                { label: 'm', value: minutes },
-                { label: 's', value: seconds },
-              ].map((unit) => (
-                <div key={unit.label} className="text-center">
-                  <p className="font-headline text-xl font-black text-secondary">{String(unit.value).padStart(2, '0')}</p>
-                  <p className="text-[10px] text-gray-500">{unit.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Regla #1 */}
         <section className="bg-error/10 border-2 border-error/30 rounded-2xl p-6 text-center">

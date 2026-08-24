@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 
 interface Config {
@@ -6,75 +7,68 @@ interface Config {
   event_title: string
   event_description: string
   rules: string
-  scoring_categories: string[]
+  scoring_categories: string
+  judge_password: string
+  team_password: string
   landing_page_content: string
 }
 
 export default function EventSettings() {
-  const { token } = useAuthStore()
+  const { token, logout } = useAuthStore()
+  const navigate = useNavigate()
   const [config, setConfig] = useState<Config>({
     event_date: '',
     event_title: '',
     event_description: '',
     rules: '',
-    scoring_categories: [],
+    scoring_categories: '',
+    judge_password: '',
+    team_password: '',
     landing_page_content: '',
   })
-  const [newCategory, setNewCategory] = useState('')
-  const [judgePassword, setJudgePassword] = useState('')
-  const [teamPassword, setTeamPassword] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
-    fetch('/api/config')
-      .then(r => r.json())
-      .then((data: Config) => {
-        setConfig({
-          event_date: data.event_date ? data.event_date.slice(0, 16) : '',
-          event_title: data.event_title || '',
-          event_description: data.event_description || '',
-          rules: data.rules || '',
-          scoring_categories: data.scoring_categories || [],
-          landing_page_content: data.landing_page_content || '',
-        })
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    fetchConfig()
   }, [])
 
-  const updateField = (field: keyof Config, value: string) => {
-    setConfig(prev => ({ ...prev, [field]: value }))
-  }
-
-  const addCategory = () => {
-    const cat = newCategory.trim()
-    if (cat && !config.scoring_categories.includes(cat)) {
-      setConfig(prev => ({ ...prev, scoring_categories: [...prev.scoring_categories, cat] }))
-      setNewCategory('')
+  async function fetchConfig() {
+    try {
+      const res = await fetch('/api/config')
+      const data = await res.json()
+      setConfig({
+        event_date: data.event_date || '',
+        event_title: data.event_title || '',
+        event_description: data.event_description || '',
+        rules: data.rules || '',
+        scoring_categories: Array.isArray(data.scoring_categories) ? data.scoring_categories.join(', ') : data.scoring_categories || '',
+        judge_password: data.judge_password || '',
+        team_password: data.team_password || '',
+        landing_page_content: data.landing_page_content || '',
+      })
+    } catch (err) {
+      console.error('Failed to fetch config:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const removeCategory = (cat: string) => {
-    setConfig(prev => ({ ...prev, scoring_categories: prev.scoring_categories.filter(c => c !== cat) }))
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
   }
 
   const handleSave = async () => {
+    if (!token) return
     setSaving(true)
-    setMessage(null)
+    setFeedback(null)
     try {
-      const body: Record<string, any> = {
-        event_date: config.event_date || null,
-        event_title: config.event_title,
-        event_description: config.event_description,
-        rules: config.rules,
-        scoring_categories: config.scoring_categories,
-        landing_page_content: config.landing_page_content,
+      const body = {
+        ...config,
+        scoring_categories: config.scoring_categories.split(',').map(s => s.trim()).filter(Boolean),
       }
-      if (judgePassword) body.judge_password = judgePassword
-      if (teamPassword) body.team_password = teamPassword
-
       const res = await fetch('/api/config', {
         method: 'PUT',
         headers: {
@@ -83,18 +77,14 @@ export default function EventSettings() {
         },
         body: JSON.stringify(body),
       })
-
-      if (!res.ok) {
-        const data = await res.json()
-        setMessage({ type: 'error', text: data.error || 'Error al guardar' })
-        return
+      if (res.ok) {
+        setFeedback({ type: 'success', message: 'Configuración guardada correctamente.' })
+      } else {
+        const err = await res.json()
+        setFeedback({ type: 'error', message: err.error || 'Error al guardar.' })
       }
-
-      setMessage({ type: 'success', text: 'Configuración guardada' })
-      setJudgePassword('')
-      setTeamPassword('')
     } catch {
-      setMessage({ type: 'error', text: 'Error de red' })
+      setFeedback({ type: 'error', message: 'Error de red — intenta de nuevo.' })
     } finally {
       setSaving(false)
     }
@@ -110,135 +100,91 @@ export default function EventSettings() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Configuración del Evento</h1>
-        <p className="text-gray-500 mb-6">Administra los detalles de la competencia.</p>
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+          <h1 className="font-headline text-xl font-black text-secondary">Panel de Admin</h1>
+          <div className="flex items-center gap-6">
+            <Link to="/admin/dashboard" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Equipos</Link>
+            <Link to="/admin/chat" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Chat</Link>
+            <Link to="/admin/score-reveal" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Puntuaciones</Link>
+            <Link to="/admin/settings" className="text-sm font-bold text-primary border-b-2 border-primary pb-0.5">Configuración</Link>
+            <button onClick={handleLogout} className="text-sm font-bold text-error hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </nav>
 
-        {message && (
-          <div className={`px-4 py-3 rounded-xl mb-6 text-sm ${
-            message.type === 'success'
-              ? 'bg-green-50 border border-green-200 text-green-700'
-              : 'bg-red-50 border border-red-200 text-red-700'
-          }`}>
-            {message.text}
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+          <h2 className="font-headline text-lg font-bold text-secondary mb-1">Configuración del Evento</h2>
+          <p className="text-sm text-gray-500">Ajusta los parámetros generales del torneo.</p>
+        </div>
+
+        {feedback && (
+          <div className={`mb-6 p-4 rounded-xl text-sm font-medium ${feedback.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+            {feedback.message}
           </div>
         )}
 
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <h2 className="font-headline text-lg font-bold text-secondary">General</h2>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Título del evento</label>
-              <input
-                type="text"
-                value={config.event_title}
-                onChange={(e) => updateField('event_title', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha y hora del evento</label>
-              <input
-                type="datetime-local"
-                value={config.event_date}
-                onChange={(e) => updateField('event_date', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (Markdown)</label>
-              <textarea
-                value={config.event_description}
-                onChange={(e) => updateField('event_description', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[100px] font-mono"
-                placeholder="Descripción del evento..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reglas (Markdown)</label>
-              <textarea
-                value={config.rules}
-                onChange={(e) => updateField('rules', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[100px] font-mono"
-                placeholder="Reglas de la competencia..."
-              />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <h2 className="font-headline text-lg font-bold text-secondary">Categorías de Puntuación</h2>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
-                className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Nueva categoría..."
-              />
-              <button
-                type="button"
-                onClick={addCategory}
-                className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-semibold px-4 py-2 rounded-xl text-sm transition-colors"
-              >
-                Agregar
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {config.scoring_categories.map(cat => (
-                <span key={cat} className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-                  {cat}
-                  <button onClick={() => removeCategory(cat)} className="text-secondary/50 hover:text-error text-xs">✕</button>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <h2 className="font-headline text-lg font-bold text-secondary">Contraseñas</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="font-headline text-base font-bold text-secondary mb-4">General</h3>
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de jueces</label>
-                <input
-                  type="password"
-                  value={judgePassword}
-                  onChange={(e) => setJudgePassword(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="Dejar vacío para no cambiar"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Título del Evento</label>
+                <input type="text" value={config.event_title} onChange={e => setConfig(prev => ({ ...prev, event_title: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de equipos</label>
-                <input
-                  type="password"
-                  value={teamPassword}
-                  onChange={(e) => setTeamPassword(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="Dejar vacío para no cambiar"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha del Evento</label>
+                <input type="datetime-local" value={config.event_date} onChange={e => setConfig(prev => ({ ...prev, event_date: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (Markdown)</label>
+                <textarea value={config.event_description} onChange={e => setConfig(prev => ({ ...prev, event_description: e.target.value }))} rows={4} className="w-full border border-gray-300 rounded-xl px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <h2 className="font-headline text-lg font-bold text-secondary">Contenido de Landing Page</h2>
-            <textarea
-              value={config.landing_page_content}
-              onChange={(e) => updateField('landing_page_content', e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[120px] font-mono"
-              placeholder="Contenido adicional para la landing page (Markdown)..."
-            />
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="font-headline text-base font-bold text-secondary mb-4">Reglas y Puntuación</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reglas (Markdown)</label>
+                <textarea value={config.rules} onChange={e => setConfig(prev => ({ ...prev, rules: e.target.value }))} rows={6} className="w-full border border-gray-300 rounded-xl px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Categorías de Puntuación (separadas por coma)</label>
+                <input type="text" value={config.scoring_categories} onChange={e => setConfig(prev => ({ ...prev, scoring_categories: e.target.value }))} placeholder="Sabor, Presentación, Creatividad" className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50"
-          >
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="font-headline text-base font-bold text-secondary mb-4">Contraseñas</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de Jueces</label>
+                <input type="password" value={config.judge_password} onChange={e => setConfig(prev => ({ ...prev, judge_password: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de Equipos</label>
+                <input type="password" value={config.team_password} onChange={e => setConfig(prev => ({ ...prev, team_password: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="font-headline text-base font-bold text-secondary mb-4">Landing Page</h3>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Contenido (Markdown)</label>
+              <textarea value={config.landing_page_content} onChange={e => setConfig(prev => ({ ...prev, landing_page_content: e.target.value }))} rows={8} className="w-full border border-gray-300 rounded-xl px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <button onClick={handleSave} disabled={saving} className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {saving ? 'Guardando...' : 'Guardar Configuración'}
           </button>
         </div>
