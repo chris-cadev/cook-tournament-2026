@@ -1,24 +1,52 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import TeamEditModal from '../../components/admin/TeamEditModal'
-import Spinner from '../../components/ui/Spinner'
+import AdminNavbar from '../../components/admin/AdminNavbar'
 
 interface Team {
   id: number
   name: string
   sandwich_name: string
   captain_email: string
-  status: 'pending' | 'confirmed' | 'disqualified'
+  status: string
   station: string | null
   registered_at: string
 }
 
+function ActionDropdown({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative inline-block text-left">
+      <button onClick={() => setOpen(!open)} className="text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">
+        ⋮
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-xl shadow-lg z-10 py-1">
+          <button onClick={() => { onEdit(); setOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Edit</button>
+          <button onClick={() => { onDelete(); setOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Teams() {
-  const { token, logout } = useAuthStore()
+  const { token } = useAuthStore()
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null)
+  const [editing, setEditing] = useState<Team | null>(null)
+  const [page, setPage] = useState(0)
+  const pageSize = 50
 
   const fetchTeams = useCallback(async () => {
     if (!token) return
@@ -26,10 +54,7 @@ export default function Teams() {
       const res = await fetch('/api/teams', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      if (res.ok) {
-        const data = await res.json()
-        setTeams(data)
-      }
+      if (res.ok) setTeams(await res.json())
     } catch (err) {
       console.error('Failed to fetch teams:', err)
     } finally {
@@ -39,135 +64,82 @@ export default function Teams() {
 
   useEffect(() => { fetchTeams() }, [fetchTeams])
 
-  const updateTeamStatus = async (id: number, status: string) => {
-    if (!token) return
-    const res = await fetch(`/api/teams/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ status }),
-    })
-    if (res.ok) setTeams(prev => prev.map(t => (t.id === id ? { ...t, status: status as Team['status'] } : t)))
-  }
-
-  const deleteTeam = async (id: number) => {
-    if (!token || !confirm('¿Estás seguro?')) return
+  const handleDelete = async (id: number) => {
+    if (!token || !confirm('Delete this team?')) return
     const res = await fetch(`/api/teams/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
-    if (res.ok) setTeams(prev => prev.filter(t => t.id !== id))
+    if (res.ok) setTeams((t) => t.filter((x) => x.id !== id))
   }
+
+  const handleSaved = () => { setEditing(null); fetchTeams() }
 
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      disqualified: 'bg-red-100 text-red-800',
+      pending: 'bg-yellow-100 text-yellow-700',
+      confirmed: 'bg-green-100 text-green-700',
+      disqualified: 'bg-red-100 text-red-700',
     }
-    const labels: Record<string, string> = {
-      pending: 'Pendiente',
-      confirmed: 'Confirmado',
-      disqualified: 'Descalificado',
-    }
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[status] || 'bg-gray-100 text-gray-800'}`}>
-        {labels[status] || status}
-      </span>
-    )
+    return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${colors[status] || colors.pending}`} title={`Status: ${status}`}>{status}</span>
   }
 
+  const totalPages = Math.ceil(teams.length / pageSize)
+  const pagedTeams = teams.slice(page * pageSize, (page + 1) * pageSize)
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner />
-      </div>
-    )
+    return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" /></div>
   }
 
   return (
     <div className="min-h-screen bg-surface">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-          <h1 className="font-headline text-xl font-black text-secondary">Panel de Admin</h1>
-          <div className="flex items-center gap-6">
-            <Link to="/admin/dashboard" className="text-sm font-bold text-primary border-b-2 border-primary pb-0.5">Equipos</Link>
-            <Link to="/admin/chat" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Chat</Link>
-            <Link to="/admin/score-reveal" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Puntuaciones</Link>
-            <Link to="/admin/settings" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Configuración</Link>
-            <button onClick={() => { logout() }} className="text-sm font-bold text-error hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
-              Cerrar sesión
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <AdminNavbar />
+      <div className="max-w-[1200px] mx-auto px-4 py-6">
+        <h1 className="font-headline text-3xl font-black text-secondary mb-6">Teams</h1>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="font-headline text-lg font-bold text-secondary">Equipos Registrados</h2>
-            <p className="text-sm text-gray-500 mt-1">{teams.length} equipos en total</p>
-          </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Nombre</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Sándwich</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Capitán</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Estado</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Estación</th>
-                  <th className="text-right px-6 py-3 font-bold text-gray-600">Acciones</th>
+                <tr className="bg-secondary/5 border-b border-gray-100">
+                  <th className="text-left px-4 py-3 font-bold text-secondary">Name</th>
+                  <th className="text-left px-4 py-3 font-bold text-secondary">Sandwich</th>
+                  <th className="text-left px-4 py-3 font-bold text-secondary">Captain</th>
+                  <th className="text-center px-4 py-3 font-bold text-secondary">Status</th>
+                  <th className="text-left px-4 py-3 font-bold text-secondary">Station</th>
+                  <th className="text-right px-4 py-3 font-bold text-secondary">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {teams.map(team => (
-                  <tr key={team.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-secondary">{team.name}</td>
-                    <td className="px-6 py-4 text-gray-700">{team.sandwich_name}</td>
-                    <td className="px-6 py-4 text-gray-700">{team.captain_email}</td>
-                    <td className="px-6 py-4">{statusBadge(team.status)}</td>
-                    <td className="px-6 py-4 text-gray-700">{team.station || '—'}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        {team.status !== 'confirmed' && (
-                          <button onClick={() => updateTeamStatus(team.id, 'confirmed')} className="px-3 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-                            Confirmar
-                          </button>
-                        )}
-                        <button onClick={() => setEditingTeam(team)} className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
-                          Editar
-                        </button>
-                        <button onClick={() => deleteTeam(team.id)} className="px-3 py-1 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-                          Eliminar
-                        </button>
-                      </div>
+              <tbody className="divide-y divide-gray-100">
+                {pagedTeams.map((team) => (
+                  <tr key={team.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium" title={`Captain: ${team.captain_email}`}>{team.name}</td>
+                    <td className="px-4 py-3 text-gray-600">{team.sandwich_name}</td>
+                    <td className="px-4 py-3 text-gray-600">{team.captain_email}</td>
+                    <td className="px-4 py-3 text-center">{statusBadge(team.status)}</td>
+                    <td className="px-4 py-3 text-gray-600">{team.station || '—'}</td>
+                    <td className="px-4 py-3 text-right">
+                      <ActionDropdown onEdit={() => setEditing(team)} onDelete={() => handleDelete(team.id)} />
                     </td>
                   </tr>
                 ))}
+                {teams.length === 0 && (
+                  <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No teams registered yet.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
-
-          {teams.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No hay equipos registrados aún.
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+              <span className="text-sm text-gray-500">Page {page + 1} of {totalPages}</span>
+              <div className="flex gap-2">
+                <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} className="px-3 py-1 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+                <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="px-3 py-1 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      {editingTeam && token && (
-        <TeamEditModal
-          team={editingTeam}
-          onClose={() => setEditingTeam(null)}
-          onSave={(updated) => {
-            setTeams(prev => prev.map(t => t.id === updated.id ? { ...t, ...updated } : t))
-            setEditingTeam(null)
-          }}
-          token={token}
-        />
-      )}
+      {editing && <TeamEditModal team={editing} onClose={() => setEditing(null)} onSaved={handleSaved} />}
     </div>
   )
 }

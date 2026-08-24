@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getDb, saveDb } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { getIO } from '../socket.js';
+import { sendScoreReveal } from '../email.js';
 const router = Router();
 function rowsToObject(rows) {
     if (rows.length === 0 || rows[0].values.length === 0)
@@ -42,8 +43,10 @@ router.get('/leaderboard', (_req, res) => {
         let totalScore = 0;
         for (const cat of categories) {
             const avg = scoreMap.get(`${team.id}:${cat}`) || 0;
-            categoryScores[cat] = Math.round(avg * 100) / 100;
             totalScore += avg;
+            if (revealed.includes(cat)) {
+                categoryScores[cat] = Math.round(avg * 100) / 100;
+            }
         }
         return {
             team_id: team.id,
@@ -93,6 +96,16 @@ router.post('/reveal', authMiddleware, requireRole('admin'), (req, res) => {
     const scores = rowsToArray(scoreRows);
     const io = getIO();
     io.emit('score:reveal', { category, scores });
-    res.json({ ok: true, revealed_category: category });
+    const eventTitleRows = db.exec('SELECT event_title FROM event_config WHERE id = 1');
+    const eventTitle = eventTitleRows.length > 0 && eventTitleRows[0].values.length > 0 ? eventTitleRows[0].values[0][0] : 'El Campeonato';
+    const teamEmailRows = db.exec('SELECT captain_email FROM teams WHERE status = ? AND captain_email IS NOT NULL', ['confirmed']);
+    if (teamEmailRows.length > 0) {
+        for (const row of teamEmailRows[0].values) {
+            const email = row[0];
+            if (email)
+                sendScoreReveal(email, eventTitle, category).catch(() => { });
+        }
+    }
+    res.json({ ok: true, revealed_category: category, revealed: revealedList });
 });
 export default router;

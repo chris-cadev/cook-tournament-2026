@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { getDb, saveDb } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { sendTeamConfirmation } from '../email.js';
 const router = Router();
 function rowsToArray(rows) {
     if (rows.length === 0)
@@ -25,21 +26,23 @@ router.post('/register', (req, res) => {
     const hash = bcrypt.hashSync(password, 10);
     db.run(`INSERT INTO teams (name, sandwich_name, captain_email, password_hash, members, equipment_needs)
      VALUES (?, ?, ?, ?, ?, ?)`, [name, sandwich_name, captain_email, hash, JSON.stringify(members || []), equipment_needs || null]);
+    saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];
-    saveDb();
+    const configRows = db.exec('SELECT event_title FROM event_config WHERE id = 1');
+    const eventTitle = configRows.length > 0 && configRows[0].values.length > 0 ? configRows[0].values[0][0] : 'El Campeonato';
+    sendTeamConfirmation(captain_email, name, eventTitle).catch(() => { });
     res.status(201).json({ id, name, status: 'pending' });
 });
 router.get('/', authMiddleware, requireRole('admin'), (_req, res) => {
     const db = getDb();
-    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, equipment_needs, status, station, registered_at FROM teams ORDER BY name');
-    const teams = rowsToArray(rows).map(t => ({ ...t, members: JSON.parse(t.members || '[]') }));
-    res.json(teams);
+    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams ORDER BY name');
+    res.json(rowsToArray(rows));
 });
 router.get('/:id', authMiddleware, (req, res) => {
     const db = getDb();
-    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, equipment_needs, status, station, registered_at FROM teams WHERE id = ?', [req.params.id]);
-    const teams = rowsToArray(rows).map(t => ({ ...t, members: JSON.parse(t.members || '[]') }));
+    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams WHERE id = ?', [req.params.id]);
+    const teams = rowsToArray(rows);
     if (teams.length === 0)
         return res.status(404).json({ error: 'Team not found' });
     const team = teams[0];
@@ -57,12 +60,13 @@ router.put('/:id', authMiddleware, requireRole('admin'), (req, res) => {
     }
     db.run('UPDATE teams SET name = COALESCE(?, name), sandwich_name = COALESCE(?, sandwich_name), status = COALESCE(?, status), station = COALESCE(?, station) WHERE id = ?', [name || null, sandwich_name || null, status || null, station || null, req.params.id]);
     saveDb();
-    res.json({ success: true });
+    res.json({ ok: true });
 });
 router.delete('/:id', authMiddleware, requireRole('admin'), (req, res) => {
     const db = getDb();
+    db.run('DELETE FROM scores WHERE team_id = ?', [req.params.id]);
     db.run('DELETE FROM teams WHERE id = ?', [req.params.id]);
     saveDb();
-    res.json({ success: true });
+    res.json({ ok: true });
 });
 export default router;

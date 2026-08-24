@@ -1,21 +1,13 @@
-FROM node:20-alpine AS build
-
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm ci
-
-COPY tsconfig.json ./
-COPY postcss.config.js tailwind.config.js index.html ./
-COPY src ./src
-
-RUN npm run build
+COPY package.json bun.lock ./
+COPY frontend/package.json frontend/
+RUN cd frontend && npm install
+COPY frontend/ frontend/
+RUN cd frontend && npm run build
 
 FROM nginx:alpine
-
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
+COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]

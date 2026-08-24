@@ -261,6 +261,7 @@ Mark a category as revealed in EventConfig (store revealed categories as JSON). 
 **Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:56:44Z
+<<<<<<< HEAD
 Deliverable: Public registration form that creates teams via the backend API.
 
 ### registration-form
@@ -270,3 +271,14 @@ Create public registration page at `/register`. Form fields: team name, captain 
 After successful registration, show confirmation message with team name and sandwich name. Include link to team login. No backend changes needed — front-end state transition only.
 
 ---|PASS|12|opencode-go/mimo-v2.5|2026-08-23T21:56:56Z
+=======
+Deliverable: Authenticated team members can view their team info and access team chat.
+
+### team-dashboard
+Create protected page at `/equipo` showing team info: name, sandwich name, member list, station, status. Fetch from `GET /api/teams/:id` using auth store team ID. Files: new `src/pages/team/Dashboard.tsx`, update routes.
+
+### team-chat-link
+Add "Abrir Chat" button on team dashboard that links to `/chat/team/:teamId`. Verify existing `TeamChat.tsx` page works with the authenticated team's channel. Files: update `src/pages/team/Dashboard.tsx`.
+
+---|PASS|7|opencode-go/mimo-v2.5|2026-08-23T21:07:22Z
+>>>>>>> orchestrator/task-3-milestone-3-team-dashboard

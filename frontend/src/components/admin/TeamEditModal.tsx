@@ -1,96 +1,75 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useAuthStore } from '../../stores/authStore'
 
 interface Team {
   id: number
   name: string
   sandwich_name: string
   captain_email: string
-  status: 'pending' | 'confirmed' | 'disqualified'
+  status: string
   station: string | null
-  members?: string
-  equipment_needs?: string | null
 }
 
-interface TeamEditModalProps {
+interface Props {
   team: Team
   onClose: () => void
-  onSave: (updated: Partial<Team>) => void
-  token: string
+  onSaved: () => void
 }
 
-export default function TeamEditModal({ team, onClose, onSave, token }: TeamEditModalProps) {
-  const [form, setForm] = useState({
-    name: team.name,
-    sandwich_name: team.sandwich_name,
-    status: team.status,
-    station: team.station || '',
-  })
+export default function TeamEditModal({ team, onClose, onSaved }: Props) {
+  const { token } = useAuthStore()
+  const [status, setStatus] = useState(team.status)
+  const [station, setStation] = useState(team.station || '')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSave = async () => {
     setSaving(true)
-    const body: Record<string, unknown> = {}
-    if (form.name !== team.name) body.name = form.name
-    if (form.sandwich_name !== team.sandwich_name) body.sandwich_name = form.sandwich_name
-    if (form.status !== team.status) body.status = form.status
-    if (form.station !== (team.station || '')) body.station = form.station || null
-
-    if (Object.keys(body).length === 0) {
-      onClose()
-      return
-    }
-
+    setError('')
     try {
       const res = await fetch(`/api/teams/${team.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status, station: station || null }),
       })
-      if (res.ok) {
-        onSave({ ...team, ...body } as Partial<Team>)
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || 'Save failed')
+        return
       }
+      onSaved()
+    } catch {
+      setError('Network error')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <div className="p-6 border-b border-gray-100">
-          <h3 className="font-headline text-lg font-bold text-secondary">Editar Equipo</h3>
-        </div>
-        <div className="p-6 space-y-4">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+        <h2 className="font-headline text-xl font-black text-secondary mb-4">Edit Team: {team.name}</h2>
+        {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2 mb-4">{error}</p>}
+
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-            <input type="text" value={form.name} onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sándwich</label>
-            <input type="text" value={form.sandwich_name} onChange={e => setForm(prev => ({ ...prev, sandwich_name: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-            <select value={form.status} onChange={e => setForm(prev => ({ ...prev, status: e.target.value as Team['status'] }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50">
-              <option value="pending">Pendiente</option>
-              <option value="confirmed">Confirmado</option>
-              <option value="disqualified">Descalificado</option>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="disqualified">Disqualified</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estación</label>
-            <input type="text" value={form.station} onChange={e => setForm(prev => ({ ...prev, station: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Station</label>
+            <input value={station} onChange={(e) => setStation(e.target.value)} placeholder="e.g. A, B, C" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
         </div>
-        <div className="p-6 border-t border-gray-100 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-            Cancelar
-          </button>
-          <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-xl transition-colors disabled:opacity-50">
-            {saving ? 'Guardando...' : 'Guardar'}
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-xl">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm bg-primary text-white font-bold rounded-xl hover:bg-primary-dark disabled:opacity-50">
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>

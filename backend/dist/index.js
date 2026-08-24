@@ -17,8 +17,12 @@ import judgesRoutes from './routes/judges.js';
 import scoresRoutes from './routes/scores.js';
 import chatRoutes from './routes/chat.js';
 import uploadRoutes from './routes/upload.js';
+<<<<<<< HEAD
 import adminRoutes from './routes/admin.js';
 import inviteRoutes from './routes/invites.js';
+=======
+import todoRoutes from './routes/todo.js';
+>>>>>>> orchestrator/task-3-milestone-3-team-dashboard
 const app = express();
 const server = createServer(app);
 const frontendPort = process.env.PORT || 3000;
@@ -32,8 +36,12 @@ app.use('/api/judges', judgesRoutes);
 app.use('/api/scores', scoresRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/upload', uploadRoutes);
+<<<<<<< HEAD
 app.use('/api/admin', adminRoutes);
 app.use('/api/invites', inviteRoutes);
+=======
+app.use('/api/todo', todoRoutes);
+>>>>>>> orchestrator/task-3-milestone-3-team-dashboard
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 async function start() {
     await initDb();

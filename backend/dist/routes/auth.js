@@ -51,32 +51,66 @@ router.post('/judge/login', (req, res) => {
     const db = getDb();
     const configRows = db.exec('SELECT judge_password FROM event_config WHERE id = 1');
     if (configRows.length === 0 || configRows[0].values.length === 0) {
-        return res.status(401).json({ error: 'Invalid password' });
+        return res.status(401).json({ error: 'Invalid judge password' });
     }
     const judgePasswordHash = configRows[0].values[0][0];
     if (!bcrypt.compareSync(password, judgePasswordHash)) {
         return res.status(401).json({ error: 'Invalid password' });
     }
-    let anonymousId;
+    let resolvedId;
     if (anonymous_id) {
-        const existingJudge = db.exec('SELECT anonymous_id FROM judges WHERE anonymous_id = ?', [anonymous_id]);
-        if (existingJudge.length > 0 && existingJudge[0].values.length > 0) {
-            anonymousId = existingJudge[0].values[0][0];
-            db.run('UPDATE judges SET accessed_at = CURRENT_TIMESTAMP WHERE anonymous_id = ?', [anonymousId]);
-            saveDb();
-            const token = signToken({ anonymous_id: anonymousId, role: 'judge' });
-            return res.json({ token, role: 'judge', anonymous_id: anonymousId });
+        const existing = db.exec('SELECT anonymous_id FROM judges WHERE anonymous_id = ?', [anonymous_id]);
+        if (existing.length > 0 && existing[0].values.length > 0) {
+            resolvedId = anonymous_id;
+        }
+        else {
+            const allRows = db.exec('SELECT anonymous_id FROM judges ORDER BY id DESC LIMIT 1');
+            let nextNum = 1;
+            if (allRows.length > 0 && allRows[0].values.length > 0) {
+                nextNum = parseInt(allRows[0].values[0][0].split('_')[1]) + 1;
+            }
+            resolvedId = `judge_${nextNum}`;
+            try {
+                db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
+                saveDb();
+            }
+            catch (e) {
+                if (e.message?.includes('UNIQUE constraint')) {
+                    nextNum++;
+                    resolvedId = `judge_${nextNum}`;
+                    db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
+                    saveDb();
+                }
+                else {
+                    throw e;
+                }
+            }
         }
     }
-    const existingRows = db.exec('SELECT anonymous_id FROM judges ORDER BY id DESC LIMIT 1');
-    let nextNum = 1;
-    if (existingRows.length > 0 && existingRows[0].values.length > 0) {
-        nextNum = parseInt(existingRows[0].values[0][0].split('_')[1]) + 1;
+    else {
+        const allRows = db.exec('SELECT anonymous_id FROM judges ORDER BY id DESC LIMIT 1');
+        let nextNum = 1;
+        if (allRows.length > 0 && allRows[0].values.length > 0) {
+            nextNum = parseInt(allRows[0].values[0][0].split('_')[1]) + 1;
+        }
+        resolvedId = `judge_${nextNum}`;
+        try {
+            db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
+            saveDb();
+        }
+        catch (e) {
+            if (e.message?.includes('UNIQUE constraint')) {
+                nextNum++;
+                resolvedId = `judge_${nextNum}`;
+                db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
+                saveDb();
+            }
+            else {
+                throw e;
+            }
+        }
     }
-    anonymousId = `judge_${nextNum}`;
-    db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [anonymousId]);
-    saveDb();
-    const token = signToken({ anonymous_id: anonymousId, role: 'judge' });
-    res.json({ token, role: 'judge', anonymous_id: anonymousId });
+    const token = signToken({ anonymous_id: resolvedId, role: 'judge' });
+    res.json({ token, judge: { anonymous_id: resolvedId, role: 'judge' } });
 });
 export default router;

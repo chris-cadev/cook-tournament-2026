@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { getDb, saveDb } from '../db.js'
 import { authMiddleware, requireRole } from '../middleware/auth.js'
+import { sendTeamConfirmation } from '../email.js'
 
 const router = Router()
 
@@ -32,24 +33,28 @@ router.post('/register', (req: Request, res: Response) => {
      VALUES (?, ?, ?, ?, ?, ?)`,
     [name, sandwich_name, captain_email, hash, JSON.stringify(members || []), equipment_needs || null]
   )
+  saveDb()
 
   const idRows = db.exec('SELECT last_insert_rowid() as id')
   const id = idRows[0].values[0][0]
-  saveDb()
+
+  const configRows = db.exec('SELECT event_title FROM event_config WHERE id = 1')
+  const eventTitle = configRows.length > 0 && configRows[0].values.length > 0 ? configRows[0].values[0][0] : 'El Campeonato'
+  sendTeamConfirmation(captain_email, name, eventTitle as string).catch(() => {})
+
   res.status(201).json({ id, name, status: 'pending' })
 })
 
 router.get('/', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
   const db = getDb()
-  const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, equipment_needs, status, station, registered_at FROM teams ORDER BY name')
-  const teams: Record<string, any>[] = rowsToArray(rows).map(t => ({ ...t, members: JSON.parse((t.members as string) || '[]') }))
-  res.json(teams)
+  const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams ORDER BY name')
+  res.json(rowsToArray(rows))
 })
 
 router.get('/:id', authMiddleware, (req: Request, res: Response) => {
   const db = getDb()
-  const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, equipment_needs, status, station, registered_at FROM teams WHERE id = ?', [req.params.id])
-  const teams: Record<string, any>[] = rowsToArray(rows).map(t => ({ ...t, members: JSON.parse((t.members as string) || '[]') }))
+  const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams WHERE id = ?', [req.params.id])
+  const teams = rowsToArray(rows)
   if (teams.length === 0) return res.status(404).json({ error: 'Team not found' })
 
   const team = teams[0]
@@ -73,14 +78,15 @@ router.put('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Res
     [name || null, sandwich_name || null, status || null, station || null, req.params.id]
   )
   saveDb()
-  res.json({ success: true })
+  res.json({ ok: true })
 })
 
 router.delete('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const db = getDb()
+  db.run('DELETE FROM scores WHERE team_id = ?', [req.params.id])
   db.run('DELETE FROM teams WHERE id = ?', [req.params.id])
   saveDb()
-  res.json({ success: true })
+  res.json({ ok: true })
 })
 
 export default router

@@ -149,9 +149,15 @@
 
 ### Authentication
 
+<<<<<<< HEAD
 - [x] `POST /api/auth/admin/login` accepts `{ email, password }`, returns `{ token (JWT), user: { id, email, role } }` on success, `{ error: "Invalid credentials" }` on failure
 - [x] `POST /api/auth/team/login` accepts `{ email, password }`, returns `{ token (JWT), team: { id, name, role } }` on success, `{ error: "Invalid credentials" }` on failure
 - [x] `POST /api/auth/judge/login` accepts `{ password }`, returns `{ token (JWT), role: "judge" }` on success, `{ error: "Invalid password" }` on failure
+=======
+- [ ] `POST /api/auth/admin/login` accepts `{ email, password }`, returns `{ token (JWT), user: { id, email, role } }` on success, `{ error: "Invalid credentials" }` on failure
+- [ ] `POST /api/auth/team/login` accepts `{ email, password }`, returns `{ token (JWT), team: { id, name, role } }` on success, `{ error: "Invalid credentials" }` on failure
+- [ ] `POST /api/auth/judge/login` accepts `{ password }`, returns `{ token (JWT), judge: { anonymous_id, role: "judge" } }` on success, `{ error: "Invalid password" }` on failure
+>>>>>>> orchestrator/task-3-milestone-3-team-dashboard
 
 ### Event Config (Admin only)
 

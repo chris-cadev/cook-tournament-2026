@@ -1,216 +1,142 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useToastStore } from '../stores/toastStore'
 
-interface FormData {
-  name: string
-  sandwich_name: string
-  captain_email: string
-  password: string
-  members: string[]
-  equipment_needs: string
-}
-
 export default function Registration() {
-  const navigate = useNavigate()
-  const show = useToastStore(s => s.show)
-  const [form, setForm] = useState<FormData>({
-    name: '',
-    sandwich_name: '',
-    captain_email: '',
-    password: '',
-    members: ['', ''],
-    equipment_needs: '',
+  const [form, setForm] = useState({
+    name: '', sandwich_name: '', captain_email: '', password: '',
+    members: ['', ''], equipment_needs: '',
   })
-  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const addToast = useToastStore((s) => s.add)
 
-  const updateField = (field: keyof FormData, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }))
-  }
+  const set = (key: string, val: string) => setForm((f) => ({ ...f, [key]: val }))
 
-  const updateMember = (index: number, value: string) => {
-    const members = [...form.members]
-    members[index] = value
-    setForm(prev => ({ ...prev, members }))
+  const setMember = (i: number, val: string) => {
+    const m = [...form.members]
+    m[i] = val
+    setForm((f) => ({ ...f, members: m }))
   }
 
   const addMember = () => {
-    if (form.members.length < 3) {
-      setForm(prev => ({ ...prev, members: [...prev.members, ''] }))
-    }
+    if (form.members.length < 3) setForm((f) => ({ ...f, members: [...f.members, ''] }))
   }
 
-  const removeMember = (index: number) => {
-    if (form.members.length > 2) {
-      setForm(prev => ({ ...prev, members: prev.members.filter((_, i) => i !== index) }))
-    }
+  const removeMember = (i: number) => {
+    if (form.members.length > 2) setForm((f) => ({ ...f, members: f.members.filter((_, j) => j !== i) }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (!form.name || !form.sandwich_name || !form.captain_email || !form.password) {
-      setError('Completa todos los campos obligatorios.')
-      return
-    }
-
-    setSubmitting(true)
+    setLoading(true)
     try {
       const res = await fetch('/api/teams/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          sandwich_name: form.sandwich_name,
-          captain_email: form.captain_email,
-          password: form.password,
-          members: form.members.filter(m => m.trim()),
-          equipment_needs: form.equipment_needs || null,
+          ...form,
+          members: form.members.filter((m) => m.trim()),
         }),
       })
-
       const data = await res.json()
-
       if (!res.ok) {
-        setError(data.error || 'Error al registrar equipo')
+        setError(data.error || 'Registration failed')
         return
       }
-
-      navigate('/team/login')
-      show('¡Equipo registrado!', 'success')
+      setSuccess(true)
+      addToast('¡Equipo Registrado!', 'success')
     } catch {
-      setError('Error de red — intenta de nuevo')
+      setError('Network error')
     } finally {
-      setSubmitting(false)
+      setLoading(false)
     }
+  }
+
+  if (success) {
+    const referralUrl = `${window.location.origin}/register?ref=${encodeURIComponent(form.name)}`
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center px-4">
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <p className="text-4xl mb-4">🎉</p>
+          <h1 className="font-headline text-2xl font-black text-secondary mb-2">¡Equipo Registrado!</h1>
+          <p className="text-gray-600 text-sm mb-4">Tu equipo está pendiente de confirmación por el organizador.</p>
+          <div className="bg-gray-50 rounded-xl p-3 mb-6">
+            <p className="text-xs text-gray-500 mb-1">Comparte este enlace para invitar:</p>
+            <p className="text-sm font-mono text-secondary break-all">{referralUrl}</p>
+          </div>
+          <Link to="/" className="inline-block bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary-dark transition-colors">
+            Volver al inicio
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Registrar Equipo</h1>
-        <p className="text-gray-500 mb-8">Completa los datos de tu equipo para inscribirte en la competencia.</p>
+      <div className="max-w-lg mx-auto px-4 py-8">
+        <h1 className="font-headline text-3xl font-black text-secondary mb-6 text-center">Registrar Equipo</h1>
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2">{error}</p>}
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <h2 className="font-headline text-lg font-bold text-secondary">Datos del Equipo</h2>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del equipo *</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Ej: Los Panaderos"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del sándwich *</label>
-              <input
-                type="text"
-                value={form.sandwich_name}
-                onChange={(e) => updateField('sandwich_name', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Ej: El Rey del BBQ"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del equipo *</label>
+            <input value={form.name} onChange={(e) => set('name', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <h2 className="font-headline text-lg font-bold text-secondary">Capitán</h2>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email del capitán *</label>
-              <input
-                type="email"
-                value={form.captain_email}
-                onChange={(e) => updateField('captain_email', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="capitan@email.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña del equipo *</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => updateField('password', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Mínimo 4 caracteres"
-              />
-              <p className="text-xs text-gray-400 mt-1">Comparte esta contraseña con todos los miembros del equipo.</p>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del sándwich *</label>
+            <input value={form.sandwich_name} onChange={(e) => set('sandwich_name', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-headline text-lg font-bold text-secondary">Miembros</h2>
-              {form.members.length < 3 && (
-                <button
-                  type="button"
-                  onClick={addMember}
-                  className="text-sm text-primary font-medium hover:text-primary-dark"
-                >
-                  + Agregar miembro
-                </button>
-              )}
-            </div>
-
-            {form.members.map((member, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={member}
-                  onChange={(e) => updateMember(i, e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder={`Miembro ${i + 1}`}
-                />
-                {form.members.length > 2 && (
-                  <button
-                    type="button"
-                    onClick={() => removeMember(i)}
-                    className="text-gray-400 hover:text-red-500 p-1"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-            <p className="text-xs text-gray-400">Mínimo 2, máximo 3 miembros por equipo.</p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email del capitán *</label>
+            <input type="email" value={form.captain_email} onChange={(e) => set('captain_email', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <h2 className="font-headline text-lg font-bold text-secondary">Equipamento</h2>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Necesidades especiales (opcional)</label>
-              <textarea
-                value={form.equipment_needs}
-                onChange={(e) => updateField('equipment_needs', e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[80px]"
-                placeholder="Ej: Necesitamos acceso a electricidad extra para una freidora..."
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña del equipo *</label>
+            <input type="password" value={form.password} onChange={(e) => set('password', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
           </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? 'Registrando...' : 'Registrar Equipo'}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Miembros del equipo (2–3) *</label>
+            <div className="space-y-2">
+              {form.members.map((m, i) => (
+                <div key={i} className="flex gap-2">
+                  <input
+                    value={m}
+                    onChange={(e) => setMember(i, e.target.value)}
+                    placeholder={`Miembro ${i + 1}`}
+                    className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    required
+                  />
+                  {form.members.length > 2 && (
+                    <button type="button" onClick={() => removeMember(i)} className="text-red-400 hover:text-red-600 px-2">✕</button>
+                  )}
+                </div>
+              ))}
+            </div>
+            {form.members.length < 3 && (
+              <button type="button" onClick={addMember} className="mt-2 text-sm text-primary hover:underline">+ Agregar miembro</button>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Equipamiento que necesitan (opcional)</label>
+            <textarea value={form.equipment_needs} onChange={(e) => set('equipment_needs', e.target.value)} rows={2} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
+          </div>
+
+          <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2.5 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50">
+            {loading ? 'Registrando...' : 'Registrar Equipo'}
           </button>
         </form>
+        <p className="text-center text-sm text-gray-500 mt-4">
+          <Link to="/" className="text-primary hover:underline">Volver al inicio</Link>
+        </p>
       </div>
     </div>
   )

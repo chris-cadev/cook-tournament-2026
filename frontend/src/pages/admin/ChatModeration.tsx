@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
+import AdminNavbar from '../../components/admin/AdminNavbar'
 
 interface ChatMessage {
   id: number
@@ -8,6 +9,8 @@ interface ChatMessage {
   sender_name: string
   sender_role: string
   content: string
+  attachment_url: string | null
+  attachment_type: string | null
   created_at: string
 }
 
@@ -83,21 +86,16 @@ export default function ChatModeration() {
     return () => clearInterval(interval)
   }, [fetchMessages])
 
-  const deleteMessage = async (messageId: number) => {
+  const deleteMessage = async (msg: ChatMessage) => {
     if (!token || !confirm('Delete this message?')) return
     try {
-      let channel = 'global'
-      if (activeTab === 'team' && selectedTeamId) {
-        channel = `team:${selectedTeamId}`
-      } else if (activeTab === 'judge') {
-        channel = 'judge'
-      }
-      const res = await fetch(`/api/chat/${channel}/messages/${messageId}`, {
+      const channel = msg.channel === 'global' ? 'global' : msg.channel
+      const res = await fetch(`/api/chat/${channel}/messages/${msg.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
       if (res.ok) {
-        setMessages(prev => prev.filter(m => m.id !== messageId))
+        setMessages(prev => prev.filter(m => m.id !== msg.id))
       }
     } catch (err) {
       console.error('Failed to delete message:', err)
@@ -127,6 +125,7 @@ export default function ChatModeration() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <AdminNavbar />
       <div className="max-w-[1200px] mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
@@ -198,9 +197,15 @@ export default function ChatModeration() {
                         <span className="text-xs text-gray-400">{formatTime(msg.created_at)}</span>
                       </div>
                       <p className="text-gray-800 text-sm break-words">{msg.content}</p>
+                      {msg.attachment_url && msg.attachment_type === 'image' && (
+                        <img src={msg.attachment_url} alt="attachment" className="mt-2 max-w-xs rounded-xl" />
+                      )}
+                      {msg.attachment_url && msg.attachment_type === 'audio' && (
+                        <audio controls src={msg.attachment_url} className="mt-2 max-w-xs" />
+                      )}
                     </div>
                     <button
-                      onClick={() => deleteMessage(msg.id)}
+                      onClick={() => deleteMessage(msg)}
                       className="opacity-0 group-hover:opacity-100 p-1 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                       title="Delete message"
                     >

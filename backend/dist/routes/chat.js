@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { validateChannelAccess, requireAdmin } from '../middleware/chat.js';
 import { getDb, saveDb } from '../db.js';
-import { getIO } from '../socket.js';
 const router = Router();
 function rowsToArray(rows) {
     if (rows.length === 0)
@@ -47,14 +46,10 @@ router.post('/global/messages', (req, res) => {
     const name = (sender_name && typeof sender_name === 'string' && sender_name.trim()) || 'Anonymous';
     const db = getDb();
     db.run('INSERT INTO chat_messages (channel, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?)', ['global', name, 'guest', content.trim(), attachment_url || null, attachment_type || null]);
+    saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];
     const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [id]));
-    saveDb();
-    try {
-        getIO().to('chat:global').emit('chat:new', { message });
-    }
-    catch { }
     res.status(201).json({ message });
 });
 // GET /api/chat/team/:teamId/messages
@@ -96,14 +91,10 @@ router.post('/team/:teamId/messages', authMiddleware, validateChannelAccess, (re
         attachment_url || null,
         attachment_type || null,
     ]);
+    saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];
     const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [id]));
-    saveDb();
-    try {
-        getIO().to(`chat:${channel}`).emit('chat:new', { message });
-    }
-    catch { }
     res.status(201).json({ message });
 });
 // GET /api/chat/judge/messages
@@ -141,14 +132,10 @@ router.post('/judge/messages', authMiddleware, validateChannelAccess, (req, res)
         attachment_url || null,
         attachment_type || null,
     ]);
+    saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];
     const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [id]));
-    saveDb();
-    try {
-        getIO().to('chat:judge').emit('chat:new', { message });
-    }
-    catch { }
     res.status(201).json({ message });
 });
 // GET /api/chat/teams (admin: list teams for moderation)

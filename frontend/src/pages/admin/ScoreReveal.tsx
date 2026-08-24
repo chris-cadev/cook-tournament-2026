@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { toast } from '../../components/ui/Toast'
+import { useToastStore } from '../../stores/toastStore'
+import AdminNavbar from '../../components/admin/AdminNavbar'
 
 interface CategoryStatus {
   category: string
@@ -9,6 +10,7 @@ interface CategoryStatus {
 
 export default function ScoreReveal() {
   const { token } = useAuthStore()
+  const addToast = useToastStore((s) => s.add)
   const [categories, setCategories] = useState<CategoryStatus[]>([])
   const [revealedCount, setRevealedCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -48,7 +50,7 @@ export default function ScoreReveal() {
 
       if (!res.ok) {
         const err = await res.json()
-        alert(err.error || 'Failed to reveal category')
+        addToast(err.error || 'Failed to reveal category', 'error')
         return
       }
 
@@ -56,10 +58,10 @@ export default function ScoreReveal() {
         prev.map(c => (c.category === category ? { ...c, revealed: true } : c))
       )
       setRevealedCount(prev => prev + 1)
-      toast.success(`¡Puntuaciones de "${category}" reveladas!`)
+      addToast(`Scores revealed: ${category}`, 'success')
     } catch (err) {
       console.error('Failed to reveal category:', err)
-      alert('Network error — try again')
+      addToast('Network error — try again', 'error')
     } finally {
       setRevealing(null)
     }
@@ -78,6 +80,7 @@ export default function ScoreReveal() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <AdminNavbar />
       <div className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="font-headline text-3xl font-black text-secondary mb-2">
           Score Reveal Control

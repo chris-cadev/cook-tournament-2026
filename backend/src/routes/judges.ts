@@ -20,6 +20,15 @@ function rowsToObject(rows: any[]): Record<string, any> {
   return obj
 }
 
+router.get('/teams', authMiddleware, (req: Request, res: Response) => {
+  if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Judge or admin access required' })
+  }
+  const db = getDb()
+  const rows = db.exec('SELECT id, name, sandwich_name, status FROM teams WHERE status = ? ORDER BY name', ['confirmed'])
+  res.json(rowsToArray(rows))
+})
+
 router.get('/rubric', authMiddleware, (req: Request, res: Response) => {
   if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Judge or admin access required' })
@@ -44,21 +53,34 @@ router.post('/scores', authMiddleware, (req: Request, res: Response) => {
 
   const db = getDb()
 
+  const configRows = db.exec('SELECT scoring_categories FROM event_config WHERE id = 1')
+  const config = rowsToObject(configRows)
+  const validCategories: string[] = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
+
   for (const s of scores) {
-    if (typeof s.value !== 'number' || s.value < 1 || s.value > 10) {
-      return res.status(400).json({ error: `Invalid score value for category: ${s.category} (must be 1-10)` })
+    if (!validCategories.includes(s.category)) {
+      return res.status(400).json({ error: `Invalid category: ${s.category}` })
     }
-    try {
+    if (typeof s.value !== 'number' || s.value < 1 || s.value > 10 || !Number.isInteger(s.value)) {
+      return res.status(400).json({ error: `Score value must be an integer between 1 and 10` })
+    }
+  }
+
+  try {
+    db.run('BEGIN')
+    for (const s of scores) {
       db.run(
         'INSERT INTO scores (team_id, judge_anonymous_id, category, value, notes) VALUES (?, ?, ?, ?, ?)',
         [team_id, req.user!.anonymous_id, s.category, s.value, s.notes || null]
       )
-    } catch (e: any) {
-      if (e.message?.includes('UNIQUE constraint')) {
-        return res.status(409).json({ error: `Score already submitted for category: ${s.category}` })
-      }
-      throw e
     }
+    db.run('COMMIT')
+  } catch (e: any) {
+    db.run('ROLLBACK')
+    if (e.message?.includes('UNIQUE constraint')) {
+      return res.status(409).json({ error: 'Score already submitted' })
+    }
+    throw e
   }
 
   saveDb()
@@ -72,18 +94,18 @@ router.get('/scores/:teamId', authMiddleware, (req: Request, res: Response) => {
 
   const db = getDb()
   let rows
-  if (req.user?.role === 'judge') {
-    rows = db.exec(
-      'SELECT * FROM scores WHERE team_id = ? AND judge_anonymous_id = ? ORDER BY category',
-      [req.params.teamId, req.user!.anonymous_id]
-    )
-  } else {
+  if (req.user?.role === 'admin') {
     rows = db.exec(
       'SELECT * FROM scores WHERE team_id = ? ORDER BY category, judge_anonymous_id',
       [req.params.teamId]
     )
+  } else {
+    rows = db.exec(
+      'SELECT * FROM scores WHERE team_id = ? AND judge_anonymous_id = ? ORDER BY category',
+      [req.params.teamId, req.user!.anonymous_id]
+    )
   }
-  res.json({ scores: rowsToArray(rows) })
+  res.json(rowsToArray(rows))
 })
 
 export default router

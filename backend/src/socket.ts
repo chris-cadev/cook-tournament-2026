@@ -18,6 +18,8 @@ function rowsToObject(rows: any[]): Record<string, any> | null {
 function validateChannelAccess(user: AuthUser, channel: string): boolean {
   if (channel === 'global') return true
 
+  if (user.role === 'guest') return false
+
   if (channel.startsWith('team:')) {
     const channelId = parseInt(channel.split(':')[1], 10)
     if (isNaN(channelId)) return false
@@ -31,15 +33,6 @@ function validateChannelAccess(user: AuthUser, channel: string): boolean {
   }
 
   return false
-}
-
-function rowsToArray(rows: any[]): Record<string, any>[] {
-  if (rows.length === 0) return []
-  return rows[0].values.map((vals: any[]) => {
-    const obj: Record<string, any> = {}
-    rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
-    return obj
-  })
 }
 
 export function initSocket(httpServer: HttpServer) {
@@ -61,8 +54,7 @@ export function initSocket(httpServer: HttpServer) {
       socket.data.user = decoded
       next()
     } catch {
-      socket.data.user = { role: 'guest' } as AuthUser
-      next()
+      next(new Error('Invalid token'))
     }
   })
 
@@ -80,18 +72,24 @@ export function initSocket(httpServer: HttpServer) {
 
       const db = getDb()
       const rows = db.exec(
-        'SELECT * FROM chat_messages WHERE channel = ? ORDER BY created_at ASC LIMIT 100',
+        'SELECT * FROM chat_messages WHERE channel = ? ORDER BY created_at DESC LIMIT 50',
         [data.channel]
       )
-      const messages = rowsToArray(rows)
-      socket.emit('chat:history', { channel: data.channel, messages })
+      if (rows.length > 0 && rows[0].values.length > 0) {
+        const messages = rows[0].values.map((vals: any[]) => {
+          const obj: Record<string, any> = {}
+          rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
+          return obj
+        }).reverse()
+        socket.emit('chat:history', { channel: data.channel, messages })
+      }
     })
 
     socket.on('chat:leave', (data: { channel: string }) => {
       socket.leave(`chat:${data.channel}`)
     })
 
-    socket.on('chat:message', (data: { channel: string; content: string; attachment_url?: string; attachment_type?: string }) => {
+    socket.on('chat:message', (data: { channel: string; content: string }) => {
       if (!validateChannelAccess(user, data.channel)) {
         socket.emit('chat:error', { error: 'Access denied to this channel' })
         return
@@ -110,22 +108,20 @@ export function initSocket(httpServer: HttpServer) {
       const db = getDb()
 
       db.run(
-        'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)',
         [
           data.channel,
           user.id || user.team_id || user.anonymous_id || null,
           user.name || user.email || user.anonymous_id || 'Unknown',
           user.role,
           data.content.trim(),
-          data.attachment_url || null,
-          data.attachment_type || null,
         ]
       )
+      saveDb()
 
       const idRows = db.exec('SELECT last_insert_rowid() as id')
       const messageId = idRows[0].values[0][0]
       const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [messageId]))
-      saveDb()
 
       io.to(`chat:${data.channel}`).emit('chat:new', { message })
     })

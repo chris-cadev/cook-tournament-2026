@@ -1,90 +1,48 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '../stores/authStore'
 
-interface LeaderboardEntry {
-  team_id: number
-  team_name: string
+interface Team {
+  id: number
+  name: string
   sandwich_name: string
+  status: string
 }
 
-interface RubricData {
-  categories: string[]
-}
-
-interface ScoreItem {
+interface Category {
   category: string
-  value: number
-  notes?: string
 }
 
-interface ExistingScore {
-  team_id: number
-  team_name: string
-  scores: Record<string, { value: number; notes?: string }>
+interface ScoresByTeam {
+  [teamId: number]: { [category: string]: { value: number; notes: string } }
 }
 
 export default function JudgePanel() {
-  const { token, user, login } = useAuthStore()
-  const isJudge = token && user?.role === 'judge'
-
-  const [password, setPassword] = useState('')
-  const [loginError, setLoginError] = useState('')
-  const [loggingIn, setLoggingIn] = useState(false)
-
+  const { token } = useAuthStore()
+  const [teams, setTeams] = useState<Team[]>([])
   const [categories, setCategories] = useState<string[]>([])
-  const [teams, setTeams] = useState<LeaderboardEntry[]>([])
+  const [scores, setScores] = useState<ScoresByTeam>({})
+  const [submitted, setSubmitted] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
-
-  const [scores, setScores] = useState<Record<number, Record<string, number>>>({})
-  const [notes, setNotes] = useState<Record<number, Record<string, string>>>({})
   const [submitting, setSubmitting] = useState<number | null>(null)
-  const [submitMsg, setSubmitMsg] = useState<{ teamId: number; ok: boolean; msg: string } | null>(null)
-
-  const [history, setHistory] = useState<ExistingScore[]>([])
-  const [historyLoading, setHistoryLoading] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoggingIn(true)
-    setLoginError('')
-    try {
-      const res = await fetch('/api/auth/judge/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-      if (!res.ok) {
-        setLoginError('Contraseña inválida')
-        return
-      }
-      const data = await res.json()
-      login(data.token, { anonymous_id: data.anonymous_id, role: data.role })
-    } catch {
-      setLoginError('Contraseña inválida')
-    } finally {
-      setLoggingIn(false)
-    }
-  }
+  const [error, setError] = useState('')
 
   const fetchData = useCallback(async () => {
     if (!token) return
-    setLoading(true)
     try {
-      const [rubricRes, lbRes] = await Promise.all([
+      const [teamsRes, rubricRes] = await Promise.all([
+        fetch('/api/judges/teams', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/judges/rubric', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/scores/leaderboard'),
       ])
+      if (teamsRes.ok) {
+        const allTeams = await teamsRes.json()
+        setTeams(allTeams)
+      }
       if (rubricRes.ok) {
-        const rubric: RubricData = await rubricRes.json()
-        setCategories(rubric.categories)
+        const rubric = await rubricRes.json()
+        setCategories(rubric.categories || [])
       }
-      if (lbRes.ok) {
-        const lb = await lbRes.json()
-        setTeams(lb.leaderboard.map((e: LeaderboardEntry) => ({ team_id: e.team_id, team_name: e.team_name, sandwich_name: e.sandwich_name })))
-      }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error('Failed to fetch data:', err)
     } finally {
       setLoading(false)
     }
@@ -92,257 +50,143 @@ export default function JudgePanel() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const setScore = (teamId: number, cat: string, val: number) => {
-    setScores(prev => ({
+  const setScore = (teamId: number, category: string, value: number) => {
+    setScores((prev) => ({
       ...prev,
-      [teamId]: { ...prev[teamId], [cat]: val },
+      [teamId]: { ...prev[teamId], [category]: { ...prev[teamId]?.[category], value, notes: prev[teamId]?.[category]?.notes || '' } },
     }))
   }
 
-  const setNote = (teamId: number, cat: string, val: string) => {
-    setNotes(prev => ({
+  const setNotes = (teamId: number, category: string, notes: string) => {
+    setScores((prev) => ({
       ...prev,
-      [teamId]: { ...prev[teamId], [cat]: val },
+      [teamId]: { ...prev[teamId], [category]: { ...prev[teamId]?.[category], notes, value: prev[teamId]?.[category]?.value || 5 } },
     }))
   }
 
-  const submitTeam = async (teamId: number) => {
-    if (!token) return
+  const handleSubmit = async (teamId: number) => {
+    const teamScores = scores[teamId]
+    if (!teamScores) return
+
+    const scoresArr = categories
+      .filter((c) => teamScores[c]?.value)
+      .map((c) => ({ category: c, value: teamScores[c].value, notes: teamScores[c].notes || '' }))
+
+    if (scoresArr.length === 0) return
+
     setSubmitting(teamId)
-    setSubmitMsg(null)
-    const teamScores = categories
-      .filter(cat => scores[teamId]?.[cat] != null)
-      .map(cat => ({
-        category: cat,
-        value: scores[teamId][cat],
-        notes: notes[teamId]?.[cat] || undefined,
-      }))
+    setError('')
     try {
       const res = await fetch('/api/judges/scores', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ team_id: teamId, scores: teamScores }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ team_id: teamId, scores: scoresArr }),
       })
-      if (res.ok) {
-        setSubmitMsg({ teamId, ok: true, msg: 'Puntuación enviada' })
-      } else if (res.status === 409) {
-        setSubmitMsg({ teamId, ok: false, msg: 'Ya puntuaste esta categoría' })
-      } else {
-        setSubmitMsg({ teamId, ok: false, msg: 'Error al enviar' })
+      if (!res.ok) {
+        const data = await res.json()
+        if (res.status === 409) {
+          setSubmitted((prev) => new Set(prev).add(teamId))
+          setError(`Ya calificaste a ${teams.find(t => t.id === teamId)?.name || 'este equipo'}.`)
+        } else {
+          setError(data.error || 'Submit failed')
+        }
+        return
       }
+      setSubmitted((prev) => new Set(prev).add(teamId))
     } catch {
-      setSubmitMsg({ teamId, ok: false, msg: 'Error de red' })
+      setError('Network error')
     } finally {
       setSubmitting(null)
     }
   }
 
-  const fetchHistory = async () => {
-    if (!token || teams.length === 0) return
-    setHistoryLoading(true)
-    try {
-      const results = await Promise.all(
-        teams.map(async (t) => {
-          const res = await fetch(`/api/judges/scores/${t.team_id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          if (!res.ok) return { team_id: t.team_id, team_name: t.team_name, scores: {} }
-          const data = await res.json()
-          const map: Record<string, { value: number; notes?: string }> = {}
-          for (const s of data.scores || []) {
-            map[s.category] = { value: s.value, notes: s.notes }
-          }
-          return { team_id: t.team_id, team_name: t.team_name, scores: map }
-        })
-      )
-      setHistory(results)
-    } catch {
-      // ignore
-    } finally {
-      setHistoryLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (showHistory && isJudge) fetchHistory()
-  }, [showHistory, isJudge, teams])
-
-  if (!isJudge) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-sm">
-          <h1 className="font-headline text-2xl font-black text-secondary text-center mb-6">
-            Panel de Juez
-          </h1>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña de juez
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full px-4 py-2 rounded-2xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                required
-              />
-            </div>
-            {loginError && (
-              <p className="text-error text-sm text-center">{loginError}</p>
-            )}
-            <button
-              type="submit"
-              disabled={loggingIn}
-              className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50"
-            >
-              {loggingIn ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
-        </div>
-      </div>
-    )
-  }
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
-      </div>
-    )
+    return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" /></div>
   }
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="font-headline text-3xl font-black text-secondary">
-            Panel de Juez
-          </h1>
-          <button
-            onClick={() => { setShowHistory(!showHistory); if (!showHistory) fetchHistory() }}
-            className="text-sm text-primary-dark hover:text-primary font-semibold"
-          >
-            {showHistory ? 'Ocultar historial' : 'Ver historial'}
-          </button>
-        </div>
+      <div className="max-w-[1200px] mx-auto px-4 py-6">
+        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Panel de Juez</h1>
+        <p className="text-gray-500 mb-6">Califica cada sándwich en las categorías configuradas.</p>
 
-        {categories.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="font-headline text-lg font-bold text-secondary mb-3">Rúbrica de Puntuación</h2>
-            <div className="flex flex-wrap gap-3">
-              {categories.map(cat => (
-                <span key={cat} className="bg-primary/10 text-primary-dark text-sm font-semibold px-3 py-1 rounded-2xl">
-                  {cat}
-                </span>
-              ))}
-            </div>
+        {error && (
+          <div className={`text-sm rounded-xl px-4 py-2 mb-4 ${error.includes('Ya calificaste') ? 'text-amber-700 bg-amber-50 border border-amber-200' : 'text-red-600 bg-red-50'}`}>
+            {error}
           </div>
         )}
 
-        {showHistory && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="font-headline text-lg font-bold text-secondary">Historial de Puntuaciones</h2>
-            </div>
-            {historyLoading ? (
-              <div className="p-6 text-center text-gray-500">Cargando...</div>
-            ) : history.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">Sin puntuaciones registradas</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-secondary/5">
-                      <th className="text-left px-4 py-2 font-headline font-bold text-secondary">Equipo</th>
-                      {categories.map(cat => (
-                        <th key={cat} className="text-center px-3 py-2 font-headline font-bold text-secondary">{cat}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {history.map(h => (
-                      <tr key={h.team_id} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 font-semibold">{h.team_name}</td>
-                        {categories.map(cat => (
-                          <td key={cat} className="px-3 py-2 text-center">
-                            {h.scores[cat] ? (
-                              <div>
-                                <span className="font-bold">{h.scores[cat].value}</span>
-                                {h.scores[cat].notes && (
-                                  <p className="text-xs text-gray-400 mt-0.5">{h.scores[cat].notes}</p>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-gray-300">—</span>
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {teams.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 bg-white rounded-2xl">
-            No hay equipos para puntuar.
-          </div>
+        {categories.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">No scoring categories configured yet.</p>
         ) : (
-          teams.map(team => (
-            <div key={team.team_id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                  <h3 className="font-headline text-lg font-bold text-secondary">{team.team_name}</h3>
-                  <p className="text-sm text-gray-500">{team.sandwich_name}</p>
-                </div>
-                {submitMsg?.teamId === team.team_id && (
-                  <span className={`text-sm font-semibold ${submitMsg.ok ? 'text-tertiary' : 'text-error'}`}>
-                    {submitMsg.msg}
-                  </span>
-                )}
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {categories.map(cat => (
-                    <div key={cat} className="space-y-1">
-                      <label className="text-sm font-medium text-gray-700">{cat}</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={10}
-                        value={scores[team.team_id]?.[cat] ?? ''}
-                        onChange={e => setScore(team.team_id, cat, Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-2xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary text-center font-bold"
-                        placeholder="1–10"
-                      />
-                      <input
-                        type="text"
-                        value={notes[team.team_id]?.[cat] ?? ''}
-                        onChange={e => setNote(team.team_id, cat, e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-2xl border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                        placeholder="Notas (opcional)"
-                      />
+          <div className="space-y-6">
+            {teams.map((team) => {
+              const isSubmitted = submitted.has(team.id)
+              return (
+                <div key={team.id} className={`bg-white rounded-2xl shadow-sm border p-6 ${isSubmitted ? 'border-green-200 bg-green-50/30' : 'border-gray-100'}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="font-headline text-xl font-bold text-secondary">{team.name}</h2>
+                      <p className="text-sm text-gray-500">{team.sandwich_name}</p>
                     </div>
-                  ))}
+                    {isSubmitted && <span className="text-sm font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">✓ Enviado</span>}
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="text-left px-3 py-2 font-bold text-secondary">Categoría</th>
+                          <th className="text-center px-3 py-2 font-bold text-secondary w-24">Puntos (1–10)</th>
+                          <th className="text-left px-3 py-2 font-bold text-secondary">Notas</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {categories.map((cat) => (
+                          <tr key={cat}>
+                            <td className="px-3 py-2 font-medium" title={`Califica el "${cat}" de 1 a 10 puntos`}>{cat}</td>
+                            <td className="px-3 py-2 text-center">
+                              <input
+                                type="number"
+                                min={1}
+                                max={10}
+                                value={scores[team.id]?.[cat]?.value || ''}
+                                onChange={(e) => setScore(team.id, cat, parseInt(e.target.value) || 1)}
+                                disabled={isSubmitted}
+                                className="w-16 border border-gray-300 rounded-lg px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                value={scores[team.id]?.[cat]?.notes || ''}
+                                onChange={(e) => setNotes(team.id, cat, e.target.value)}
+                                disabled={isSubmitted}
+                                placeholder="Optional"
+                                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {!isSubmitted && (
+                    <div className="mt-4 text-right">
+                      <button
+                        onClick={() => handleSubmit(team.id)}
+                        disabled={submitting === team.id}
+                        className="bg-primary text-white font-bold px-5 py-2 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50"
+                      >
+                        {submitting === team.id ? 'Enviando...' : 'Enviar Puntuación'}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div className="mt-4 flex justify-end">
-                  <button
-                    onClick={() => submitTeam(team.team_id)}
-                    disabled={submitting === team.team_id}
-                    className="bg-tertiary hover:bg-tertiary/90 text-white font-headline font-bold px-6 py-2.5 rounded-2xl transition-colors disabled:opacity-50"
-                  >
-                    {submitting === team.team_id ? 'Enviando...' : 'Enviar puntuación'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+              )
+            })}
+            {teams.length === 0 && <p className="text-gray-500 text-center py-8">No confirmed teams yet.</p>}
+          </div>
         )}
       </div>
     </div>

@@ -42,57 +42,27 @@ router.get('/', (_req: Request, res: Response) => {
 })
 
 router.put('/', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
-  const {
-    event_date,
-    event_title,
-    event_description,
-    rules,
-    scoring_categories,
-    judge_password,
-    team_password,
-    landing_page_content,
-  } = req.body
-
   const db = getDb()
+  const { event_date, event_title, event_description, rules, scoring_categories, judge_password, team_password, landing_page_content } = req.body
 
-  const existing = db.exec('SELECT id FROM event_config WHERE id = 1')
-  if (existing.length === 0 || existing[0].values.length === 0) {
-    const judgeHash = judge_password ? bcrypt.hashSync(judge_password, 10) : null
-    const teamHash = team_password ? bcrypt.hashSync(team_password, 10) : null
-    db.run(
-      `INSERT INTO event_config (id, event_date, event_title, event_description, rules, scoring_categories, judge_password, team_password, landing_page_content)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        event_date || null,
-        event_title || 'The Crust Competition 2026',
-        event_description || '',
-        rules || '',
-        JSON.stringify(scoring_categories || []),
-        judgeHash,
-        teamHash,
-        landing_page_content || '',
-      ]
-    )
-  } else {
-    const updates: string[] = []
-    const params: any[] = []
+  const updates: string[] = []
+  const params: any[] = []
 
-    if (event_date !== undefined) { updates.push('event_date = ?'); params.push(event_date) }
-    if (event_title !== undefined) { updates.push('event_title = ?'); params.push(event_title) }
-    if (event_description !== undefined) { updates.push('event_description = ?'); params.push(event_description) }
-    if (rules !== undefined) { updates.push('rules = ?'); params.push(rules) }
-    if (scoring_categories !== undefined) { updates.push('scoring_categories = ?'); params.push(JSON.stringify(scoring_categories)) }
-    if (judge_password !== undefined) { updates.push('judge_password = ?'); params.push(bcrypt.hashSync(judge_password, 10)) }
-    if (team_password !== undefined) { updates.push('team_password = ?'); params.push(bcrypt.hashSync(team_password, 10)) }
-    if (landing_page_content !== undefined) { updates.push('landing_page_content = ?'); params.push(landing_page_content) }
+  if (event_date !== undefined) { updates.push('event_date = ?'); params.push(event_date) }
+  if (event_title !== undefined) { updates.push('event_title = ?'); params.push(event_title) }
+  if (event_description !== undefined) { updates.push('event_description = ?'); params.push(event_description) }
+  if (rules !== undefined) { updates.push('rules = ?'); params.push(rules) }
+  if (scoring_categories !== undefined) { updates.push('scoring_categories = ?'); params.push(JSON.stringify(scoring_categories)) }
+  if (landing_page_content !== undefined) { updates.push('landing_page_content = ?'); params.push(landing_page_content) }
+  if (judge_password !== undefined && judge_password !== '') { updates.push('judge_password = ?'); params.push(bcrypt.hashSync(judge_password, 10)) }
+  if (team_password !== undefined && team_password !== '') { updates.push('team_password = ?'); params.push(bcrypt.hashSync(team_password, 10)) }
 
-    if (updates.length > 0) {
-      updates.push('updated_at = datetime("now")')
-      params.push(1)
-      db.run(`UPDATE event_config SET ${updates.join(', ')} WHERE id = ?`, params)
-    }
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No fields to update' })
   }
 
+  updates.push("updated_at = datetime('now')")
+  db.run(`UPDATE event_config SET ${updates.join(', ')} WHERE id = 1`, params)
   saveDb()
   res.json({ ok: true })
 })
