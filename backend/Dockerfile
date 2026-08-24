@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 FROM node:20-alpine
 
 WORKDIR /app
@@ -36,6 +37,8 @@ EXPOSE 3001
 CMD ["node", "backend/dist/index.js"]
 >>>>>>> orchestrator/task-3-milestone-3-team-dashboard
 =======
+=======
+>>>>>>> orchestrator/task-6-milestone-6-score-reveal-ux
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -51,4 +54,7 @@ COPY --from=builder /app/dist ./dist
 RUN mkdir -p data
 EXPOSE 3001
 CMD ["node", "dist/index.js"]
+<<<<<<< HEAD
+>>>>>>> orchestrator/task-6-milestone-6-score-reveal-ux
+=======
 >>>>>>> orchestrator/task-6-milestone-6-score-reveal-ux
