@@ -7,9 +7,10 @@ import express from 'express'
 import cors from 'cors'
 import { createServer } from 'http'
 import { initSocket } from './socket.js'
-import { initDb } from './db.js'
+import { initDb, getDb, saveDb } from './db.js'
 import { runMigrations } from './migrate.js'
 import { seedAdmin, seedEventConfig } from './seed.js'
+import { sendEmail, markdownToHtml, loadTemplates } from './email.js'
 
 import authRoutes from './routes/auth.js'
 import configRoutes from './routes/config.js'
@@ -27,6 +28,9 @@ import todoRoutes from './routes/todo.js'
 import guestsRoutes from './routes/guests.js'
 import joinRequestsRoutes from './routes/join-requests.js'
 import notesRoutes from './routes/notes.js'
+import adminJudgesRoutes from './routes/admin-judges.js'
+import adminTasksRoutes from './routes/admin-tasks.js'
+import adminTeamsRoutes from './routes/admin-teams.js'
 
 const app = express()
 const server = createServer(app)
@@ -52,6 +56,9 @@ app.use('/api/todo', todoRoutes)
 app.use('/api/guests', guestsRoutes)
 app.use('/api/join-requests', joinRequestsRoutes)
 app.use('/api/teams', notesRoutes)
+app.use('/api/admin/judges', adminJudgesRoutes)
+app.use('/api/admin/tasks', adminTasksRoutes)
+app.use('/api/admin/teams', adminTeamsRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
@@ -71,3 +78,48 @@ start().catch((err) => {
   console.error('Failed to start server:', err)
   process.exit(1)
 })
+
+// Email scheduler — check every 60s
+setInterval(async () => {
+  try {
+    const db = getDb()
+    const rows = db.exec("SELECT id, template_id, recipient_filter FROM email_schedules WHERE status = 'pending' AND scheduled_at <= datetime('now')")
+    if (rows.length === 0 || rows[0].values.length === 0) return
+
+    const templates = loadTemplates()
+    for (const row of rows[0].values) {
+      const [scheduleId, templateId, recipientFilter] = row
+      const template = templates.find(t => t.id === templateId)
+      if (!template) {
+        db.run("UPDATE email_schedules SET status = 'failed' WHERE id = ?", [scheduleId])
+        continue
+      }
+
+      let recipientEmails: string[] = []
+      if (recipientFilter === 'all_teams') {
+        const teamRows = db.exec('SELECT captain_email FROM teams')
+        if (teamRows.length > 0) recipientEmails = teamRows[0].values.map(r => r[0] as string)
+      } else if (recipientFilter === 'all_judges') {
+        const judgeRows = db.exec("SELECT email FROM users WHERE role = 'judge'")
+        if (judgeRows.length > 0) recipientEmails = judgeRows[0].values.map(r => r[0] as string)
+      }
+
+      for (const email of recipientEmails) {
+        db.run('INSERT INTO email_logs (template_id, recipient_email) VALUES (?, ?)', [templateId, email])
+        const logIdRows = db.exec('SELECT last_insert_rowid() as id')
+        const logId = logIdRows[0].values[0][0] as number
+
+        const vars = { team_name: '', captain_name: '', captain_email: email, event_title: 'The Crust Competition 2026', event_date: '' }
+        const subject = template.subject.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`)
+        const htmlBody = markdownToHtml(template.body.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`))
+
+        await sendEmail(email, subject, htmlBody, logId)
+      }
+
+      db.run("UPDATE email_schedules SET status = 'sent' WHERE id = ?", [scheduleId])
+    }
+    saveDb()
+  } catch (err) {
+    console.error('Email scheduler error:', err)
+  }
+}, 60_000)

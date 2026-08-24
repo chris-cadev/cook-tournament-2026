@@ -42,11 +42,17 @@ export async function sendEmail(
   to: string,
   subject: string,
   html: string,
+  logId?: number,
 ): Promise<{ ok: boolean; error?: string }> {
   const t = getTransporter()
   if (!t) return { ok: false, error: 'SMTP not configured' }
   try {
-    await t.sendMail({ from: process.env.SMTP_USER, to, subject, html })
+    let finalHtml = html
+    if (logId) {
+      const pixelUrl = `${process.env.API_URL || 'http://localhost:3001'}/api/email/pixel/${logId}`
+      finalHtml += `<img src="${pixelUrl}" width="1" height="1" style="display:none" alt="" />`
+    }
+    await t.sendMail({ from: process.env.SMTP_USER, to, subject, html: finalHtml })
     return { ok: true }
   } catch (err: any) {
     console.error('Email send error:', err)

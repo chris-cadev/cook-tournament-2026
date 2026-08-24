@@ -1,9 +1,18 @@
 import { Router, Request, Response } from 'express'
 import { authMiddleware, requireRole } from '../middleware/auth.js'
-import { getDb } from '../db.js'
+import { getDb, saveDb } from '../db.js'
 import { loadTemplates, saveTemplates, sendEmail, markdownToHtml } from '../email.js'
 
 const router = Router()
+
+function rowsToArray(rows: any[]): Record<string, any>[] {
+  if (rows.length === 0) return []
+  return rows[0].values.map((vals: any[]) => {
+    const obj: Record<string, any> = {}
+    rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
+    return obj
+  })
+}
 
 // GET /api/admin/email/templates
 router.get('/templates', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
@@ -96,7 +105,11 @@ router.post('/send', authMiddleware, requireRole('admin'), async (req: Request, 
     const subject = template.subject.replace(/\{\{(\w+)\}\}/g, (_, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`)
     const htmlBody = markdownToHtml(template.body.replace(/\{\{(\w+)\}\}/g, (_, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`))
 
-    const result = await sendEmail(r.email, subject, htmlBody)
+    db.run('INSERT INTO email_logs (template_id, recipient_email) VALUES (?, ?)', [template_id, r.email])
+    const logIdRows = db.exec('SELECT last_insert_rowid() as id')
+    const logId = logIdRows[0].values[0][0] as number
+
+    const result = await sendEmail(r.email, subject, htmlBody, logId)
     results.push({ email: r.email, ...result })
   }
 
@@ -197,6 +210,79 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
   }
 
   res.json({ days_until_event: daysUntilEvent, results })
+})
+
+// GET /api/email/pixel/:logId — tracking pixel
+router.get('/pixel/:logId', (req: Request, res: Response) => {
+  const db = getDb()
+  const logId = req.params.logId
+
+  db.run(
+    "UPDATE email_logs SET open_count = open_count + 1, opened_at = COALESCE(opened_at, datetime('now')) WHERE id = ?",
+    [logId]
+  )
+  saveDb()
+
+  const umamiUrl = process.env.UMAMI_URL
+  const umamiWebsiteId = process.env.UMAMI_WEBSITE_ID
+  if (umamiUrl && umamiWebsiteId) {
+    const logRows = db.exec('SELECT template_id, recipient_email FROM email_logs WHERE id = ?', [logId])
+    if (logRows.length > 0 && logRows[0].values.length > 0) {
+      const templateId = logRows[0].values[0][0]
+      const recipient = logRows[0].values[0][1]
+      fetch(`${umamiUrl}/api/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.UMAMI_API_KEY || ''}` },
+        body: JSON.stringify({
+          name: 'email_opened',
+          data: { template_id: templateId, recipient },
+          website_id: umamiWebsiteId,
+        }),
+      }).catch(() => {})
+    }
+  }
+
+  const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
+  res.set({ 'Content-Type': 'image/gif', 'Cache-Control': 'no-store, no-cache, must-revalidate' })
+  res.send(pixel)
+})
+
+// GET /api/admin/email/schedules
+router.get('/schedules', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
+  const db = getDb()
+  const rows = db.exec('SELECT * FROM email_schedules ORDER BY scheduled_at DESC')
+  res.json(rowsToArray(rows))
+})
+
+// POST /api/admin/email/schedules
+router.post('/schedules', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
+  const { template_id, recipient_filter, scheduled_at } = req.body
+  if (!template_id || !recipient_filter || !scheduled_at) {
+    return res.status(400).json({ error: 'template_id, recipient_filter, and scheduled_at required' })
+  }
+
+  const db = getDb()
+  db.run(
+    'INSERT INTO email_schedules (template_id, recipient_filter, scheduled_at) VALUES (?, ?, ?)',
+    [template_id, recipient_filter, scheduled_at]
+  )
+  saveDb()
+  res.status(201).json({ ok: true })
+})
+
+// DELETE /api/admin/email/schedules/:id
+router.delete('/schedules/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
+  const db = getDb()
+  db.run("DELETE FROM email_schedules WHERE id = ? AND status = 'pending'", [req.params.id])
+  saveDb()
+  res.json({ ok: true })
+})
+
+// GET /api/admin/email/logs
+router.get('/logs', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
+  const db = getDb()
+  const rows = db.exec('SELECT * FROM email_logs ORDER BY sent_at DESC LIMIT 100')
+  res.json(rowsToArray(rows))
 })
 
 export default router
