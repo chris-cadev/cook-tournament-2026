@@ -115,43 +115,56 @@ router.patch('/:id/accept', authMiddleware, (req: Request, res: Response) => {
     members: teamRows[0].values[0][3] as string,
   }
 
-  if (req.user?.role !== 'admin' && req.user?.team_id !== team.id) {
+  if (req.user?.role !== 'admin' && req.user?.email !== team.captain_email) {
     return res.status(403).json({ error: 'Only the captain can manage requests' })
   }
 
-  const members: string[] = JSON.parse(team.members || '[]')
+  let members: string[]
+  try {
+    members = JSON.parse(team.members || '[]')
+  } catch {
+    members = []
+  }
   if (members.length >= 3) {
     return res.status(400).json({ error: 'Team is full' })
   }
 
   members.push(request.name)
-  db.run('UPDATE teams SET members = ? WHERE id = ?', [JSON.stringify(members), team.id])
 
-  db.run('UPDATE join_requests SET status = ? WHERE id = ?', ['accepted', request.id])
-
-  const otherPending = db.exec(
-    'SELECT id, name, email FROM join_requests WHERE team_id = ? AND status = ? AND id != ?',
-    [team.id, 'pending', request.id]
-  )
   let rejectedCount = 0
-  if (otherPending.length > 0 && otherPending[0].values.length > 0) {
-    for (const row of otherPending[0].values) {
-      const rId = row[0] as number
-      const rName = row[1] as string
-      const rEmail = row[2] as string
+  db.run('BEGIN')
+  try {
+    db.run('UPDATE teams SET members = ? WHERE id = ?', [JSON.stringify(members), team.id])
+    db.run('UPDATE join_requests SET status = ? WHERE id = ?', ['accepted', request.id])
 
-      db.run('UPDATE join_requests SET status = ? WHERE id = ?', ['rejected', rId])
+    const otherPending = db.exec(
+      'SELECT id, name, email FROM join_requests WHERE team_id = ? AND status = ? AND id != ?',
+      [team.id, 'pending', request.id]
+    )
+    if (otherPending.length > 0 && otherPending[0].values.length > 0) {
+      for (const row of otherPending[0].values) {
+        const rId = row[0] as number
+        const rName = row[1] as string
+        const rEmail = row[2] as string
 
-      const fullHtml = markdownToHtml(
-        `Hola ${rName},\n\n` +
-        `El equipo **${team.name}** ya alcanzó el número máximo de integrantes (3).\n\n` +
-        `Te invitamos a unirte a otro equipo o crear el tuyo:\n` +
-        `- [Unirse a otro equipo](/join)\n` +
-        `- [Registrar equipo](/register)`
-      )
-      sendEmail(rEmail, `El equipo ${team.name} está completo`, fullHtml)
-      rejectedCount++
+        db.run('UPDATE join_requests SET status = ? WHERE id = ?', ['rejected', rId])
+
+        const fullHtml = markdownToHtml(
+          `Hola ${rName},\n\n` +
+          `El equipo **${team.name}** ya alcanzó el número máximo de integrantes (3).\n\n` +
+          `Te invitamos a unirte a otro equipo o crear el tuyo:\n` +
+          `- [Unirse a otro equipo](/join)\n` +
+          `- [Registrar equipo](/register)`
+        )
+        sendEmail(rEmail, `El equipo ${team.name} está completo`, fullHtml)
+        rejectedCount++
+      }
     }
+
+    db.run('COMMIT')
+  } catch (err) {
+    db.run('ROLLBACK')
+    throw err
   }
 
   saveDb()
