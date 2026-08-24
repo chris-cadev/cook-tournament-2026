@@ -186,4 +186,61 @@ router.patch('/:id/accept', authMiddleware, (req: Request, res: Response) => {
   res.json({ success: true, accepted: { name: request.name, email: request.email }, rejected_count: rejectedCount })
 })
 
+router.patch('/:id/reject', authMiddleware, (req: Request, res: Response) => {
+  const db = getDb()
+  const requestId = Number(req.params.id)
+
+  const reqRows = db.exec(
+    'SELECT id, team_id, name, email, status FROM join_requests WHERE id = ?',
+    [requestId]
+  )
+  if (reqRows.length === 0 || reqRows[0].values.length === 0) {
+    return res.status(404).json({ error: 'Request not found' })
+  }
+
+  const request = {
+    id: reqRows[0].values[0][0] as number,
+    team_id: reqRows[0].values[0][1] as number,
+    name: reqRows[0].values[0][2] as string,
+    email: reqRows[0].values[0][3] as string,
+    status: reqRows[0].values[0][4] as string,
+  }
+
+  if (request.status !== 'pending') {
+    return res.status(400).json({ error: 'Request already processed' })
+  }
+
+  const teamRows = db.exec(
+    'SELECT id, name, captain_email FROM teams WHERE id = ?',
+    [request.team_id]
+  )
+  if (teamRows.length === 0 || teamRows[0].values.length === 0) {
+    return res.status(404).json({ error: 'Team not found' })
+  }
+
+  const team = {
+    id: teamRows[0].values[0][0] as number,
+    name: teamRows[0].values[0][1] as string,
+    captain_email: teamRows[0].values[0][2] as string,
+  }
+
+  if (req.user?.role !== 'admin' && req.user?.email !== team.captain_email) {
+    return res.status(403).json({ error: 'Only the captain can manage requests' })
+  }
+
+  db.run('UPDATE join_requests SET status = ? WHERE id = ?', ['rejected', request.id])
+  saveDb()
+
+  const rejectHtml = markdownToHtml(
+    `Hola ${request.name},\n\n` +
+    `Lamentablemente tu solicitud para unirse al equipo **${team.name}** no fue aceptada.\n\n` +
+    `Puedes intentar unirte a otro equipo o crear el tuyo:\n` +
+    `- [Unirse a otro equipo](/join)\n` +
+    `- [Registrar equipo](/register)`
+  )
+  sendEmail(request.email, `Actualización de tu solicitud a ${team.name}`, rejectHtml)
+
+  res.json({ success: true })
+})
+
 export default router
