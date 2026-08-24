@@ -1,74 +1,90 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useToastStore } from '../stores/toastStore'
 
 export default function Registration() {
-  const [form, setForm] = useState({
-    name: '', sandwich_name: '', captain_email: '', password: '',
-    members: ['', ''], equipment_needs: '',
-  })
+  const [teamName, setTeamName] = useState('')
+  const [sandwichName, setSandwichName] = useState('')
+  const [captainEmail, setCaptainEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [members, setMembers] = useState(['', '', ''])
+  const [equipmentNeeds, setEquipmentNeeds] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  const addToast = useToastStore((s) => s.add)
+  const [registeredTeam, setRegisteredTeam] = useState<{ id: number; name: string } | null>(null)
 
-  const set = (key: string, val: string) => setForm((f) => ({ ...f, [key]: val }))
-
-  const setMember = (i: number, val: string) => {
-    const m = [...form.members]
-    m[i] = val
-    setForm((f) => ({ ...f, members: m }))
+  function updateMember(index: number, value: string) {
+    setMembers((prev) => {
+      const next = [...prev]
+      next[index] = value
+      return next
+    })
   }
 
-  const addMember = () => {
-    if (form.members.length < 3) setForm((f) => ({ ...f, members: [...f.members, ''] }))
+  function addMember() {
+    if (members.length < 3) setMembers((prev) => [...prev, ''])
   }
 
-  const removeMember = (i: number) => {
-    if (form.members.length > 2) setForm((f) => ({ ...f, members: f.members.filter((_, j) => j !== i) }))
+  function removeMember(index: number) {
+    if (members.length > 2) setMembers((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
     setLoading(true)
+    setError('')
+
+    const validMembers = members.filter((m) => m.trim())
+    if (validMembers.length < 2) {
+      setError('Debe haber al menos 2 miembros')
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/teams/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...form,
-          members: form.members.filter((m) => m.trim()),
+          name: teamName,
+          sandwich_name: sandwichName,
+          captain_email: captainEmail,
+          password,
+          members: validMembers,
+          equipment_needs: equipmentNeeds || undefined,
         }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Registration failed')
+        setError(data.error || 'Error al registrar equipo')
         return
       }
       setSuccess(true)
-      addToast('¡Equipo Registrado!', 'success')
+      setRegisteredTeam({ id: data.id, name: data.name })
     } catch {
-      setError('Network error')
+      setError('Error de red')
     } finally {
       setLoading(false)
     }
   }
 
-  if (success) {
-    const referralUrl = `${window.location.origin}/register?ref=${encodeURIComponent(form.name)}`
+  if (success && registeredTeam) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-          <p className="text-4xl mb-4">🎉</p>
-          <h1 className="font-headline text-2xl font-black text-secondary mb-2">¡Equipo Registrado!</h1>
-          <p className="text-gray-600 text-sm mb-4">Tu equipo está pendiente de confirmación por el organizador.</p>
-          <div className="bg-gray-50 rounded-xl p-3 mb-6">
-            <p className="text-xs text-gray-500 mb-1">Comparte este enlace para invitar:</p>
-            <p className="text-sm font-mono text-secondary break-all">{referralUrl}</p>
-          </div>
-          <Link to="/" className="inline-block bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary-dark transition-colors">
-            Volver al inicio
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-md text-center">
+          <div className="text-4xl mb-4">🎉</div>
+          <h1 className="font-headline text-2xl font-black text-secondary mb-2">
+            ¡Equipo registrado!
+          </h1>
+          <p className="text-gray-600 mb-6">
+            <strong>{registeredTeam.name}</strong> ha sido registrado exitosamente.
+            El organizador revisará tu inscripción pronto.
+          </p>
+          <Link
+            to="/"
+            className="inline-block bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors"
+          >
+            Volver al Inicio
           </Link>
         </div>
       </div>
@@ -78,65 +94,124 @@ export default function Registration() {
   return (
     <div className="min-h-screen bg-surface">
       <div className="max-w-lg mx-auto px-4 py-8">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-6 text-center">Registrar Equipo</h1>
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2">{error}</p>}
+        <div className="mb-6">
+          <Link to="/" className="text-sm text-primary hover:underline">← Volver al inicio</Link>
+        </div>
+        <h1 className="font-headline text-3xl font-black text-secondary mb-2">
+          Registro de Equipo
+        </h1>
+        <p className="text-gray-500 mb-8">
+          Completa los datos de tu equipo para participar en el campeonato
+        </p>
 
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del equipo *</label>
-            <input value={form.name} onChange={(e) => set('name', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+            <input
+              type="text"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Ej: Los Panaderos"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del sándwich *</label>
-            <input value={form.sandwich_name} onChange={(e) => set('sandwich_name', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+            <input
+              type="text"
+              value={sandwichName}
+              onChange={(e) => setSandwichName(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Ej: El Triple Jamón"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email del capitán *</label>
-            <input type="email" value={form.captain_email} onChange={(e) => set('captain_email', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+            <input
+              type="email"
+              value={captainEmail}
+              onChange={(e) => setCaptainEmail(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="capitan@ejemplo.com"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña del equipo *</label>
-            <input type="password" value={form.password} onChange={(e) => set('password', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={4}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Comparte esta contraseña con tu equipo"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Miembros del equipo (2–3) *</label>
-            <div className="space-y-2">
-              {form.members.map((m, i) => (
-                <div key={i} className="flex gap-2">
-                  <input
-                    value={m}
-                    onChange={(e) => setMember(i, e.target.value)}
-                    placeholder={`Miembro ${i + 1}`}
-                    className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    required
-                  />
-                  {form.members.length > 2 && (
-                    <button type="button" onClick={() => removeMember(i)} className="text-red-400 hover:text-red-600 px-2">✕</button>
-                  )}
-                </div>
-              ))}
-            </div>
-            {form.members.length < 3 && (
-              <button type="button" onClick={addMember} className="mt-2 text-sm text-primary hover:underline">+ Agregar miembro</button>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Miembros del equipo *</label>
+            {members.map((member, i) => (
+              <div key={i} className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={member}
+                  onChange={(e) => updateMember(i, e.target.value)}
+                  className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder={`Miembro ${i + 1}`}
+                />
+                {members.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => removeMember(i)}
+                    className="text-error hover:bg-error/10 px-3 rounded-xl transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+            {members.length < 3 && (
+              <button
+                type="button"
+                onClick={addMember}
+                className="text-sm text-primary hover:underline"
+              >
+                + Agregar miembro
+              </button>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Equipamiento que necesitan (opcional)</label>
-            <textarea value={form.equipment_needs} onChange={(e) => set('equipment_needs', e.target.value)} rows={2} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Equipamiento especial (opcional)</label>
+            <textarea
+              value={equipmentNeeds}
+              onChange={(e) => setEquipmentNeeds(e.target.value)}
+              rows={3}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Ej: Necesitamos enchufe extra para la plancha"
+            />
           </div>
 
-          <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2.5 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50">
+          {error && (
+            <div className="bg-error/10 border border-error/30 text-error text-sm rounded-xl px-4 py-2">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
+          >
             {loading ? 'Registrando...' : 'Registrar Equipo'}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          <Link to="/" className="text-primary hover:underline">Volver al inicio</Link>
-        </p>
       </div>
     </div>
   )

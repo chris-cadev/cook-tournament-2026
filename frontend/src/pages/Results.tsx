@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { socket } from '../lib/socket'
+import { connectSocket } from '../lib/socket'
+import { useAuthStore } from '../stores/authStore'
 
 interface LeaderboardEntry {
   team_id: number
@@ -18,6 +19,7 @@ interface LeaderboardData {
 export default function Results() {
   const [data, setData] = useState<LeaderboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const token = useAuthStore(s => s.token)
 
   const fetchLeaderboard = useCallback(async () => {
     try {
@@ -36,6 +38,7 @@ export default function Results() {
   }, [fetchLeaderboard])
 
   useEffect(() => {
+    const socket = connectSocket(token || undefined)
     socket.connect()
 
     socket.on('score:reveal', () => {
@@ -46,7 +49,7 @@ export default function Results() {
       socket.off('score:reveal')
       socket.disconnect()
     }
-  }, [fetchLeaderboard])
+  }, [fetchLeaderboard, token])
 
   // Fallback: poll every 30s
   useEffect(() => {

@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-process.loadEnvFile(path.resolve(__dirname, '../.env'))
+try { process.loadEnvFile(path.resolve(__dirname, '../.env')) } catch { /* no .env file */ }
 
 const frontendPort = Number(process.env.PORT) || 3000
 const backendPort = Number(process.env.BACKEND_PORT) || 3001

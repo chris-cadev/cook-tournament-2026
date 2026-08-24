@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { getDb, saveDb } from '../db.js'
 import { authMiddleware, requireRole } from '../middleware/auth.js'
-import { sendTeamConfirmation } from '../email.js'
 
 const router = Router()
 
@@ -37,11 +36,6 @@ router.post('/register', (req: Request, res: Response) => {
 
   const idRows = db.exec('SELECT last_insert_rowid() as id')
   const id = idRows[0].values[0][0]
-
-  const configRows = db.exec('SELECT event_title FROM event_config WHERE id = 1')
-  const eventTitle = configRows.length > 0 && configRows[0].values.length > 0 ? configRows[0].values[0][0] : 'El Campeonato'
-  sendTeamConfirmation(captain_email, name, eventTitle as string).catch(() => {})
-
   res.status(201).json({ id, name, status: 'pending' })
 })
 
@@ -78,15 +72,14 @@ router.put('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Res
     [name || null, sandwich_name || null, status || null, station || null, req.params.id]
   )
   saveDb()
-  res.json({ ok: true })
+  res.json({ success: true })
 })
 
 router.delete('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const db = getDb()
-  db.run('DELETE FROM scores WHERE team_id = ?', [req.params.id])
   db.run('DELETE FROM teams WHERE id = ?', [req.params.id])
   saveDb()
-  res.json({ ok: true })
+  res.json({ success: true })
 })
 
 export default router

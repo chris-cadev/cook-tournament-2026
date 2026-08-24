@@ -261,24 +261,15 @@ Mark a category as revealed in EventConfig (store revealed categories as JSON). 
 **Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:56:44Z
-<<<<<<< HEAD
-Deliverable: Public registration form that creates teams via the backend API.
+Deliverable: Judges can view the scoring rubric and submit scores for teams.
 
-### registration-form
-Create public registration page at `/register`. Form fields: team name, captain email, password, member names (2-3, dynamic add/remove), sandwich name, equipment needs textarea. Submit to `POST /api/teams/register`. Show success alert on 201, error alert on 409. Files: new `src/pages/Register.tsx`, update routes.
+### judge-rubric-view
+Create protected page at `/jueces` showing scoring rubric in an Accordion layout. Fetch categories from `GET /api/judges/rubric`. Each category shows name + description, expandable. Files: new `src/pages/judges/Panel.tsx`, update routes.
 
-### registration-success-redirect
-After successful registration, show confirmation message with team name and sandwich name. Include link to team login. No backend changes needed — front-end state transition only.
+### judge-score-submission
+Add scoring form below rubric: team selector dropdown (fetch `GET /api/teams`), category score inputs (1-10 range), optional notes field per category. Submit to `POST /api/judges/scores`. Show success/error alerts. Files: update `src/pages/judges/Panel.tsx`.
 
----|PASS|12|opencode-go/mimo-v2.5|2026-08-23T21:56:56Z
-=======
-Deliverable: Authenticated team members can view their team info and access team chat.
+### judge-double-score-handling
+Handle 409 response from score submission (judge already scored this category for this team). Display Spanish error message "Ya puntuaste esta categoría para este equipo". Disable submitted category inputs. Frontend-only logic in `src/pages/judges/Panel.tsx`.
 
-### team-dashboard
-Create protected page at `/equipo` showing team info: name, sandwich name, member list, station, status. Fetch from `GET /api/teams/:id` using auth store team ID. Files: new `src/pages/team/Dashboard.tsx`, update routes.
-
-### team-chat-link
-Add "Abrir Chat" button on team dashboard that links to `/chat/team/:teamId`. Verify existing `TeamChat.tsx` page works with the authenticated team's channel. Files: update `src/pages/team/Dashboard.tsx`.
-
----|PASS|7|opencode-go/mimo-v2.5|2026-08-23T21:07:22Z
->>>>>>> orchestrator/task-3-milestone-3-team-dashboard
+---|PASS|10|opencode-go/mimo-v2.5|2026-08-23T22:51:44Z

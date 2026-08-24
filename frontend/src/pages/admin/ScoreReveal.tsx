@@ -24,10 +24,11 @@ export default function ScoreReveal() {
     try {
       const res = await fetch('/api/config')
       const config = await res.json()
-      const cats: string[] = config.scoring_categories || []
+      const rawCats: any[] = config.scoring_categories || []
+      const catNames: string[] = rawCats.map((c: any) => typeof c === 'string' ? c : c.name)
       const revealed: string[] = config.revealed_categories || []
 
-      setCategories(cats.map(c => ({ category: c, revealed: revealed.includes(c) })))
+      setCategories(catNames.map(c => ({ category: c, revealed: revealed.includes(c) })))
       setRevealedCount(revealed.length)
     } catch (err) {
       console.error('Failed to fetch config:', err)

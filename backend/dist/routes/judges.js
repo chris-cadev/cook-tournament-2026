@@ -23,7 +23,7 @@ router.get('/teams', authMiddleware, (req, res) => {
         return res.status(403).json({ error: 'Judge or admin access required' });
     }
     const db = getDb();
-    const rows = db.exec('SELECT id, name, sandwich_name, status FROM teams WHERE status = ? ORDER BY name', ['confirmed']);
+    const rows = db.exec('SELECT id, name, sandwich_name FROM teams ORDER BY name');
     res.json(rowsToArray(rows));
 });
 router.get('/rubric', authMiddleware, (req, res) => {
@@ -33,7 +33,8 @@ router.get('/rubric', authMiddleware, (req, res) => {
     const db = getDb();
     const rows = db.exec('SELECT scoring_categories FROM event_config WHERE id = 1');
     const config = rowsToObject(rows);
-    const categories = config.scoring_categories ? JSON.parse(config.scoring_categories) : [];
+    const raw = config.scoring_categories ? JSON.parse(config.scoring_categories) : [];
+    const categories = raw.map((c) => typeof c === 'string' ? { name: c, description: '' } : c);
     res.json({ categories });
 });
 router.post('/scores', authMiddleware, (req, res) => {
@@ -44,31 +45,22 @@ router.post('/scores', authMiddleware, (req, res) => {
     if (!team_id || !Array.isArray(scores)) {
         return res.status(400).json({ error: 'team_id and scores array required' });
     }
-    const db = getDb();
-    const configRows = db.exec('SELECT scoring_categories FROM event_config WHERE id = 1');
-    const config = rowsToObject(configRows);
-    const validCategories = config.scoring_categories ? JSON.parse(config.scoring_categories) : [];
     for (const s of scores) {
-        if (!validCategories.includes(s.category)) {
-            return res.status(400).json({ error: `Invalid category: ${s.category}` });
-        }
         if (typeof s.value !== 'number' || s.value < 1 || s.value > 10 || !Number.isInteger(s.value)) {
-            return res.status(400).json({ error: `Score value must be an integer between 1 and 10` });
+            return res.status(400).json({ error: `Invalid score value for category: ${s.category}. Must be integer 1-10.` });
         }
     }
-    try {
-        db.run('BEGIN');
-        for (const s of scores) {
+    const db = getDb();
+    for (const s of scores) {
+        try {
             db.run('INSERT INTO scores (team_id, judge_anonymous_id, category, value, notes) VALUES (?, ?, ?, ?, ?)', [team_id, req.user.anonymous_id, s.category, s.value, s.notes || null]);
         }
-        db.run('COMMIT');
-    }
-    catch (e) {
-        db.run('ROLLBACK');
-        if (e.message?.includes('UNIQUE constraint')) {
-            return res.status(409).json({ error: 'Score already submitted' });
+        catch (e) {
+            if (e.message?.includes('UNIQUE constraint')) {
+                return res.status(409).json({ error: `Score already submitted for category: ${s.category}` });
+            }
+            throw e;
         }
-        throw e;
     }
     saveDb();
     res.status(201).json({ ok: true });
@@ -79,11 +71,11 @@ router.get('/scores/:teamId', authMiddleware, (req, res) => {
     }
     const db = getDb();
     let rows;
-    if (req.user?.role === 'admin') {
-        rows = db.exec('SELECT * FROM scores WHERE team_id = ? ORDER BY category, judge_anonymous_id', [req.params.teamId]);
+    if (req.user?.role === 'judge') {
+        rows = db.exec('SELECT judge_anonymous_id, category, value, notes FROM scores WHERE team_id = ? AND judge_anonymous_id = ? ORDER BY category', [req.params.teamId, req.user.anonymous_id]);
     }
     else {
-        rows = db.exec('SELECT * FROM scores WHERE team_id = ? AND judge_anonymous_id = ? ORDER BY category', [req.params.teamId, req.user.anonymous_id]);
+        rows = db.exec('SELECT judge_anonymous_id, category, value, notes FROM scores WHERE team_id = ? ORDER BY category, judge_anonymous_id', [req.params.teamId]);
     }
     res.json(rowsToArray(rows));
 });

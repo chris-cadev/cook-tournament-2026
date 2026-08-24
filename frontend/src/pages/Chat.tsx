@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { socket } from '../lib/socket'
+import { connectSocket, getSocket } from '../lib/socket'
+import { useAuthStore } from '../stores/authStore'
 
 interface ChatMessage {
   id: number
@@ -23,6 +24,7 @@ export default function Chat() {
   const [hasOlder, setHasOlder] = useState(true)
   const [uploading, setUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const token = useAuthStore(s => s.token)
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -63,6 +65,8 @@ export default function Chat() {
 
   useEffect(() => {
     fetchMessages()
+
+    const socket = connectSocket(token || undefined)
     socket.connect()
 
     socket.on('chat:new', (data: { message: ChatMessage }) => {
@@ -81,7 +85,7 @@ export default function Chat() {
       socket.emit('chat:leave', { channel: 'global' })
       socket.disconnect()
     }
-  }, [fetchMessages])
+  }, [fetchMessages, token])
 
   useEffect(() => {
     scrollToBottom()
@@ -101,16 +105,27 @@ export default function Chat() {
 
     setSending(true)
     try {
-      const res = await fetch('/api/chat/global/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender_name: senderName.trim(), content: newMessage.trim() }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setMessages(prev => [...prev, data.message])
+      const socket = getSocket()
+      if (socket?.connected) {
+        socket.emit('chat:message', {
+          channel: 'global',
+          content: newMessage.trim(),
+          sender_name: senderName.trim(),
+        })
         setNewMessage('')
         localStorage.setItem('chat_name', senderName.trim())
+      } else {
+        const res = await fetch('/api/chat/global/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sender_name: senderName.trim(), content: newMessage.trim() }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setMessages(prev => [...prev, data.message])
+          setNewMessage('')
+          localStorage.setItem('chat_name', senderName.trim())
+        }
       }
     } catch (err) {
       console.error('Failed to send message:', err)

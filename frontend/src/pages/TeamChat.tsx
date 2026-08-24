@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { connectSocket } from '../lib/socket'
 import { useAuthStore } from '../stores/authStore'
 import { socket } from '../lib/socket'
 
@@ -93,6 +94,27 @@ export default function TeamChat({ teamId, teamName, onBack }: TeamChatProps) {
       socket.disconnect()
     }
   }, [fetchMessages, token, teamId])
+
+  useEffect(() => {
+    if (token) {
+      const socket = connectSocket(token)
+      socket.connect()
+
+      socket.on('chat:message', (data: { message: ChatMessage }) => {
+        if (data.message.channel === `team:${teamId}`) {
+          setMessages(prev => [...prev, data.message])
+        }
+      })
+
+      socket.emit('chat:join', { channel: `team:${teamId}` })
+
+      return () => {
+        socket.off('chat:message')
+        socket.emit('chat:leave', { channel: `team:${teamId}` })
+        socket.disconnect()
+      }
+    }
+  }, [teamId, token])
 
   useEffect(() => {
     scrollToBottom()

@@ -1,164 +1,274 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { useToastStore } from '../../stores/toastStore'
-import AdminNavbar from '../../components/admin/AdminNavbar'
 
 interface Config {
   event_date: string
   event_title: string
   event_description: string
   rules: string
-  scoring_categories: string[]
+  scoring_categories: { name: string; description: string }[]
   landing_page_content: string
-}
-
-function AccordionSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left">
-        <span className="font-headline font-bold text-secondary text-sm">{title}</span>
-        <span className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
-      </button>
-      {open && <div className="p-4 space-y-4">{children}</div>}
-    </div>
-  )
 }
 
 export default function EventSettings() {
   const { token } = useAuthStore()
-  const addToast = useToastStore((s) => s.add)
   const [config, setConfig] = useState<Config>({
-    event_date: '', event_title: '', event_description: '',
-    rules: '', scoring_categories: [], landing_page_content: '',
+    event_date: '',
+    event_title: '',
+    event_description: '',
+    rules: '',
+    scoring_categories: [],
+    landing_page_content: '',
   })
   const [newCategory, setNewCategory] = useState('')
+  const [newCategoryDesc, setNewCategoryDesc] = useState('')
   const [judgePassword, setJudgePassword] = useState('')
   const [teamPassword, setTeamPassword] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    fetch('/api/config')
-      .then((r) => r.json())
-      .then((data) => {
+    async function fetchConfig() {
+      try {
+        const res = await fetch('/api/config')
+        const data = await res.json()
+        const rawCats = data.scoring_categories || []
+        const cats = rawCats.map((c: any) =>
+          typeof c === 'string' ? { name: c, description: '' } : c
+        )
         setConfig({
           event_date: data.event_date || '',
           event_title: data.event_title || '',
           event_description: data.event_description || '',
           rules: data.rules || '',
-          scoring_categories: data.scoring_categories || [],
+          scoring_categories: cats,
           landing_page_content: data.landing_page_content || '',
         })
-      })
-      .finally(() => setLoading(false))
+      } catch (err) {
+        console.error('Failed to fetch config:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchConfig()
   }, [])
 
-  const set = (key: string, val: string) => setConfig((c) => ({ ...c, [key]: val }))
-
-  const addCategory = () => {
-    if (newCategory.trim() && !config.scoring_categories.includes(newCategory.trim())) {
-      setConfig((c) => ({ ...c, scoring_categories: [...c.scoring_categories, newCategory.trim()] }))
-      setNewCategory('')
-    }
-  }
-
-  const removeCategory = (i: number) => {
-    setConfig((c) => ({ ...c, scoring_categories: c.scoring_categories.filter((_, j) => j !== i) }))
-  }
-
-  const handleSave = async () => {
+  async function handleSave() {
+    if (!token) return
     setSaving(true)
+    setSaved(false)
     try {
-      const body: any = { ...config }
+      const body: Record<string, any> = {
+        event_date: config.event_date,
+        event_title: config.event_title,
+        event_description: config.event_description,
+        rules: config.rules,
+        scoring_categories: config.scoring_categories,
+        landing_page_content: config.landing_page_content,
+      }
       if (judgePassword) body.judge_password = judgePassword
       if (teamPassword) body.team_password = teamPassword
+
       const res = await fetch('/api/config', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(body),
       })
-      if (!res.ok) { addToast('Error saving settings', 'error'); return }
-      addToast('Settings saved!', 'success')
-      setJudgePassword('')
-      setTeamPassword('')
-    } catch {
-      addToast('Network error', 'error')
+      if (res.ok) {
+        setSaved(true)
+        setJudgePassword('')
+        setTeamPassword('')
+        setTimeout(() => setSaved(false), 3000)
+      }
+    } catch (err) {
+      console.error('Failed to save config:', err)
     } finally {
       setSaving(false)
     }
   }
 
+  function addCategory() {
+    if (newCategory.trim() && !config.scoring_categories.some((c) => c.name === newCategory.trim())) {
+      setConfig((prev) => ({
+        ...prev,
+        scoring_categories: [...prev.scoring_categories, { name: newCategory.trim(), description: newCategoryDesc.trim() }],
+      }))
+      setNewCategory('')
+      setNewCategoryDesc('')
+    }
+  }
+
+  function removeCategory(cat: string) {
+    setConfig((prev) => ({
+      ...prev,
+      scoring_categories: prev.scoring_categories.filter((c) => c.name !== cat),
+    }))
+  }
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" /></div>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-surface">
-      <AdminNavbar />
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-6">Event Settings</h1>
-        <div className="space-y-4">
-          <AccordionSection title="General" defaultOpen>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Event Title</label>
-              <input value={config.event_title} onChange={(e) => set('event_title', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Event Date</label>
-              <input type="datetime-local" value={config.event_date?.slice(0, 16) || ''} onChange={(e) => set('event_date', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
-            </div>
-          </AccordionSection>
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Configuración del Evento</h1>
+        <p className="text-gray-500 mb-6">Administra los detalles del campeonato</p>
 
-          <AccordionSection title="Content">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Event Description (Markdown)</label>
-              <textarea value={config.event_description} onChange={(e) => set('event_description', e.target.value)} rows={4} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none font-mono" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rules (Markdown)</label>
-              <textarea value={config.rules} onChange={(e) => set('rules', e.target.value)} rows={4} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none font-mono" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Landing Page Content (Markdown)</label>
-              <textarea value={config.landing_page_content} onChange={(e) => set('landing_page_content', e.target.value)} rows={4} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none font-mono" />
-            </div>
-          </AccordionSection>
-
-          <AccordionSection title="Scoring">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Scoring Categories</label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {config.scoring_categories.map((cat, i) => (
-                  <span key={i} className="bg-primary/10 text-primary-dark text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1">
-                    {cat}
-                    <button onClick={() => removeCategory(i)} className="ml-1 text-primary-dark/60 hover:text-red-600">✕</button>
-                  </span>
-                ))}
+        <div className="space-y-6">
+          {/* Event basics */}
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-headline text-xl font-bold text-secondary mb-4">Datos del Evento</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                <input
+                  type="text"
+                  value={config.event_title}
+                  onChange={(e) => setConfig((p) => ({ ...p, event_title: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha del evento</label>
+                <input
+                  type="datetime-local"
+                  value={config.event_date}
+                  onChange={(e) => setConfig((p) => ({ ...p, event_date: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (Markdown)</label>
+                <textarea
+                  value={config.event_description}
+                  onChange={(e) => setConfig((p) => ({ ...p, event_description: e.target.value }))}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Rules */}
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-headline text-xl font-bold text-secondary mb-4">Reglas (Markdown)</h2>
+            <textarea
+              value={config.rules}
+              onChange={(e) => setConfig((p) => ({ ...p, rules: e.target.value }))}
+              rows={6}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </section>
+
+          {/* Scoring categories */}
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-headline text-xl font-bold text-secondary mb-4">Categorías de Puntuación</h2>
+            <div className="flex flex-col gap-2 mb-4">
               <div className="flex gap-2">
-                <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="New category" className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm" onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())} />
-                <button onClick={addCategory} className="px-4 py-2 bg-secondary/10 text-secondary font-bold text-sm rounded-xl hover:bg-secondary/20">Add</button>
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
+                  className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Nombre de categoría"
+                />
+                <button
+                  onClick={addCategory}
+                  className="bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-3 rounded-xl transition-colors"
+                >
+                  Agregar
+                </button>
+              </div>
+              <input
+                type="text"
+                value={newCategoryDesc}
+                onChange={(e) => setNewCategoryDesc(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Descripción (opcional)"
+              />
+            </div>
+            <div className="space-y-2">
+              {config.scoring_categories.map((cat) => (
+                <div
+                  key={cat.name}
+                  className="flex items-start justify-between bg-secondary/5 rounded-xl px-4 py-3"
+                >
+                  <div>
+                    <span className="font-medium text-secondary text-sm">{cat.name}</span>
+                    {cat.description && (
+                      <p className="text-xs text-gray-500 mt-0.5">{cat.description}</p>
+                    )}
+                  </div>
+                  <button onClick={() => removeCategory(cat.name)} className="text-gray-400 hover:text-error ml-2">
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Landing page content */}
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-headline text-xl font-bold text-secondary mb-4">Contenido Landing Page (Markdown)</h2>
+            <textarea
+              value={config.landing_page_content}
+              onChange={(e) => setConfig((p) => ({ ...p, landing_page_content: e.target.value }))}
+              rows={6}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </section>
+
+          {/* Passwords */}
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-headline text-xl font-bold text-secondary mb-4">Contraseñas</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de jueces</label>
+                <input
+                  type="password"
+                  value={judgePassword}
+                  onChange={(e) => setJudgePassword(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Dejar vacío para no cambiar"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de equipos</label>
+                <input
+                  type="password"
+                  value={teamPassword}
+                  onChange={(e) => setTeamPassword(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Dejar vacío para no cambiar"
+                />
               </div>
             </div>
-          </AccordionSection>
+          </section>
 
-          <AccordionSection title="Security">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Judge Password</label>
-                <input type="password" value={judgePassword} onChange={(e) => setJudgePassword(e.target.value)} placeholder="Leave blank to keep" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Team Password</label>
-                <input type="password" value={teamPassword} onChange={(e) => setTeamPassword(e.target.value)} placeholder="Leave blank to keep" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
-              </div>
-            </div>
-          </AccordionSection>
-
-          <button onClick={handleSave} disabled={saving} className="bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Settings'}
-          </button>
+          {/* Save */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-8 py-3 rounded-xl transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
+            {saved && (
+              <span className="text-sm text-tertiary font-medium">Guardado exitosamente</span>
+            )}
+          </div>
         </div>
       </div>
     </div>

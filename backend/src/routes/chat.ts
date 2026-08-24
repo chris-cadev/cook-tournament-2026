@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express'
 import { authMiddleware } from '../middleware/auth.js'
 import { validateChannelAccess, requireAdmin } from '../middleware/chat.js'
 import { getDb, saveDb } from '../db.js'
-import { getIO } from '../socket.js'
 
 const router = Router()
 
@@ -47,7 +46,7 @@ router.get('/global/messages', (req: Request, res: Response) => {
 
 // POST /api/chat/global/messages (public)
 router.post('/global/messages', (req: Request, res: Response) => {
-  const { sender_name, content, attachment_url, attachment_type } = req.body
+  const { sender_name, content } = req.body
 
   if (!content || typeof content !== 'string' || content.trim().length === 0) {
     return res.status(400).json({ error: 'Message content is required' })
@@ -61,17 +60,14 @@ router.post('/global/messages', (req: Request, res: Response) => {
   const db = getDb()
 
   db.run(
-    'INSERT INTO chat_messages (channel, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?)',
-    ['global', name, 'guest', content.trim(), attachment_url || null, attachment_type || null]
+    'INSERT INTO chat_messages (channel, sender_name, sender_role, content) VALUES (?, ?, ?, ?)',
+    ['global', name, 'guest', content.trim()]
   )
+  saveDb()
 
   const idRows = db.exec('SELECT last_insert_rowid() as id')
   const id = idRows[0].values[0][0]
   const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [id]))
-  saveDb()
-
-  try { getIO().to('chat:global').emit('chat:new', { message }) } catch {}
-
   res.status(201).json({ message })
 })
 
@@ -104,7 +100,7 @@ router.get('/team/:teamId/messages', authMiddleware, validateChannelAccess, (req
 router.post('/team/:teamId/messages', authMiddleware, validateChannelAccess, (req: Request, res: Response) => {
   const { teamId } = req.params
   const channel = `team:${teamId}`
-  const { content, attachment_url, attachment_type } = req.body
+  const { content } = req.body
 
   if (!content || typeof content !== 'string' || content.trim().length === 0) {
     return res.status(400).json({ error: 'Message content is required' })
@@ -118,25 +114,20 @@ router.post('/team/:teamId/messages', authMiddleware, validateChannelAccess, (re
   const user = req.user!
 
   db.run(
-    'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)',
     [
       channel,
       user.id || user.team_id || null,
       user.name || user.email || user.anonymous_id || 'Unknown',
       user.role,
       content.trim(),
-      attachment_url || null,
-      attachment_type || null,
     ]
   )
+  saveDb()
 
   const idRows = db.exec('SELECT last_insert_rowid() as id')
   const id = idRows[0].values[0][0]
   const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [id]))
-  saveDb()
-
-  try { getIO().to(`chat:${channel}`).emit('chat:new', { message }) } catch {}
-
   res.status(201).json({ message })
 })
 
@@ -165,7 +156,7 @@ router.get('/judge/messages', authMiddleware, validateChannelAccess, (req: Reque
 
 // POST /api/chat/judge/messages
 router.post('/judge/messages', authMiddleware, validateChannelAccess, (req: Request, res: Response) => {
-  const { content, attachment_url, attachment_type } = req.body
+  const { content } = req.body
 
   if (!content || typeof content !== 'string' || content.trim().length === 0) {
     return res.status(400).json({ error: 'Message content is required' })
@@ -179,25 +170,21 @@ router.post('/judge/messages', authMiddleware, validateChannelAccess, (req: Requ
   const user = req.user!
 
   db.run(
-    'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO chat_messages (channel, sender_id, sender_anonymous_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?, ?)',
     [
       'judge',
-      user.id || user.anonymous_id || null,
+      user.id || null,
+      user.anonymous_id || null,
       user.name || user.anonymous_id || 'Judge',
       user.role,
       content.trim(),
-      attachment_url || null,
-      attachment_type || null,
     ]
   )
+  saveDb()
 
   const idRows = db.exec('SELECT last_insert_rowid() as id')
   const id = idRows[0].values[0][0]
   const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [id]))
-  saveDb()
-
-  try { getIO().to('chat:judge').emit('chat:new', { message }) } catch {}
-
   res.status(201).json({ message })
 })
 

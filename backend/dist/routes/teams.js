@@ -2,7 +2,6 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { getDb, saveDb } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
-import { sendTeamConfirmation } from '../email.js';
 const router = Router();
 function rowsToArray(rows) {
     if (rows.length === 0)
@@ -29,9 +28,6 @@ router.post('/register', (req, res) => {
     saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];
-    const configRows = db.exec('SELECT event_title FROM event_config WHERE id = 1');
-    const eventTitle = configRows.length > 0 && configRows[0].values.length > 0 ? configRows[0].values[0][0] : 'El Campeonato';
-    sendTeamConfirmation(captain_email, name, eventTitle).catch(() => { });
     res.status(201).json({ id, name, status: 'pending' });
 });
 router.get('/', authMiddleware, requireRole('admin'), (_req, res) => {
@@ -60,13 +56,12 @@ router.put('/:id', authMiddleware, requireRole('admin'), (req, res) => {
     }
     db.run('UPDATE teams SET name = COALESCE(?, name), sandwich_name = COALESCE(?, sandwich_name), status = COALESCE(?, status), station = COALESCE(?, station) WHERE id = ?', [name || null, sandwich_name || null, status || null, station || null, req.params.id]);
     saveDb();
-    res.json({ ok: true });
+    res.json({ success: true });
 });
 router.delete('/:id', authMiddleware, requireRole('admin'), (req, res) => {
     const db = getDb();
-    db.run('DELETE FROM scores WHERE team_id = ?', [req.params.id]);
     db.run('DELETE FROM teams WHERE id = ?', [req.params.id]);
     saveDb();
-    res.json({ ok: true });
+    res.json({ success: true });
 });
 export default router;

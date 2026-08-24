@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { connectSocket } from '../lib/socket'
 import { useAuthStore } from '../stores/authStore'
 import { socket } from '../lib/socket'
 
@@ -6,6 +7,7 @@ interface ChatMessage {
   id: number
   channel: string
   sender_id: number | null
+  sender_anonymous_id: string | null
   sender_name: string
   sender_role: string
   content: string
@@ -91,6 +93,27 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
       socket.disconnect()
     }
   }, [fetchMessages, token])
+
+  useEffect(() => {
+    if (token) {
+      const socket = connectSocket(token)
+      socket.connect()
+
+      socket.on('chat:message', (data: { message: ChatMessage }) => {
+        if (data.message.channel === 'judge') {
+          setMessages(prev => [...prev, data.message])
+        }
+      })
+
+      socket.emit('chat:join', { channel: 'judge' })
+
+      return () => {
+        socket.off('chat:message')
+        socket.emit('chat:leave', { channel: 'judge' })
+        socket.disconnect()
+      }
+    }
+  }, [token])
 
   useEffect(() => {
     scrollToBottom()
@@ -206,7 +229,7 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
               </button>
             )}
             {messages.map((msg) => {
-              const isOwn = msg.sender_id?.toString() === user?.anonymous_id
+              const isOwn = msg.sender_anonymous_id === user?.anonymous_id
               return (
                 <div key={msg.id} className={`flex gap-2 items-end ${isOwn ? 'justify-end' : 'justify-start'}`}>
                   {!isOwn && (
