@@ -166,6 +166,7 @@ export default function TeamTable() {
 
       <TeamEditModal
         open={editingTeam !== null}
+        mode="edit"
         onClose={() => setEditingTeam(null)}
         team={editingTeam}
         onSaved={fetchTeams}

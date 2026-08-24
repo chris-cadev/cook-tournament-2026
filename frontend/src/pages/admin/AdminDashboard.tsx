@@ -3,11 +3,12 @@ import Teams from './Teams'
 import EventSettings from './EventSettings'
 import ScoreReveal from './ScoreReveal'
 import ChatModeration from './ChatModeration'
-import ToDo from './ToDo'
+import AdminTasks from './AdminTasks'
+import Judges from './Judges'
 import EmailReminders from './EmailReminders'
 import Invites from './Invites'
 
-type Tab = 'teams' | 'settings' | 'scores' | 'chat' | 'todo' | 'email' | 'invites'
+type Tab = 'teams' | 'settings' | 'scores' | 'chat' | 'todo' | 'judges' | 'email' | 'invites'
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('teams')
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
     { key: 'teams', label: 'Equipos', icon: 'groups' },
     { key: 'settings', label: 'Configuración', icon: 'settings' },
     { key: 'scores', label: 'Puntuaciones', icon: 'emoji_events' },
+    { key: 'judges', label: 'Jueces', icon: 'gavel' },
     { key: 'chat', label: 'Chat', icon: 'chat' },
     { key: 'todo', label: 'Tareas', icon: 'checklist' },
     { key: 'email', label: 'Email', icon: 'mail' },
@@ -44,8 +46,9 @@ export default function AdminDashboard() {
         {tab === 'teams' && <Teams />}
         {tab === 'settings' && <EventSettings />}
         {tab === 'scores' && <ScoreReveal />}
+        {tab === 'judges' && <Judges />}
         {tab === 'chat' && <ChatModeration />}
-        {tab === 'todo' && <ToDo />}
+        {tab === 'todo' && <AdminTasks />}
         {tab === 'email' && <EmailReminders />}
         {tab === 'invites' && <Invites />}
       </div>

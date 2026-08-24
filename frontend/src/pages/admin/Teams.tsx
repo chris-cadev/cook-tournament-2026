@@ -16,6 +16,7 @@ export default function Teams() {
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Team | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const fetchTeams = useCallback(async () => {
     try {
@@ -62,6 +63,10 @@ export default function Teams() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="font-headline text-2xl font-black text-secondary">Equipos ({teams.length})</h2>
+        <button onClick={() => setCreating(true)}
+          className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-4 py-2 rounded-2xl transition-colors text-sm">
+          + Crear Equipo
+        </button>
       </div>
 
       {teams.length === 0 ? (
@@ -109,9 +114,19 @@ export default function Teams() {
       {editing && (
         <TeamEditModal
           open
+          mode="edit"
           team={editing}
           onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); fetchTeams() }}
+        />
+      )}
+
+      {creating && (
+        <TeamEditModal
+          open
+          mode="create"
+          onClose={() => setCreating(false)}
+          onSaved={() => { setCreating(false); fetchTeams() }}
         />
       )}
     </div>
