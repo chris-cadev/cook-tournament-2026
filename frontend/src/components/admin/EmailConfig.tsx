@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface EmailTemplate {
   id: string
@@ -22,7 +21,6 @@ interface SendResult {
 }
 
 export default function EmailConfig() {
-  const { token } = useAuthStore()
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,7 +32,7 @@ export default function EmailConfig() {
   const [sendingReminders, setSendingReminders] = useState(false)
   const [reminderResult, setReminderResult] = useState<{ message?: string; days_until_event?: number; results?: { template: string; sent: number; failed: number }[] } | null>(null)
 
-  const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+  const authHeaders = { 'Content-Type': 'application/json' }
 
   useEffect(() => {
     Promise.all([fetchTemplates(), fetchTeams()])

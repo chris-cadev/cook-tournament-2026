@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuthStore } from '../../stores/authStore'
 import Teams from './Teams'
 import EventSettings from './EventSettings'
 import ScoreReveal from './ScoreReveal'
@@ -13,13 +11,6 @@ type Tab = 'teams' | 'settings' | 'scores' | 'chat' | 'todo' | 'email' | 'invite
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('teams')
-  const { logout } = useAuthStore()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: 'teams', label: 'Equipos', icon: 'groups' },
@@ -33,17 +24,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Navbar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-headline text-xl font-black text-secondary">Admin Panel</Link>
-          <div className="flex items-center gap-3">
-            <Link to="/" className="text-sm text-gray-500 hover:text-primary transition-colors">Ver sitio</Link>
-            <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-red-600 transition-colors">Salir</button>
-          </div>
-        </div>
-      </header>
-
       {/* Tabs */}
       <div className="max-w-6xl mx-auto px-4 pt-4">
         <div className="flex gap-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-1 mb-6 overflow-x-auto">

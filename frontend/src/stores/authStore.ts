@@ -4,29 +4,42 @@ interface AuthUser {
   id?: number
   email?: string
   team_id?: number
+  team_slug?: string
   name?: string
+  sandwich_name?: string
   anonymous_id?: string
   role: 'admin' | 'team' | 'judge' | 'guest'
 }
 
 interface AuthState {
-  token: string | null
   user: AuthUser | null
-  login: (token: string, user: AuthUser) => void
+  loading: boolean
+  login: (user: AuthUser) => void
   logout: () => void
+  checkSession: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  token: localStorage.getItem('token'),
-  user: JSON.parse(localStorage.getItem('user') || 'null'),
-  login: (token, user) => {
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(user))
-    set({ token, user })
+  user: null,
+  loading: true,
+  login: (user) => {
+    set({ user })
   },
-  logout: () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    set({ token: null, user: null })
+  logout: async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    set({ user: null })
+  },
+  checkSession: async () => {
+    try {
+      const res = await fetch('/api/auth/me')
+      if (res.ok) {
+        const data = await res.json()
+        set({ user: data.user, loading: false })
+      } else {
+        set({ user: null, loading: false })
+      }
+    } catch {
+      set({ user: null, loading: false })
+    }
   },
 }))

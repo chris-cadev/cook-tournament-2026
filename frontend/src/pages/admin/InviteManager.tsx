@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface InviteCode {
   id: number
@@ -11,13 +10,12 @@ interface InviteCode {
 }
 
 export default function InviteManager() {
-  const { token } = useAuthStore()
   const [invites, setInvites] = useState<InviteCode[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
-  const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+  const authHeaders = { 'Content-Type': 'application/json' }
 
   useEffect(() => { fetchInvites() }, [])
 

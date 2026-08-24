@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface Config {
   event_date: string
@@ -11,7 +10,6 @@ interface Config {
 }
 
 export default function EventSettings() {
-  const { token } = useAuthStore()
   const [config, setConfig] = useState<Config>({
     event_date: '', event_title: '', event_description: '', rules: '',
     scoring_categories: [], landing_page_content: '',
@@ -48,7 +46,7 @@ export default function EventSettings() {
       if (teamPassword) body.team_password = teamPassword
       const res = await fetch('/api/config', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
       if (res.ok) {

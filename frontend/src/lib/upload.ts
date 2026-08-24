@@ -1,9 +1,7 @@
 export async function uploadFile(
   file: File,
-  token?: string | null
 ): Promise<{ file_url: string; attachment_type: 'image' | 'audio' } | null> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (token) headers.Authorization = `Bearer ${token}`
 
   try {
     const presignRes = await fetch('/api/upload/presign', {

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface ChatMessage {
   id: number
@@ -15,54 +14,48 @@ interface ChatMessage {
 
 interface Team {
   id: number
+  slug: string
   name: string
 }
 
 type TabType = 'global' | 'team' | 'judge'
 
 export default function ChatModeration() {
-  const { token } = useAuthStore()
   const [activeTab, setActiveTab] = useState<TabType>('global')
-  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
+  const [selectedTeamSlug, setSelectedTeamSlug] = useState<string | null>(null)
   const [teams, setTeams] = useState<Team[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchTeams = useCallback(async () => {
-    if (!token) return
     try {
-      const res = await fetch('/api/chat/teams', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch('/api/chat/teams')
       if (res.ok) {
         const data = await res.json()
         setTeams(data.teams || [])
         if (data.teams?.length > 0) {
-          setSelectedTeamId(data.teams[0].id)
+          setSelectedTeamSlug(data.teams[0].slug)
         }
       }
     } catch (err) {
       console.error('Failed to fetch teams:', err)
     }
-  }, [token])
+  }, [])
 
   const fetchMessages = useCallback(async () => {
-    if (!token) return
     setLoading(true)
     try {
       let url = ''
       if (activeTab === 'global') {
         url = '/api/chat/global/messages?limit=100'
-      } else if (activeTab === 'team' && selectedTeamId) {
-        url = `/api/chat/team/${selectedTeamId}/messages?limit=100`
+      } else if (activeTab === 'team' && selectedTeamSlug) {
+        url = `/api/chat/team/${selectedTeamSlug}/messages?limit=100`
       } else if (activeTab === 'judge') {
         url = '/api/chat/judge/messages?limit=100'
       }
 
       if (url) {
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const res = await fetch(url)
         if (res.ok) {
           const data = await res.json()
           setMessages(data.messages)
@@ -73,7 +66,7 @@ export default function ChatModeration() {
     } finally {
       setLoading(false)
     }
-  }, [activeTab, selectedTeamId, token])
+  }, [activeTab, selectedTeamSlug])
 
   useEffect(() => {
     fetchTeams()
@@ -86,20 +79,19 @@ export default function ChatModeration() {
   }, [fetchMessages])
 
   const deleteMessage = async (messageId: number) => {
-    if (!token || !confirm('Delete this message?')) return
+    if (!confirm('Delete this message?')) return
     try {
       let url = ''
       if (activeTab === 'global') {
         url = `/api/chat/global/messages/${messageId}`
-      } else if (activeTab === 'team' && selectedTeamId) {
-        url = `/api/chat/team/${selectedTeamId}/messages/${messageId}`
+      } else if (activeTab === 'team' && selectedTeamSlug) {
+        url = `/api/chat/team/${selectedTeamSlug}/messages/${messageId}`
       } else if (activeTab === 'judge') {
         url = `/api/chat/judge/messages/${messageId}`
       }
       if (!url) return
       const res = await fetch(url, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
       })
       if (res.ok) {
         setMessages(prev => prev.filter(m => m.id !== messageId))
@@ -117,9 +109,9 @@ export default function ChatModeration() {
   const getChannelLabel = () => {
     if (activeTab === 'global') return 'Global Chat'
     if (activeTab === 'judge') return 'Judge Chat'
-    if (activeTab === 'team' && selectedTeamId) {
-      const team = teams.find(t => t.id === selectedTeamId)
-      return team ? `Team: ${team.name}` : `Team ${selectedTeamId}`
+    if (activeTab === 'team' && selectedTeamSlug) {
+      const team = teams.find(t => t.slug === selectedTeamSlug)
+      return team ? `Team: ${team.name}` : `Team ${selectedTeamSlug}`
     }
     return ''
   }
@@ -162,12 +154,12 @@ export default function ChatModeration() {
             <div className="p-4 border-b border-gray-200">
               <label className="block text-sm font-medium text-gray-700 mb-2">Select Team Channel</label>
               <select
-                value={selectedTeamId || ''}
-                onChange={(e) => setSelectedTeamId(parseInt(e.target.value, 10))}
+                value={selectedTeamSlug || ''}
+                onChange={(e) => setSelectedTeamSlug(e.target.value)}
                 className="w-full md:w-64 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
                 {teams.map(team => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
+                  <option key={team.slug} value={team.slug}>{team.name}</option>
                 ))}
               </select>
             </div>

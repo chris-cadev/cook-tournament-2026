@@ -15,7 +15,7 @@ const CATEGORIES = [
 ]
 
 export default function TeamChecklist() {
-  const { token, user } = useAuthStore()
+  const { user } = useAuthStore()
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
   const [newText, setNewText] = useState('')
@@ -27,11 +27,9 @@ export default function TeamChecklist() {
   }, [user])
 
   const fetchChecklist = useCallback(async () => {
-    if (!token || !teamId) return
+    if (!teamId) return
     try {
-      const res = await fetch(`/api/teams/${teamId}/checklist`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch(`/api/teams/${teamId}/checklist`)
       if (res.ok) {
         const data = await res.json()
         setItems(data.checklist || [])
@@ -41,24 +39,24 @@ export default function TeamChecklist() {
     } finally {
       setLoading(false)
     }
-  }, [token, teamId])
+  }, [teamId])
 
   useEffect(() => {
     fetchChecklist()
   }, [fetchChecklist])
 
   const saveChecklist = useCallback(async (newItems: ChecklistItem[]) => {
-    if (!token || !teamId) return
+    if (!teamId) return
     try {
       await fetch(`/api/teams/${teamId}/checklist`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ checklist: newItems }),
       })
     } catch (err) {
       console.error('Failed to save checklist:', err)
     }
-  }, [token, teamId])
+  }, [teamId])
 
   const addItem = () => {
     if (!newText.trim()) return

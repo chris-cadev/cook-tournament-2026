@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface Station {
   id: number
@@ -8,35 +7,30 @@ interface Station {
 }
 
 export default function StationManager() {
-  const { token } = useAuthStore()
   const [stations, setStations] = useState<Station[]>([])
   const [loading, setLoading] = useState(true)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
 
   const fetchStations = useCallback(async () => {
-    if (!token) return
     try {
-      const res = await fetch('/api/admin/stations', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch('/api/admin/stations')
       if (res.ok) {
         setStations(await res.json())
       }
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => { fetchStations() }, [fetchStations])
 
   const addStation = async () => {
-    if (!newName.trim() || !token) return
+    if (!newName.trim()) return
     const res = await fetch('/api/admin/stations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ name: newName.trim(), description: newDesc.trim() || null }),
     })
@@ -49,10 +43,9 @@ export default function StationManager() {
   }
 
   const deleteStation = async (id: number) => {
-    if (!token || !confirm('¿Eliminar esta estación?')) return
+    if (!confirm('¿Eliminar esta estación?')) return
     await fetch(`/api/admin/stations/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
     })
     setStations(prev => prev.filter(s => s.id !== id))
   }

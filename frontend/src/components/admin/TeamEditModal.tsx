@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 interface Team {
   id: number
+  slug: string
   name: string
   sandwich_name: string
   captain_email: string
@@ -11,24 +12,26 @@ interface Team {
 }
 
 interface Props {
-  team: Team
+  open: boolean
+  team: Team | null
   onClose: () => void
   onSaved: () => void
 }
 
-export default function TeamEditModal({ team, onClose, onSaved }: Props) {
-  const [status, setStatus] = useState(team.status)
-  const [station, setStation] = useState(team.station || '')
+export default function TeamEditModal({ open, team, onClose, onSaved }: Props) {
+  const [status, setStatus] = useState(team?.status || 'pending')
+  const [station, setStation] = useState(team?.station || '')
   const [saving, setSaving] = useState(false)
+
+  if (!open || !team) return null
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/teams/${team.id}`, {
+      const res = await fetch(`/api/teams/${team.slug}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({ status, station: station || null }),
       })

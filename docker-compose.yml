@@ -1,5 +1,4 @@
-version: '3.8'
-
+name: cook-2026
 services:
   frontend:
     build:
@@ -36,19 +35,27 @@ services:
       - backend-data:/app/data
     depends_on:
       - minio
+      - mailpit
     restart: unless-stopped
 
   minio:
     image: minio/minio:latest
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9100:9000"
+      - "9101:9001"
     environment:
       - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
       - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"   # SMTP server
+      - "8025:8025"   # Web UI
     restart: unless-stopped
 
 volumes:

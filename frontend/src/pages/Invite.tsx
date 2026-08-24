@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useToastStore } from '../stores/toastStore'
-import Navbar from '../components/Navbar'
 
 export default function Invite() {
   const { addToast } = useToastStore()
@@ -32,7 +31,6 @@ export default function Invite() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-8">
         <h1 className="font-headline text-3xl font-black text-secondary mb-6">Invitar Amigos</h1>
 

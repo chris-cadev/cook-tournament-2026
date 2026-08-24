@@ -74,41 +74,48 @@ router.put('/todos', authMiddleware, requireRole('admin'), (req: Request, res: R
 })
 
 router.post('/invites', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
-  const { role, team_id } = req.body
+  const { role, team_id, max_uses, notes } = req.body
   const validRoles = ['guest', 'team']
   const inviteRole = validRoles.includes(role) ? role : 'guest'
+  const inviteMaxUses = Number(max_uses) || 1
 
   const db = getDb()
   const code = crypto.randomBytes(6).toString('hex')
 
   db.run(
-    'INSERT INTO invites (code, created_by, role, team_id) VALUES (?, ?, ?, ?)',
-    [code, req.user!.email || 'admin', inviteRole, team_id || null]
+    'INSERT INTO invites (code, created_by, role, team_id, max_uses, notes) VALUES (?, ?, ?, ?, ?, ?)',
+    [code, req.user!.email || 'admin', inviteRole, team_id || null, inviteMaxUses, notes || null]
   )
   saveDb()
 
   const baseUrl = req.headers.origin || `http://${req.headers.host}`
   const inviteUrl = `${baseUrl}/invite/${code}`
 
-  res.status(201).json({ code, invite_url: inviteUrl, role: inviteRole })
+  res.status(201).json({ code, invite_url: inviteUrl, role: inviteRole, max_uses: inviteMaxUses })
 })
 
 router.get('/invites', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
   const db = getDb()
-  const rows = db.exec('SELECT * FROM invites ORDER BY created_at DESC')
+  const rows = db.exec(`
+    SELECT i.*, GROUP_CONCAT(g.name || ' <' || g.email || '>') AS accepted_by
+    FROM invites i
+    LEFT JOIN guests g ON g.invite_code = i.code
+    GROUP BY i.id
+    ORDER BY i.created_at DESC
+  `)
   res.json(rowsToArray(rows))
 })
 
 router.get('/invites/:code/validate', (req: Request, res: Response) => {
   const db = getDb()
   const row = rowsToObject(
-    db.exec('SELECT code, role, team_id, used_at FROM invites WHERE code = ?', [req.params.code])
+    db.exec('SELECT code, role, team_id, used_at, uses, max_uses FROM invites WHERE code = ?', [req.params.code])
   )
   if (!row) {
     return res.status(404).json({ error: 'Invite not found' })
   }
-  if (row.used_at) {
-    return res.status(400).json({ error: 'Invite already used' })
+  if (row.max_uses && row.uses >= row.max_uses) {
+    return res.status(400).json({ error: 'Invite has reached maximum uses' })
   }
   res.json({ code: row.code, role: row.role, team_id: row.team_id })
 })

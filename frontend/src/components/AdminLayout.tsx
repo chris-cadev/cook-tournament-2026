@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { useAuthStore } from '../stores/authStore'
 
 const navItems = [
   { to: '/admin/score-reveal', label: 'Score Reveal' },
@@ -9,14 +8,12 @@ const navItems = [
 ]
 
 export default function AdminLayout() {
-  const logout = useAuthStore((s) => s.logout)
-
   return (
     <div className="min-h-screen bg-surface">
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
+        <div className="max-w-6xl mx-auto px-4 flex items-center h-14">
+          <span className="font-headline font-black text-secondary text-lg mr-4 hidden sm:block">Admin</span>
           <div className="flex items-center gap-1 overflow-x-auto">
-            <span className="font-headline font-black text-secondary text-lg mr-4 hidden sm:block">Admin</span>
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -33,12 +30,6 @@ export default function AdminLayout() {
               </NavLink>
             ))}
           </div>
-          <button
-            onClick={logout}
-            className="text-sm text-gray-400 hover:text-error transition-colors ml-4 whitespace-nowrap"
-          >
-            Logout
-          </button>
         </div>
       </nav>
       <Outlet />

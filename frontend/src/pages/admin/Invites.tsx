@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface Invite {
   id: number
@@ -7,25 +6,27 @@ interface Invite {
   created_by: string
   role: string
   team_id: number | null
+  max_uses: number
+  uses: number
+  notes: string | null
   used_by: string | null
   used_at: string | null
+  accepted_by: string | null
   created_at: string
 }
 
 export default function Invites() {
-  const { token } = useAuthStore()
   const [invites, setInvites] = useState<Invite[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [inviteRole, setInviteRole] = useState('guest')
+  const [maxUses, setMaxUses] = useState(1)
+  const [notes, setNotes] = useState('')
   const [lastCreated, setLastCreated] = useState<{ code: string; url: string } | null>(null)
 
   const fetchInvites = useCallback(async () => {
-    if (!token) return
     try {
-      const res = await fetch('/api/admin/invites', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch('/api/admin/invites')
       if (res.ok) {
         const data = await res.json()
         setInvites(data)
@@ -35,7 +36,7 @@ export default function Invites() {
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     fetchInvites()
@@ -46,12 +47,14 @@ export default function Invites() {
     try {
       const res = await fetch('/api/admin/invites', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ role: inviteRole }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: inviteRole, max_uses: maxUses, notes: notes || undefined }),
       })
       if (res.ok) {
         const data = await res.json()
         setLastCreated({ code: data.code, url: data.invite_url })
+        setNotes('')
+        setMaxUses(1)
         fetchInvites()
       }
     } catch (err) {
@@ -84,7 +87,7 @@ export default function Invites() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
         <p className="text-sm text-gray-600">Genera enlaces únicos para invitar participantes al evento.</p>
 
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <select
             value={inviteRole}
             onChange={(e) => setInviteRole(e.target.value)}
@@ -93,14 +96,30 @@ export default function Invites() {
             <option value="guest">Invitado / Espectador</option>
             <option value="team">Cocinero (Equipo)</option>
           </select>
-          <button
-            onClick={createInvite}
-            disabled={creating}
-            className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
-          >
-            {creating ? 'Creando...' : 'Crear Enlace'}
-          </button>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={maxUses}
+            onChange={(e) => setMaxUses(Number(e.target.value) || 1)}
+            placeholder="Usos máximos"
+            className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+          <input
+            type="text"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Notas (opcional)"
+            className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
         </div>
+        <button
+          onClick={createInvite}
+          disabled={creating}
+          className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
+        >
+          {creating ? 'Creando...' : 'Crear Enlace'}
+        </button>
 
         {lastCreated && (
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-2">
@@ -131,7 +150,9 @@ export default function Invites() {
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th className="text-left px-6 py-3 font-medium text-gray-600">Código</th>
                   <th className="text-left px-6 py-3 font-medium text-gray-600">Rol</th>
-                  <th className="text-left px-6 py-3 font-medium text-gray-600">Estado</th>
+                  <th className="text-left px-6 py-3 font-medium text-gray-600">Usos</th>
+                  <th className="text-left px-6 py-3 font-medium text-gray-600">Notas</th>
+                  <th className="text-left px-6 py-3 font-medium text-gray-600">Aceptado por</th>
                   <th className="text-left px-6 py-3 font-medium text-gray-600">Creado</th>
                   <th className="px-6 py-3"></th>
                 </tr>
@@ -147,16 +168,16 @@ export default function Invites() {
                         {invite.role === 'team' ? 'Cocinero' : 'Invitado'}
                       </span>
                     </td>
-                    <td className="px-6 py-3">
-                      {invite.used_at ? (
-                        <span className="text-xs text-gray-500">Usado por {invite.used_by}</span>
-                      ) : (
-                        <span className="text-xs text-green-600 font-medium">Disponible</span>
-                      )}
+                    <td className="px-6 py-3 text-xs">
+                      <span className={invite.uses >= invite.max_uses ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                        {invite.uses}/{invite.max_uses}
+                      </span>
                     </td>
+                    <td className="px-6 py-3 text-xs text-gray-500 max-w-[150px] truncate">{invite.notes || '—'}</td>
+                    <td className="px-6 py-3 text-xs text-gray-500 max-w-[200px] truncate">{invite.accepted_by || '—'}</td>
                     <td className="px-6 py-3 text-xs text-gray-500">{formatDate(invite.created_at)}</td>
                     <td className="px-6 py-3">
-                      {!invite.used_at && (
+                      {invite.uses < invite.max_uses && (
                         <button
                           onClick={() => copyToClipboard(`${window.location.origin}/invite/${invite.code}`)}
                           className="text-primary hover:text-primary-dark text-xs font-medium"

@@ -43,13 +43,13 @@ export default function Login() {
       }
 
       if (role === 'admin') {
-        login(data.token, { id: data.user.id, email: data.user.email, name: data.user.name, role: 'admin' })
+        login({ id: data.user.id, email: data.user.email, name: data.user.name, role: 'admin' })
         navigate('/admin')
       } else if (role === 'team') {
-        login(data.token, { team_id: data.team.id, name: data.team.name, role: 'team' })
-        navigate(`/chat/team/${data.team.id}`)
+        login({ team_id: data.team.id, name: data.team.name, role: 'team' })
+        navigate('/team/dashboard')
       } else {
-        login(data.token, { anonymous_id: data.judge.anonymous_id, role: 'judge' })
+        login({ anonymous_id: data.judge.anonymous_id, role: 'judge' })
         navigate('/judge')
       }
     } catch {

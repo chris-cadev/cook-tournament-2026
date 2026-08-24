@@ -25,7 +25,7 @@ export default function TeamLogin() {
         setError(data.error || 'Credenciales inválidas')
         return
       }
-      login(data.token, {
+      login({
         team_id: data.team.id,
         name: data.team.name,
         role: 'team',

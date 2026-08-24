@@ -7,11 +7,11 @@ interface Props {
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: Props) {
-  const { token, user } = useAuthStore()
+  const { user } = useAuthStore()
 
-  if (!token || !user) {
+  if (!user) {
     const role = allowedRoles?.[0]
-    const loginPath = role === 'admin' ? '/login/admin' : role === 'team' ? '/login/team' : role === 'judge' ? '/login/judge' : '/login/admin'
+    const loginPath = role === 'admin' ? '/login/admin' : role === 'team' ? '/login/team' : role === 'judge' ? '/login/judge' : role === 'guest' ? '/login/guest' : '/login'
     return <Navigate to={loginPath} replace />
   }
 

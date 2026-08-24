@@ -3,6 +3,7 @@ import TeamEditModal from '../../components/admin/TeamEditModal'
 
 interface Team {
   id: number
+  slug: string
   name: string
   sandwich_name: string
   captain_email: string
@@ -18,9 +19,7 @@ export default function Teams() {
 
   const fetchTeams = useCallback(async () => {
     try {
-      const res = await fetch('/api/teams', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      })
+      const res = await fetch('/api/teams')
       if (res.ok) setTeams(await res.json())
     } finally {
       setLoading(false)
@@ -29,13 +28,12 @@ export default function Teams() {
 
   useEffect(() => { fetchTeams() }, [fetchTeams])
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (slug: string) => {
     if (!confirm('¿Eliminar este equipo?')) return
-    await fetch(`/api/teams/${id}`, {
+    await fetch(`/api/teams/${slug}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
-    setTeams((t) => t.filter((x) => x.id !== id))
+    setTeams((t) => t.filter((x) => x.slug !== slug))
   }
 
   const statusBadge = (status: string) => {
@@ -95,7 +93,7 @@ export default function Teams() {
                         <button onClick={() => setEditing(team)} className="text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors" title="Editar">
                           <span className="material-symbols-outlined text-lg">edit</span>
                         </button>
-                        <button onClick={() => handleDelete(team.id)} className="text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Eliminar">
+                        <button onClick={() => handleDelete(team.slug)} className="text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Eliminar">
                           <span className="material-symbols-outlined text-lg">delete</span>
                         </button>
                       </div>
@@ -110,6 +108,7 @@ export default function Teams() {
 
       {editing && (
         <TeamEditModal
+          open
           team={editing}
           onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); fetchTeams() }}

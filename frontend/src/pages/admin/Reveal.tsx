@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 import { useToastStore } from '../../stores/toastStore'
-import { socket } from '../../lib/socket'
-import Navbar from '../../components/Navbar'
+import { useSocket } from '../../lib/socket'
 
 interface CategoryStatus {
   category: string
@@ -20,7 +18,6 @@ interface LeaderboardEntry {
 
 
 export default function Reveal() {
-  const { token } = useAuthStore()
   const addToast = useToastStore((s) => s.addToast)
   const [categories, setCategories] = useState<CategoryStatus[]>([])
   const [revealedCount, setRevealedCount] = useState(0)
@@ -61,17 +58,18 @@ export default function Reveal() {
     fetchLeaderboard()
   }, [fetchConfig, fetchLeaderboard])
 
+  const socket = useSocket()
+
   useEffect(() => {
-    socket.connect()
+    if (!socket) return
     socket.on('score:reveal', () => {
       fetchLeaderboard()
       fetchConfig()
     })
     return () => {
       socket.off('score:reveal')
-      socket.disconnect()
     }
-  }, [fetchLeaderboard, fetchConfig])
+  }, [socket, fetchLeaderboard, fetchConfig])
 
   const nextUnrevealed = categories.find(c => !c.revealed)
 
@@ -84,7 +82,6 @@ export default function Reveal() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ category: confirmCategory }),
       })
@@ -145,7 +142,6 @@ export default function Reveal() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
       <div className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="font-headline text-3xl font-black text-secondary mb-2">
           Control de Revelación de Puntuaciones

@@ -4,18 +4,18 @@ interface ChatInputProps {
   placeholder?: string
   onSend: (content: string, attachment?: { url: string; type: string }) => Promise<void>
   disabled?: boolean
-  token?: string | null
 }
 
 const ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,audio/mpeg,audio/wav,audio/ogg,audio/webm,audio/mp4'
 
-export default function ChatInput({ placeholder = 'Type a message...', onSend, disabled, token }: ChatInputProps) {
+export default function ChatInput({ placeholder = 'Escribe un mensaje...', onSend, disabled }: ChatInputProps) {
   const [content, setContent] = useState('')
   const [sending, setSending] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<{ url: string; type: string; name: string } | null>(null)
   const [minioAvailable, setMinioAvailable] = useState(true)
   const fileRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     fetch('/api/upload/health')
@@ -24,6 +24,14 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
       .catch(() => setMinioAvailable(false))
   }, [])
 
+  const prevSending = useRef(sending)
+  useEffect(() => {
+    if (prevSending.current && !sending) {
+      textareaRef.current?.focus()
+    }
+    prevSending.current = sending
+  }, [sending])
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -31,19 +39,18 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
     const isImage = file.type.startsWith('image/')
     const isAudio = file.type.startsWith('audio/')
     if (!isImage && !isAudio) {
-      alert('Only image and audio files are allowed')
+      alert('Solo se permiten archivos de imagen y audio')
       return
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('File too large (max 10MB)')
+      alert('Archivo muy grande (máximo 10MB)')
       return
     }
 
     setUploading(true)
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (token) headers['Authorization'] = `Bearer ${token}`
       const res = await fetch('/api/upload/presign', {
         method: 'POST',
         headers,
@@ -52,7 +59,7 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
 
       if (!res.ok) {
         const err = await res.json()
-        alert(err.error || 'Upload not available')
+        alert(err.error || 'Subida no disponible')
         return
       }
 
@@ -65,14 +72,14 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
       })
 
       if (!uploadRes.ok) {
-        alert('Failed to upload file')
+        alert('Error al subir archivo')
         return
       }
 
       setPreview({ url: file_url, type: isImage ? 'image' : 'audio', name: file.name })
     } catch (err) {
       console.error('Upload error:', err)
-      alert('Upload failed')
+      alert('Error al subir')
     } finally {
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -111,7 +118,7 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
           <button
             onClick={() => setPreview(null)}
             className="text-gray-400 hover:text-red-500 p-1"
-            title="Remove attachment"
+            title="Eliminar adjunto"
           >
             <span className="material-symbols-outlined text-sm">close</span>
           </button>
@@ -127,9 +134,9 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
         />
         <button
           onClick={() => fileRef.current?.click()}
-          disabled={disabled || sending || uploading || !minioAvailable || !token}
+          disabled={disabled || sending || uploading || !minioAvailable}
           className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title={!token ? 'Login required to upload files' : !minioAvailable ? 'File upload unavailable' : 'Attach image or audio'}
+          title={!minioAvailable ? 'Subida de archivos no disponible' : 'Adjuntar imagen o audio'}
         >
           {uploading ? (
             <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
@@ -138,6 +145,7 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
           )}
         </button>
         <textarea
+          ref={textareaRef}
           className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[40px] max-h-[120px]"
           placeholder={placeholder}
           rows={1}
@@ -151,7 +159,7 @@ export default function ChatInput({ placeholder = 'Type a message...', onSend, d
           disabled={(!content.trim() && !preview) || sending || disabled}
           className="px-4 py-2 bg-primary text-white rounded-xl font-medium text-sm hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send
+          Enviar
         </button>
       </div>
     </div>

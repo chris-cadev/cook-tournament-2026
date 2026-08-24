@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast } from '../components/ui/Toast'
+import { useToast } from '../components/ui/Toast'
 
 export default function Register() {
+  const { toast } = useToast()
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [sandwichName, setSandwichName] = useState('')
@@ -69,7 +70,7 @@ export default function Register() {
       }
 
       setSuccess(true)
-      toast.success('¡Equipo registrado!')
+      toast('¡Equipo registrado!', 'success')
       setTimeout(() => navigate('/'), 2000)
     } catch {
       setError('Error de conexión. Verifica tu red.')

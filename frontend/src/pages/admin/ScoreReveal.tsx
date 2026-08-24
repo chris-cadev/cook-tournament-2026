@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface CategoryStatus {
   category: string
@@ -7,7 +6,6 @@ interface CategoryStatus {
 }
 
 export default function ScoreReveal() {
-  const { token } = useAuthStore()
   const [categories, setCategories] = useState<CategoryStatus[]>([])
   const [revealedCount, setRevealedCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -40,7 +38,6 @@ export default function ScoreReveal() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ category }),
       })

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 export default function EmailReminders() {
-  const { token } = useAuthStore()
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<{ sent: number; total: number } | null>(null)
   const [error, setError] = useState('')
@@ -22,7 +20,6 @@ export default function EmailReminders() {
     try {
       const res = await fetch('/api/admin/send-reminders', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
       if (!res.ok) {

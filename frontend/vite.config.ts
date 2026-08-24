@@ -6,8 +6,10 @@ import fs from 'fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const envPath = path.resolve(__dirname, '../.env')
-if (fs.existsSync(envPath)) {
+try {
   process.loadEnvFile(envPath)
+} catch {
+  // .env is optional — production uses environment variables
 }
 
 const frontendPort = Number(process.env.PORT) || 3000

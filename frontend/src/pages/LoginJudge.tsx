@@ -6,8 +6,15 @@ export default function LoginJudge() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const user = useAuthStore((s) => s.user)
   const login = useAuthStore((s) => s.login)
+  const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,7 +31,7 @@ export default function LoginJudge() {
         setError(data.error || 'Login failed')
         return
       }
-      login(data.token, { anonymous_id: data.judge.anonymous_id, role: 'judge' })
+      login({ anonymous_id: data.judge.anonymous_id, role: 'judge' })
       navigate('/judge/panel')
     } catch {
       setError('Network error')
@@ -34,7 +41,12 @@ export default function LoginJudge() {
   }
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center px-4">
+    <div className="relative min-h-screen bg-surface flex items-center justify-center px-4">
+      {user && (
+        <button onClick={handleLogout} className="absolute top-4 right-4 text-sm text-gray-400 hover:text-gray-600">
+          Cerrar sesión
+        </button>
+      )}
       <div className="w-full max-w-sm">
         <h1 className="font-headline text-3xl font-black text-secondary text-center mb-2">Judge Access</h1>
         <p className="text-gray-500 text-center mb-6 text-sm">Ingresa la contraseña de juez</p>

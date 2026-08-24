@@ -3,8 +3,30 @@ import { Server as HttpServer } from 'http'
 import jwt from 'jsonwebtoken'
 import { AuthUser } from './middleware/auth.js'
 import { getDb, saveDb } from './db.js'
+import { resolveTeamSlug } from './team-utils.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret'
+const COOKIE_NAME = 'session_token'
+
+const ADJECTIVES = ['Happy', 'Lucky', 'Sunny', 'Cosmic', 'Funky', 'Groovy', 'Witty', 'Brave', 'Clever', 'Swift', 'Calm', 'Bold', 'Keen', 'Warm', 'Wild', 'Proud', 'Jolly', 'Merry', 'Noble', 'Royal']
+const ANIMALS = ['Fox', 'Bear', 'Owl', 'Wolf', 'Hawk', 'Lynx', 'Deer', 'Seal', 'Crow', 'Puma', 'Goat', 'Crane', 'Swan', 'Lemur', 'Otter', 'Raven', 'Jaguar', 'Falcon', 'Koala', 'Panda']
+
+function generateGuestName(): string {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]
+  const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)]
+  const num = Math.floor(10 + Math.random() * 90)
+  return `${adj}${animal}${num}`
+}
+
+function parseCookies(header: string | undefined): Record<string, string> {
+  if (!header) return {}
+  return Object.fromEntries(
+    header.split(';').map(c => {
+      const [key, ...val] = c.trim().split('=')
+      return [key, val.join('=')]
+    })
+  )
+}
 
 let io: Server
 
@@ -19,10 +41,11 @@ function validateChannelAccess(user: AuthUser, channel: string): boolean {
   if (channel === 'global') return true
 
   if (channel.startsWith('team:')) {
-    const channelId = parseInt(channel.split(':')[1], 10)
-    if (isNaN(channelId)) return false
+    const slug = channel.split(':')[1]
+    const teamId = resolveTeamSlug(slug)
+    if (teamId === null) return false
     if (user.role === 'admin') return true
-    if (user.role === 'team' && user.team_id === channelId) return true
+    if (user.role === 'team' && user.team_id === teamId) return true
     return false
   }
 
@@ -51,7 +74,16 @@ export function initSocket(httpServer: HttpServer) {
   })
 
   io.use((socket, next) => {
-    const token = socket.handshake.auth.token
+    let token: string | null = null
+
+    const authHeader = socket.handshake.auth.token
+    if (authHeader) {
+      token = authHeader
+    } else {
+      const cookies = parseCookies(socket.handshake.headers.cookie)
+      token = cookies[COOKIE_NAME] || null
+    }
+
     if (!token) {
       socket.data.user = { role: 'guest' } as AuthUser
       return next()
@@ -70,11 +102,16 @@ export function initSocket(httpServer: HttpServer) {
     const user = socket.data.user as AuthUser
     console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email || 'guest'})`)
 
+    if (user.role === 'guest' && !user.id) {
+      socket.emit('chat:guest-name', { name: generateGuestName() })
+    }
+
     socket.on('chat:join', (data: { channel: string }) => {
       if (!validateChannelAccess(user, data.channel)) {
         socket.emit('chat:error', { error: 'Access denied to this channel' })
         return
       }
+      console.log(`Socket joining room: chat:${data.channel}`)
       socket.join(`chat:${data.channel}`)
       socket.emit('chat:joined', { channel: data.channel })
 
@@ -92,7 +129,7 @@ export function initSocket(httpServer: HttpServer) {
       socket.leave(`chat:${data.channel}`)
     })
 
-    socket.on('chat:send', (data: { channel: string; content: string; attachment_url?: string; attachment_type?: string }) => {
+    socket.on('chat:send', (data: { channel: string; content: string; sender_name?: string; attachment_url?: string; attachment_type?: string }) => {
       if (!validateChannelAccess(user, data.channel)) {
         socket.emit('chat:error', { error: 'Access denied to this channel' })
         return
@@ -109,27 +146,31 @@ export function initSocket(httpServer: HttpServer) {
       }
 
       const db = getDb()
+      const name = (data.sender_name && typeof data.sender_name === 'string' && data.sender_name.trim()) || user.name || user.email || user.anonymous_id || 'Unknown'
 
       db.run(
         'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           data.channel,
           user.id || user.team_id || user.anonymous_id || null,
-          user.name || user.email || user.anonymous_id || 'Unknown',
+          name,
           user.role,
           data.content.trim(),
           data.attachment_url || null,
           data.attachment_type || null,
         ]
       )
-      saveDb()
 
       const idRows = db.exec('SELECT last_insert_rowid() as id')
       const messageId = idRows[0].values[0][0]
       const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [messageId]))
 
-      io.to(`chat:${data.channel}`).emit('chat:message', { message })
-      io.to(`chat:${data.channel}`).emit('chat:new', { message })
+      saveDb()
+
+      if (message) {
+        io.to(`chat:${data.channel}`).emit('chat:message', { message })
+        io.to(`chat:${data.channel}`).emit('chat:new', { message })
+      }
     })
 
     socket.on('disconnect', () => {

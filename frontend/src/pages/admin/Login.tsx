@@ -25,7 +25,7 @@ export default function AdminLogin() {
         setError(data.error || 'Credenciales inválidas')
         return
       }
-      login(data.token, { id: data.user.id, email: data.user.email, name: data.user.name, role: 'admin' })
+      login({ id: data.user.id, email: data.user.email, name: data.user.name, role: 'admin' })
       navigate('/admin')
     } catch {
       setError('Error de conexión')

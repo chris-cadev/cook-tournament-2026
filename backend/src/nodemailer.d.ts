@@ -1,20 +1,18 @@
 declare module 'nodemailer' {
-  interface TransportOptions {
+  export interface TransportOptions {
     host?: string
     port?: number
     secure?: boolean
     auth?: { user?: string; pass?: string }
   }
-  interface SendMailOptions {
+  export interface SendMailOptions {
     from?: string
     to?: string | string[]
     subject?: string
     html?: string
   }
-  interface Transporter {
+  export interface Transporter {
     sendMail(options: SendMailOptions): Promise<any>
   }
-  function createTransport(options: TransportOptions): Transporter
-  const defaultExport: { createTransport: typeof createTransport }
-  export default defaultExport
+  export function createTransport(options: TransportOptions): Transporter
 }

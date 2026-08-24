@@ -23,49 +23,77 @@ function useCountdown(target: string) {
 }
 
 const schedule = [
-  { time: '2:00 – 2:15', activity: 'Llegada de equipos e instalación. Llegada del público y socialización.', who: 'Todos' },
-  { time: '2:15 – 2:25', activity: 'Lectura de reglas. Asignación de estaciones.', who: 'Organizador + Equipos' },
-  { time: '2:25 – 3:30', activity: '¡Comienza la cocina! (65 min). Actividades paralelas para el público.', who: 'Equipos + Público' },
-  { time: '3:30 – 3:40', activity: '¡ALTO! Emplatado y etiquetado (A–F).', who: 'Equipos' },
-  { time: '3:40 – 4:10', activity: 'Degustación de jueces. Público prueba muestras.', who: 'Jueces + Público' },
-  { time: '4:10 – 4:25', activity: 'Conteo de puntuaciones.', who: 'Organizador' },
-  { time: '4:25 – 4:50', activity: 'Ceremonia de premiación y deseos de cumpleaños.', who: 'Todos' },
-  { time: '4:50 – 5:00', activity: 'Despedida. El parque cierra a las 5:00 PM.', who: 'Todos' },
+  { time: '0:00 – 0:10', activity: 'Llegada de equipos e instalación. Llegada del público y socialización.', who: 'Todos' },
+  { time: '0:10 – 0:15', activity: 'Lectura de reglas. Asignación de estaciones.', who: 'Organizador + Equipos' },
+  { time: '0:15 – 1:15', activity: '¡Comienza la cocina! (60 min). Actividades paralelas para el público.', who: 'Equipos + Público' },
+  { time: '1:15', activity: '¡ALTO! Emplatado y etiquetado (A–F).', who: 'Equipos' },
+  { time: '1:20 – 1:40', activity: 'Degustación de jueces. Público prueba muestras.', who: 'Jueces + Público' },
+  { time: '1:40 – 1:50', activity: 'Conteo de puntuaciones.', who: 'Organizador' },
+  { time: '1:50 – 2:00', activity: 'Ceremonia de premiación y deseos de cumpleaños.', who: 'Todos' },
 ]
 
-const scoring = [
-  { category: 'Sabor', weight: 'x2', max: 20, desc: 'Balance de sabores, sazón, nivel de delicia' },
-  { category: 'Textura', weight: 'x1', max: 10, desc: 'Frescura del pan, crujiente, consistencia' },
-  { category: 'Creatividad', weight: 'x1', max: 10, desc: 'Combinaciones originales, técnicas ingeniosas' },
-  { category: 'Presentación', weight: 'x1', max: 10, desc: 'Emplatado, color, limpieza, atractivo visual' },
-  { category: 'Bonificación', weight: 'opcional', max: '+2', desc: 'Pan casero, pepinillos caseros, ingrediente "salvaje"' },
-]
+const GUEST_KEY = 'guest_access_code'
+const GUEST_NAME = 'guest_name'
 
 export default function Landing() {
   const { days, hours, minutes, seconds } = useCountdown(EVENT_DATE)
+  const [rsvp, setRsvp] = useState(() => ({ name: localStorage.getItem(GUEST_NAME) || '', email: '', num_people: '' }))
+  const [rsvpErrors, setRsvpErrors] = useState<Record<string, string>>({})
+  const [rsvpLoading, setRsvpLoading] = useState(false)
+  const [rsvpCode, setRsvpCode] = useState<string | null>(() => localStorage.getItem(GUEST_KEY))
+
+  const updateRsvp = (field: string, value: string) => {
+    setRsvp((f) => ({ ...f, [field]: value }))
+    if (rsvpErrors[field]) setRsvpErrors((e) => { const n = { ...e }; delete n[field]; return n })
+  }
+
+  const handleRsvp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const errs: Record<string, string> = {}
+    if (!rsvp.name.trim()) errs.name = 'Nombre requerido'
+    if (!rsvp.email.trim()) errs.email = 'Email requerido'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rsvp.email)) errs.email = 'Email inválido'
+    if (rsvp.num_people) {
+      const p = parseInt(rsvp.num_people, 10)
+      if (isNaN(p) || p < 0 || p > 10) errs.num_people = 'Máximo 10 acompañantes'
+    }
+    if (Object.keys(errs).length > 0) { setRsvpErrors(errs); return }
+
+    setRsvpLoading(true)
+    try {
+      const res = await fetch('/api/guests/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: rsvp.name.trim(),
+          email: rsvp.email.trim(),
+          num_people: rsvp.num_people ? parseInt(rsvp.num_people, 10) : 0,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setRsvpErrors({ submit: data.error }); return }
+      localStorage.setItem(GUEST_KEY, data.access_code)
+      localStorage.setItem(GUEST_NAME, rsvp.name.trim())
+      setRsvpCode(data.access_code)
+    } catch {
+      setRsvpErrors({ submit: 'Error de red' })
+    } finally {
+      setRsvpLoading(false)
+    }
+  }
+
+  const copyCode = () => {
+    if (rsvpCode) navigator.clipboard.writeText(rsvpCode)
+  }
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Navbar */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-headline text-lg font-black text-secondary">🏆 El Campeonato</Link>
-          <div className="flex items-center gap-4 text-sm">
-            <a href="#cronograma" className="text-gray-600 hover:text-primary transition-colors hidden sm:block">Cronograma</a>
-            <a href="#reglas" className="text-gray-600 hover:text-primary transition-colors hidden sm:block">Reglas</a>
-            <Link to="/register" className="text-gray-600 hover:text-primary transition-colors">Registrar</Link>
-            <Link to="/chat" className="text-gray-600 hover:text-primary transition-colors">Chat</Link>
-            <Link to="/login" className="bg-primary/10 text-primary-dark font-semibold px-3 py-1.5 rounded-xl hover:bg-primary/20 transition-colors">Entrar</Link>
-          </div>
-        </div>
-      </nav>
-
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
 
         {/* Hero */}
         <section className="text-center space-y-4">
           <h1 className="font-headline text-5xl md:text-7xl font-black text-secondary leading-tight">
-            El Campeonato de Sándwiches
+            Sandwich Fest. 2026
           </h1>
           <p className="text-xl text-gray-600">Competencia de cocina en vivo + Celebración de cumpleaños</p>
 
@@ -82,18 +110,6 @@ export default function Landing() {
               </div>
             ))}
           </div>
-
-          <div className="flex justify-center gap-3 pt-4">
-            <Link to="/register" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors">
-              Registrar Tu Equipo
-            </Link>
-            <Link to="/chat" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
-              Unirse al Chat Global
-            </Link>
-            <Link to="/results" className="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
-              Ver Resultados
-            </Link>
-          </div>
         </section>
 
         {/* Regla #1 */}
@@ -104,26 +120,99 @@ export default function Landing() {
           <p className="text-sm text-gray-600 mt-1">Cualquier hamburguesa = descalificación inmediata</p>
         </section>
 
-        {/* Quick facts */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Equipos', value: 'Hasta 6', icon: '👥' },
-            { label: 'Por equipo', value: 'Max 3 personas', icon: '🧑‍🍳' },
-            { label: 'Jueces', value: '3 oficiales', icon: '⚖️' },
-            { label: 'Cocción', value: '60 minutos', icon: '⏱️' },
-          ].map((item) => (
-            <div key={item.label} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-              <p className="text-2xl mb-1">{item.icon}</p>
-              <p className="font-headline font-bold text-secondary text-sm">{item.value}</p>
-              <p className="text-xs text-gray-500">{item.label}</p>
+        {/* Dos caminos: Asistir / Competir */}
+        <section id="asistir" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Voy a asistir */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-headline text-xl font-black text-secondary mb-1">Voy a asistir 🎉</h2>
+            <p className="text-sm text-gray-500 mb-4">Regístrate para reservar tu lugar y acceder al evento desde cualquier dispositivo.</p>
+
+            {rsvpCode ? (
+              <div className="text-center py-4 space-y-3">
+                <p className="text-3xl">🎫</p>
+                <p className="font-headline font-bold text-secondary text-lg">¡Listo, {rsvp.name}!</p>
+                <p className="text-sm text-gray-500">Tu código de acceso es:</p>
+                <div className="bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl px-6 py-4">
+                  <p className="font-mono text-3xl font-black text-primary tracking-widest">{rsvpCode}</p>
+                </div>
+                <p className="text-xs text-gray-400">Guárdalo, lo necesitas para entrar al evento.</p>
+                <button onClick={copyCode}
+                  className="text-sm bg-primary/10 text-primary-dark font-semibold px-4 py-2 rounded-xl hover:bg-primary/20 transition-colors">
+                  {navigator.clipboard ? 'Copiar código' : 'Código copiado'}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleRsvp} className="space-y-3">
+                {rsvpErrors.submit && <p className="text-xs text-red-600 bg-red-50 p-2 rounded-xl">{rsvpErrors.submit}</p>}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tu nombre *</label>
+                  <input type="text" value={rsvp.name} onChange={(e) => updateRsvp('name', e.target.value)} autoFocus
+                    className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 ${rsvpErrors.name ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                    placeholder="Ej: María López" />
+                  {rsvpErrors.name && <p className="text-xs text-red-600 mt-1">{rsvpErrors.name}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <input type="email" value={rsvp.email} onChange={(e) => updateRsvp('email', e.target.value)}
+                    className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 ${rsvpErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                    placeholder="maria@ejemplo.com" />
+                  {rsvpErrors.email && <p className="text-xs text-red-600 mt-1">{rsvpErrors.email}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Acompañantes <span className="text-gray-400">(opcional)</span></label>
+                  <input type="number" min={0} max={10} value={rsvp.num_people} onChange={(e) => updateRsvp('num_people', e.target.value)}
+                    className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 ${rsvpErrors.num_people ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                    placeholder="0" />
+                  {rsvpErrors.num_people && <p className="text-xs text-red-600 mt-1">{rsvpErrors.num_people}</p>}
+                </div>
+
+                <button type="submit" disabled={rsvpLoading}
+                  className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50">
+                  {rsvpLoading ? 'Confirmando...' : 'Confirmar Asistencia'}
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Quiero competir */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
+            <h2 className="font-headline text-xl font-black text-secondary mb-1">Quiero competir 🍳</h2>
+            <p className="text-sm text-gray-500 mb-4">Forma tu equipo o únete a uno existente para pelear por La Tostadora Dorada.</p>
+
+            <div className="flex-1 flex flex-col justify-center space-y-3 text-sm text-gray-600">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">👥</span>
+                <p>Hasta <strong>6 equipos</strong> · máx. 3 personas c/u</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-lg">⏱️</span>
+                <p><strong>60 minutos</strong> de cocina en vivo</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-lg">⚖️</span>
+                <p>3 jueces oficiales · degustación a ciegas</p>
+              </div>
             </div>
-          ))}
+
+            <div className="mt-6 space-y-2">
+              <Link to="/register" className="block text-center bg-secondary hover:bg-secondary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors">
+                Registrar mi equipo
+              </Link>
+              <Link to="/join-team" className="block text-center bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold py-3 rounded-2xl transition-colors">
+                Unirme a un equipo
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* Cronograma */}
         <section id="cronograma" className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-headline text-2xl font-black text-secondary">Cronograma</h2>
+            <p className="text-sm text-gray-500 mt-1">Sábado 10 de octubre, 2:00 – 5:00 PM</p>
           </div>
           <div className="divide-y divide-gray-100">
             {schedule.map((item) => (
@@ -138,68 +227,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Sistema de puntuación */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="font-headline text-2xl font-black text-secondary">Sistema de Puntuación</h2>
-            <p className="text-sm text-gray-500 mt-1">Degustación a ciegas · Sándwiches etiquetados A–F · 52 pts posibles por juez</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-secondary/5">
-                  <th className="text-left px-6 py-3 font-headline font-bold text-secondary">Categoría</th>
-                  <th className="text-center px-4 py-3 font-headline font-bold text-secondary">Peso</th>
-                  <th className="text-center px-4 py-3 font-headline font-bold text-secondary">Pts</th>
-                  <th className="text-left px-6 py-3 font-headline font-bold text-secondary hidden sm:table-cell">Criterios</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {scoring.map((row) => (
-                  <tr key={row.category} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 font-semibold">{row.category}</td>
-                    <td className="px-4 py-3 text-center text-gray-600">{row.weight}</td>
-                    <td className="px-4 py-3 text-center font-bold text-secondary">{row.max}</td>
-                    <td className="px-6 py-3 text-gray-600 hidden sm:table-cell">{row.desc}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* Lo que debe traer cada equipo */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="font-headline text-2xl font-black text-secondary">Qué debe traer cada equipo</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
-            <div className="p-6">
-              <h3 className="font-headline font-bold text-tertiary mb-3">El organizador proporciona</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>Mesas (1 por equipo)</li>
-                <li>Enchufes</li>
-                <li>Nevera portátil compartida con hielo</li>
-                <li>Microondas compartido</li>
-                <li>Freidora de aire compartida</li>
-                <li>Botes de basura, toallas de papel</li>
-                <li>Platos para presentación final</li>
-              </ul>
-            </div>
-            <div className="p-6">
-              <h3 className="font-headline font-bold text-error mb-3">Cada equipo debe traer</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><strong>TODOS los ingredientes</strong> (pan, proteínas, verduras, salsas, etc.)</li>
-                <li>Proteínas pre-marinadas/listas para cocinar</li>
-                <li>Cuchillos, tablas de cortar, utensilios</li>
-                <li>Cocina portátil (plancha, hornilla) — <em>no hay estufas</em></li>
-                <li>Ollas, sartenes, espátulas</li>
-                <li>Fuente propia para presentación final</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
         {/* Actividades del público */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
@@ -208,12 +235,12 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
             {[
-              { icon: '🗳️', name: 'Voto Popular en Vivo', desc: 'Escanea el QR y vota por tu sándwich favorito en tiempo real. El ganador del público se lleva un trofeo especial.' },
-              { icon: '📸', name: 'Photo Booth Temático', desc: 'Sombreros de chef, espátulas gigantes y un fondo perfecto para Instagram. ¡Etiquétanos!' },
-              { icon: '🎯', name: 'Predicciones Premiadas', desc: '¿Quién ganará? Escribe tu predicción antes del inicio. Los que acierten se llevan un premio sorpresa.' },
-              { icon: '👅', name: 'Catatura Popular', desc: 'Cuando los jueces terminen, ¡tú también pruebas! Califica los sándwiches y comparte tu opinión.' },
-              { icon: '🎵', name: 'Música y Ambientación', desc: 'Playlist curada, ambiente festivo y buena vibra todo el evento.' },
-              { icon: '🎂', name: 'Pastel de Cumpleaños', desc: 'Al final, todos compartimos un pedacito de pastel para celebrar al anfitrión.' },
+              { icon: '🗳️', name: 'Muro de Predicciones', desc: 'Coloca tu predicción del ganador. Los que acierten se llevan un premio.' },
+              { icon: '🎯', name: 'Trivia / Bingo de Sándwiches', desc: 'Datos curiosos, pistas y premios sorpresa.' },
+              { icon: '👃', name: 'Prueba de Olores', desc: 'Adivina qué ingrediente están usando los equipos.' },
+              { icon: '👅', name: 'Degustación Popular', desc: 'Prueba los sándwiches después de la evaluación de jueces.' },
+              { icon: '🎨', name: 'Evaluación Visual', desc: 'Califica los sándwiches solo por apariencia (del 1 al 5).' },
+              { icon: '🎂', name: 'Pastel de Cumpleaños', desc: 'Al final, compartimos pastel para celebrar al anfitrión.' },
             ].map((act) => (
               <div key={act.name} className="flex items-start px-6 py-4 gap-3">
                 <span className="text-2xl">{act.icon}</span>
@@ -227,7 +254,7 @@ export default function Landing() {
         </section>
 
         <footer className="text-center text-xs text-gray-400 pb-8">
-          El Campeonato de Sándwiches &amp; Celebración de Cumpleaños · 2026
+          Sandwich Fest. 2026
         </footer>
       </div>
     </div>

@@ -1,19 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 
 export default function ToDo() {
-  const { token } = useAuthStore()
   const [markdown, setMarkdown] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
 
   const fetchTodos = useCallback(async () => {
-    if (!token) return
     try {
-      const res = await fetch('/api/admin/todos', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch('/api/admin/todos')
       if (res.ok) {
         const data = await res.json()
         setMarkdown(data.content_markdown || '')
@@ -24,19 +19,18 @@ export default function ToDo() {
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     fetchTodos()
   }, [fetchTodos])
 
   const saveTodos = useCallback(async () => {
-    if (!token) return
     setSaving(true)
     try {
       const res = await fetch('/api/admin/todos', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content_markdown: markdown }),
       })
       if (res.ok) {
@@ -47,7 +41,7 @@ export default function ToDo() {
     } finally {
       setSaving(false)
     }
-  }, [token, markdown])
+  }, [markdown])
 
   useEffect(() => {
     if (loading) return

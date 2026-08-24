@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuthStore } from '../../stores/authStore'
 import Modal from '../Modal'
 import TeamEditModal from './TeamEditModal'
 
 interface Team {
   id: number
+  slug: string
   name: string
   sandwich_name: string
   captain_email: string
@@ -25,7 +25,6 @@ const statusLabels: Record<Team['status'], string> = {
 }
 
 export default function TeamTable() {
-  const { token } = useAuthStore()
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
@@ -33,12 +32,9 @@ export default function TeamTable() {
   const [deleting, setDeleting] = useState(false)
 
   const fetchTeams = useCallback(async () => {
-    if (!token) return
     setLoading(true)
     try {
-      const res = await fetch('/api/teams', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch('/api/teams')
       if (res.ok) {
         const data = await res.json()
         setTeams(Array.isArray(data) ? data : data.teams || [])
@@ -48,19 +44,18 @@ export default function TeamTable() {
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     fetchTeams()
   }, [fetchTeams])
 
   const handleDelete = async () => {
-    if (!deletingTeam || !token) return
+    if (!deletingTeam) return
     setDeleting(true)
     try {
-      const res = await fetch(`/api/teams/${deletingTeam.id}`, {
+      const res = await fetch(`/api/teams/${deletingTeam.slug}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
       })
       if (res.ok) {
         setTeams(prev => prev.filter(t => t.id !== deletingTeam.id))

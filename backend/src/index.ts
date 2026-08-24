@@ -1,9 +1,8 @@
 import dotenv from 'dotenv'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+// Find .env by walking up from CWD
+dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 import express from 'express'
 import cors from 'cors'
 import { createServer } from 'http'
@@ -20,6 +19,14 @@ import scoresRoutes from './routes/scores.js'
 import chatRoutes from './routes/chat.js'
 import uploadRoutes from './routes/upload.js'
 import adminRoutes from './routes/admin.js'
+import emailRoutes from './routes/email.js'
+import stationsRoutes from './routes/stations.js'
+import invitesRoutes from './routes/invites.js'
+import todosRoutes from './routes/todos.js'
+import todoRoutes from './routes/todo.js'
+import guestsRoutes from './routes/guests.js'
+import joinRequestsRoutes from './routes/join-requests.js'
+import notesRoutes from './routes/notes.js'
 
 const app = express()
 const server = createServer(app)
@@ -38,6 +45,13 @@ app.use('/api/scores', scoresRoutes)
 app.use('/api/chat', chatRoutes)
 app.use('/api/upload', uploadRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/admin/email', emailRoutes)
+app.use('/api/admin/stations', stationsRoutes)
+app.use('/api/invites', invitesRoutes)
+app.use('/api/todo', todoRoutes)
+app.use('/api/guests', guestsRoutes)
+app.use('/api/join-requests', joinRequestsRoutes)
+app.use('/api/teams', notesRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

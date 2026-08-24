@@ -11,11 +11,7 @@ export default function Navbar() {
           El Campeonato
         </Link>
         <div className="flex items-center gap-4 text-sm font-medium">
-          <Link to="/" className="text-gray-600 hover:text-secondary transition-colors">Inicio</Link>
-          <Link to="/results" className="text-gray-600 hover:text-secondary transition-colors">Resultados</Link>
           <Link to="/chat" className="text-gray-600 hover:text-secondary transition-colors">Chat</Link>
-          <Link to="/register" className="text-gray-600 hover:text-secondary transition-colors">Registro</Link>
-          <Link to="/invite" className="text-gray-600 hover:text-secondary transition-colors">Invitar</Link>
           {user?.role === 'admin' && (
             <Link to="/admin" className="text-primary-dark hover:text-primary transition-colors font-bold">Admin</Link>
           )}

@@ -1,7 +1,7 @@
 import { useToastStore } from '../../stores/toastStore'
 
 export default function ToastContainer() {
-  const { toasts, remove } = useToastStore()
+  const { toasts, removeToast } = useToastStore()
 
   if (toasts.length === 0) return null
 
@@ -19,7 +19,7 @@ export default function ToastContainer() {
           className={`${colors[t.type]} text-white text-sm font-medium px-4 py-3 rounded-xl shadow-lg flex items-center justify-between gap-3 animate-in slide-in-from-bottom-2`}
         >
           <span>{t.message}</span>
-          <button onClick={() => remove(t.id)} className="text-white/70 hover:text-white text-lg leading-none">&times;</button>
+          <button onClick={() => removeToast(t.id)} className="text-white/70 hover:text-white text-lg leading-none">&times;</button>
         </div>
       ))}
     </div>

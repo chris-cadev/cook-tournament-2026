@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { socket } from '../lib/socket'
+import { useSocket } from '../lib/socket'
 
 interface LeaderboardEntry {
   team_id: number
@@ -35,8 +35,10 @@ export default function Results() {
     fetchLeaderboard()
   }, [fetchLeaderboard])
 
+  const socket = useSocket()
+
   useEffect(() => {
-    socket.connect()
+    if (!socket) return
 
     socket.on('score:reveal', () => {
       fetchLeaderboard()
@@ -44,9 +46,8 @@ export default function Results() {
 
     return () => {
       socket.off('score:reveal')
-      socket.disconnect()
     }
-  }, [fetchLeaderboard])
+  }, [socket, fetchLeaderboard])
 
   useEffect(() => {
     const interval = setInterval(fetchLeaderboard, 30000)

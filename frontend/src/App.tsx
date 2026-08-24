@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route, useParams, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import Landing from './pages/Landing'
 import Results from './pages/Results'
 import Chat from './pages/Chat'
-import TeamChat from './pages/TeamChat'
 import JudgeChat from './pages/JudgeChat'
 import LoginAdmin from './pages/LoginAdmin'
 import LoginTeam from './pages/LoginTeam'
@@ -11,17 +11,37 @@ import Registration from './pages/Registration'
 import JudgeAccess from './pages/JudgeAccess'
 import JudgePanel from './pages/JudgePanel'
 import InvitePage from './pages/InvitePage'
+import JoinTeam from './pages/JoinTeam'
+import LoginGuest from './pages/LoginGuest'
+import TeamDashboard from './pages/TeamDashboard'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import ScoreReveal from './pages/admin/ScoreReveal'
 import ChatModeration from './pages/admin/ChatModeration'
+import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Umami from './components/Umami'
 import { ToastContainer } from './components/Toast'
 import { useAuthStore } from './stores/authStore'
 
 export default function App() {
+  const checkSession = useAuthStore((s) => s.checkSession)
+  const loading = useAuthStore((s) => s.loading)
+
+  useEffect(() => {
+    checkSession()
+  }, [checkSession])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="text-gray-500">Cargando...</div>
+      </div>
+    )
+  }
+
   return (
     <BrowserRouter>
+      <Navbar />
       <Umami />
       <ToastContainer />
       <Routes>
@@ -29,6 +49,7 @@ export default function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/register" element={<Registration />} />
+        <Route path="/join-team" element={<JoinTeam />} />
         <Route path="/invite/:code" element={<InvitePage />} />
 
         {/* Auth routes */}
@@ -36,13 +57,14 @@ export default function App() {
         <Route path="/login/admin" element={<LoginAdmin />} />
         <Route path="/login/team" element={<LoginTeam />} />
         <Route path="/login/judge" element={<LoginJudge />} />
+        <Route path="/login/guest" element={<LoginGuest />} />
 
-        {/* Team chat (authenticated) */}
+        {/* Team dashboard (authenticated) */}
         <Route
-          path="/chat/team/:teamId"
+          path="/team/dashboard"
           element={
             <ProtectedRoute allowedRoles={['team']}>
-              <TeamChatWrapper />
+              <TeamDashboard />
             </ProtectedRoute>
           }
         />
@@ -98,13 +120,16 @@ export default function App() {
   )
 }
 
-function TeamChatWrapper() {
-  const { teamId } = useParams()
-  const { user } = useAuthStore()
-  return <TeamChat teamId={parseInt(teamId!, 10)} teamName={user?.name || `Team ${teamId}`} />
-}
-
 function LoginChooser() {
+  const user = useAuthStore((s) => s.user)
+
+  if (user) {
+    if (user.role === 'admin') return <Navigate to="/admin" replace />
+    if (user.role === 'team') return <Navigate to="/team/dashboard" replace />
+    if (user.role === 'judge') return <Navigate to="/judge/panel" replace />
+    if (user.role === 'guest') return <Navigate to="/chat" replace />
+  }
+
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-4">
@@ -123,6 +148,11 @@ function LoginChooser() {
           <span className="material-symbols-outlined text-3xl text-primary mb-2 block">gavel</span>
           <span className="font-headline font-bold text-secondary block">Juez</span>
           <span className="text-xs text-gray-500">Panel de puntuación</span>
+        </Link>
+        <Link to="/login/guest" className="block bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow text-center">
+          <span className="material-symbols-outlined text-3xl text-primary mb-2 block">confirmation_number</span>
+          <span className="font-headline font-bold text-secondary block">Invitado</span>
+          <span className="text-xs text-gray-500">Usa tu código de acceso</span>
         </Link>
         <div className="text-center pt-2">
           <Link to="/" className="text-sm text-gray-500 hover:text-primary">← Volver al inicio</Link>

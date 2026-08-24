@@ -12,6 +12,8 @@
     "build": "npm run build -w backend && npm run build -w frontend",
     "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
     "lint": "eslint backend/src/ frontend/src/",
+    "db:reset": "npm run reset -w backend",
+    "db:reset:docker": "docker compose rm -fsv backend && docker volume rm cook-2026_backend-data; docker compose up -d backend",
     "test": "vitest run"
   },
   "devDependencies": {

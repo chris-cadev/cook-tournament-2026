@@ -1,114 +1,22 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuthStore } from '../stores/authStore'
-import { socket } from '../lib/socket'
+import { useChat } from '../lib/useChat'
 import ChatInput from '../components/ChatInput'
-
-interface ChatMessage {
-  id: number
-  channel: string
-  sender_id: number | null
-  sender_name: string
-  sender_role: string
-  content: string
-  attachment_url: string | null
-  attachment_type: string | null
-  created_at: string
-}
 
 interface JudgeChatProps {
   onBack?: () => void
 }
 
+function formatTime(dateStr: string) {
+  const date = new Date(dateStr)
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
 export default function JudgeChat({ onBack }: JudgeChatProps) {
-  const { token, user } = useAuthStore()
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [loading, setLoading] = useState(true)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { user } = useAuthStore()
+  const { messages, loading, messagesEndRef, sendMessage } = useChat('judge')
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-
-  const fetchMessages = useCallback(async () => {
-    if (!token) return
-    try {
-      const res = await fetch('/api/chat/judge/messages?limit=50', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setMessages(data.messages)
-      }
-    } catch (err) {
-      console.error('Failed to fetch messages:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
-
-  useEffect(() => {
-    fetchMessages()
-
-    const channel = 'judge'
-    socket.auth = { token }
-    socket.connect()
-    socket.emit('chat:join', { channel })
-
-    const handleMessage = (data: { message: ChatMessage }) => {
-      if (data.message.channel === channel) {
-        setMessages(prev => {
-          if (prev.some(m => m.id === data.message.id)) return prev
-          return [...prev, data.message]
-        })
-      }
-    }
-
-    const handleHistory = (data: { channel: string; messages: ChatMessage[] }) => {
-      if (data.channel === channel && data.messages.length > 0) {
-        setMessages(data.messages)
-      }
-    }
-
-    socket.on('chat:message', handleMessage)
-    socket.on('chat:new', handleMessage)
-    socket.on('chat:history', handleHistory)
-
-    return () => {
-      socket.emit('chat:leave', { channel })
-      socket.off('chat:message', handleMessage)
-      socket.off('chat:new', handleMessage)
-      socket.off('chat:history', handleHistory)
-      socket.disconnect()
-    }
-  }, [token, fetchMessages])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
-
-  const sendMessage = async (content: string, attachment?: { url: string; type: string }) => {
-    if (!token) return
-    const res = await fetch('/api/chat/judge/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        content: content || (attachment ? '[attachment]' : ''),
-        attachment_url: attachment?.url || null,
-        attachment_type: attachment?.type || null,
-      }),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      setMessages(prev => [...prev, data.message])
-    }
-  }
-
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const handleSend = async (content: string, attachment?: { url: string; type: string }) => {
+    await sendMessage(content, 'Judge', 'judge', null, attachment)
   }
 
   return (
@@ -136,7 +44,7 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
           <div className="text-center text-gray-400 py-8">No messages yet. Start the conversation!</div>
         ) : (
           <div className="max-w-4xl mx-auto flex flex-col gap-3">
-            {messages.map((msg) => {
+            {messages.filter(Boolean).map((msg) => {
               const isOwn = msg.sender_id?.toString() === user?.anonymous_id
               return (
                 <div key={msg.id} className={`flex gap-2 items-end ${isOwn ? 'justify-end' : 'justify-start'}`}>
@@ -184,8 +92,7 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
 
       <ChatInput
         placeholder="Discuss entry with judges..."
-        onSend={sendMessage}
-        token={token}
+        onSend={handleSend}
       />
     </div>
   )

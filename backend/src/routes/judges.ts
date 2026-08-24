@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { getDb, saveDb } from '../db.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { resolveTeamSlug } from '../team-utils.js'
 
 const router = Router()
 
@@ -84,9 +85,14 @@ router.post('/scores', authMiddleware, (req: Request, res: Response) => {
   res.status(201).json({ ok: true })
 })
 
-router.get('/scores/:teamId', authMiddleware, (req: Request, res: Response) => {
+router.get('/scores/:teamSlug', authMiddleware, (req: Request, res: Response) => {
   if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Judge or admin access required' })
+  }
+
+  const teamId = resolveTeamSlug(req.params.teamSlug as string)
+  if (teamId === null) {
+    return res.status(404).json({ error: 'Team not found' })
   }
 
   const db = getDb()
@@ -94,12 +100,12 @@ router.get('/scores/:teamId', authMiddleware, (req: Request, res: Response) => {
   if (req.user?.role === 'admin') {
     rows = db.exec(
       'SELECT * FROM scores WHERE team_id = ? ORDER BY category, judge_anonymous_id',
-      [req.params.teamId]
+      [teamId]
     )
   } else {
     rows = db.exec(
       'SELECT * FROM scores WHERE team_id = ? AND judge_anonymous_id = ? ORDER BY category',
-      [req.params.teamId, req.user!.anonymous_id]
+      [teamId, req.user!.anonymous_id]
     )
   }
   res.json(rowsToArray(rows))

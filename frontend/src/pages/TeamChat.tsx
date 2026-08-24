@@ -1,19 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '../stores/authStore'
-import { useSocket } from '../lib/socket'
+import { useChat } from '../lib/useChat'
 import ChatInput from '../components/ChatInput'
-
-interface ChatMessage {
-  id: number
-  channel: string
-  sender_id: number | null
-  sender_name: string
-  sender_role: string
-  content: string
-  attachment_url: string | null
-  attachment_type: string | null
-  created_at: string
-}
 
 interface JoinRequest {
   id: number
@@ -38,6 +26,11 @@ interface TeamChatProps {
   onBack?: () => void
 }
 
+function formatTime(dateStr: string) {
+  const date = new Date(dateStr)
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
 export default function TeamChat({
   teamSlug, teamName, members = [], isCaptain, embedded,
   joinRequests: externalRequests, setJoinRequests: setExternalRequests,
@@ -45,35 +38,19 @@ export default function TeamChat({
   onBack
 }: TeamChatProps) {
   const { user } = useAuthStore()
-  const socket = useSocket()
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [loading, setLoading] = useState(true)
+  const channel = `team:${teamSlug}`
+  const { messages, loading, messagesEndRef, sendMessage } = useChat(channel)
+
   const [internalRequests, setInternalRequests] = useState<JoinRequest[]>([])
   const [internalShow, setInternalShow] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [actionLoading, setActionLoading] = useState<number | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{ type: 'accept' | 'reject'; request: JoinRequest } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const joinRequests = externalRequests ?? internalRequests
   const setJoinRequests = setExternalRequests ?? setInternalRequests
   const showRequests = externalShow ?? internalShow
   const setShowRequests = setExternalShow ?? setInternalShow
-
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-
-  const fetchMessages = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/chat/team/${teamSlug}/messages?limit=50`)
-      if (res.ok) {
-        const data = await res.json()
-        setMessages(data.messages)
-      }
-    } catch (err) {
-      console.error('Failed to fetch messages:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [teamSlug])
 
   const fetchJoinRequests = useCallback(async () => {
     try {
@@ -85,96 +62,11 @@ export default function TeamChat({
     } catch (err) {
       console.error('Failed to fetch join requests:', err)
     }
-  }, [teamSlug])
+  }, [teamSlug, setJoinRequests])
 
   useEffect(() => {
-    fetchMessages()
     if (!embedded) fetchJoinRequests()
-  }, [fetchMessages, fetchJoinRequests, embedded])
-
-  useEffect(() => {
-    if (!socket) return
-
-    const channel = `team:${teamSlug}`
-
-    const handleMessage = (data: { message: ChatMessage }) => {
-      if (data?.message?.channel === channel) {
-        setMessages(prev => {
-          if (prev.some(m => m.id === data.message.id)) return prev
-          return [...prev, data.message]
-        })
-      }
-    }
-
-    const handleHistory = (data: { channel: string; messages: ChatMessage[] }) => {
-      if (data?.channel === channel && data.messages?.length > 0) {
-        setMessages(data.messages)
-      }
-    }
-
-    socket.on('chat:message', handleMessage)
-    socket.on('chat:new', handleMessage)
-    socket.on('chat:history', handleHistory)
-    socket.emit('chat:join', { channel })
-
-    return () => {
-      socket.emit('chat:leave', { channel })
-      socket.off('chat:message', handleMessage)
-      socket.off('chat:new', handleMessage)
-      socket.off('chat:history', handleHistory)
-    }
-  }, [socket, teamSlug])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
-
-  const senderName = members[0] || teamName
-
-  const sendMessage = async (content: string, attachment?: { url: string; type: string }) => {
-    const tempId = -Date.now()
-    const optimistic: ChatMessage = {
-      id: tempId,
-      channel: `team:${teamSlug}`,
-      sender_id: user?.id ?? null,
-      sender_name: senderName,
-      sender_role: user?.role || 'team',
-      content: content || (attachment ? '[attachment]' : ''),
-      attachment_url: attachment?.url || null,
-      attachment_type: attachment?.type || null,
-      created_at: new Date().toISOString(),
-    }
-    setMessages(prev => [...prev, optimistic])
-
-    try {
-      const res = await fetch(`/api/chat/team/${teamSlug}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender_name: senderName,
-          content: content || (attachment ? '[attachment]' : ''),
-          attachment_url: attachment?.url || null,
-          attachment_type: attachment?.type || null,
-        }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.message) {
-          setMessages(prev => prev.map(m => m.id === tempId ? data.message : m))
-        }
-      } else {
-        setMessages(prev => prev.filter(m => m.id !== tempId))
-      }
-    } catch {
-      setMessages(prev => prev.filter(m => m.id !== tempId))
-    }
-  }
-
-  const [actionLoading, setActionLoading] = useState<number | null>(null)
-  const [confirmModal, setConfirmModal] = useState<{ type: 'accept' | 'reject'; request: JoinRequest } | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  }, [fetchJoinRequests, embedded])
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type })
@@ -222,11 +114,11 @@ export default function TeamChat({
     }
   }
 
+  const senderName = members[0] || teamName
   const pendingRequests = joinRequests.filter(r => r.status === 'pending')
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const handleSend = async (content: string, attachment?: { url: string; type: string }) => {
+    await sendMessage(content, senderName, user?.role || 'team', user?.id ?? null, attachment)
   }
 
   const chatContent = (
@@ -375,7 +267,7 @@ export default function TeamChat({
 
       <ChatInput
         placeholder={`Mensaje a ${teamName}...`}
-        onSend={sendMessage}
+        onSend={handleSend}
       />
     </>
   )

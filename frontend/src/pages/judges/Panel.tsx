@@ -24,7 +24,7 @@ interface ExistingScore {
 }
 
 export default function JudgePanel() {
-  const { token, user, login, logout } = useAuthStore()
+  const { user, login, logout } = useAuthStore()
 
   // Auth gate
   const [password, setPassword] = useState('')
@@ -62,7 +62,7 @@ export default function JudgePanel() {
         setLoginError(data.error || 'Error de autenticación')
         return
       }
-      login(data.token, { anonymous_id: data.judge.anonymous_id, role: 'judge' })
+      login({ anonymous_id: data.judge.anonymous_id, role: 'judge' })
     } catch {
       setLoginError('Error de red')
     } finally {
@@ -72,12 +72,12 @@ export default function JudgePanel() {
 
   // Fetch rubric + teams after login
   useEffect(() => {
-    if (!isJudge || !token) return
+    if (!isJudge) return
 
     async function loadData() {
       const [rubricRes, teamsRes] = await Promise.all([
-        fetch('/api/judges/rubric', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/judges/teams', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/judges/rubric'),
+        fetch('/api/judges/teams'),
       ])
       if (rubricRes.ok) {
         const rubricData = await rubricRes.json()
@@ -90,7 +90,7 @@ export default function JudgePanel() {
       }
     }
     loadData()
-  }, [isJudge, token])
+  }, [isJudge])
 
   // Initialize score inputs when categories change
   useEffect(() => {
@@ -101,15 +101,13 @@ export default function JudgePanel() {
 
   // Fetch existing scores when team is selected
   useEffect(() => {
-    if (!selectedTeamId || !token) {
+    if (!selectedTeamId) {
       setExistingScores(new Set())
       return
     }
 
     async function fetchScores() {
-      const res = await fetch(`/api/judges/scores/${selectedTeamId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch(`/api/judges/scores/${selectedTeamId}`)
       if (res.ok) {
         const data: ExistingScore[] = await res.json()
         const mine = data.map((s) => s.category)
@@ -117,7 +115,7 @@ export default function JudgePanel() {
       }
     }
     fetchScores()
-  }, [selectedTeamId, token, user])
+  }, [selectedTeamId, user])
 
   // Update a score value
   function updateScore(category: string, field: 'value' | 'notes', val: number | string) {
@@ -128,7 +126,7 @@ export default function JudgePanel() {
 
   // Submit scores
   async function handleSubmit() {
-    if (!selectedTeamId || !token) return
+    if (!selectedTeamId) return
     setSubmitting(true)
     setSubmitError('')
     setSubmitSuccess(false)
@@ -140,7 +138,6 @@ export default function JudgePanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ team_id: selectedTeamId, scores: toSubmit }),
       })

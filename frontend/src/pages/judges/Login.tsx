@@ -24,7 +24,7 @@ export default function JudgeLogin() {
         setError(data.error || 'Contraseña inválida')
         return
       }
-      login(data.token, { anonymous_id: data.judge.anonymous_id, role: 'judge' })
+      login({ anonymous_id: data.judge.anonymous_id, role: 'judge' })
       navigate('/jueces')
     } catch {
       setError('Error de conexión')
