@@ -48,7 +48,6 @@ export default function Results() {
     }
   }, [fetchLeaderboard])
 
-  // Fallback: poll every 30s
   useEffect(() => {
     const interval = setInterval(fetchLeaderboard, 30000)
     return () => clearInterval(interval)
@@ -72,6 +71,14 @@ export default function Results() {
 
   const { leaderboard, categories, revealed } = data
   const revealedCats = categories.filter(c => revealed.includes(c))
+  const allRevealed = revealedCats.length === categories.length
+
+  const rankBadge = (idx: number) => {
+    if (idx === 0) return <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded-full">🥇 1st</span>
+    if (idx === 1) return <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-bold px-2 py-0.5 rounded-full">🥈 2nd</span>
+    if (idx === 2) return <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-bold px-2 py-0.5 rounded-full">🥉 3rd</span>
+    return <span className="text-gray-400 text-sm font-bold">#{idx + 1}</span>
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -81,20 +88,17 @@ export default function Results() {
         </h1>
         <p className="text-gray-500 text-center mb-8">Live Leaderboard</p>
 
-        {/* Live reveal banner */}
-        {revealedCats.length > 0 && revealedCats.length < categories.length && (
-          <div className="mb-6 p-4 bg-primary/10 border-2 border-primary/30 rounded-2xl text-center">
+        {/* Live banner */}
+        {!allRevealed && leaderboard.some(e => e.total_score > 0) && (
+          <div className="mb-6 p-4 bg-primary/10 border-2 border-primary/30 rounded-2xl text-center animate-pulse">
             <p className="font-headline font-bold text-primary-dark">
-              Puntuaciones siendo reveladas en vivo
-            </p>
-            <p className="text-sm text-gray-600 mt-1">
-              {revealedCats.length} de {categories.length} categorías reveladas
+              🔴 Scores being revealed live — {revealedCats.length}/{categories.length} categories shown
             </p>
           </div>
         )}
 
         {/* Winner spotlight */}
-        {leaderboard.length > 0 && revealedCats.length === categories.length && (
+        {allRevealed && leaderboard.length > 0 && (
           <div className="mb-8 p-6 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border-2 border-primary/30 text-center">
             <p className="text-sm font-medium text-primary-dark uppercase tracking-wide mb-1">
               🏆 Champion
@@ -133,14 +137,12 @@ export default function Results() {
                   <tr
                     key={entry.team_id}
                     className={`border-b border-gray-100 last:border-0 ${
-                      idx === 0 && revealedCats.length === categories.length
+                      idx === 0 && allRevealed
                         ? 'bg-primary/5'
                         : 'hover:bg-gray-50'
                     }`}
                   >
-                    <td className="px-4 py-3 font-bold text-gray-400">
-                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`}
-                    </td>
+                    <td className="px-4 py-3">{rankBadge(idx)}</td>
                     <td className="px-4 py-3">
                       <div className="font-semibold">{entry.team_name}</div>
                       <div className="text-sm text-gray-500 sm:hidden">{entry.sandwich_name}</div>
@@ -151,7 +153,17 @@ export default function Results() {
                     </td>
                     {revealedCats.map(cat => (
                       <td key={cat} className="px-4 py-3 text-right text-sm">
-                        {entry.category_scores[cat]?.toFixed(1) ?? '—'}
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="font-medium">{entry.category_scores[cat]?.toFixed(1) ?? '—'}</span>
+                          {entry.category_scores[cat] != null && (
+                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary rounded-full"
+                                style={{ width: `${(entry.category_scores[cat] / 10) * 100}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </td>
                     ))}
                   </tr>
@@ -165,7 +177,7 @@ export default function Results() {
           </div>
         )}
 
-        {revealedCats.length < categories.length && (
+        {!allRevealed && (
           <p className="text-center text-sm text-gray-400 mt-6">
             {categories.length - revealedCats.length} categories yet to be revealed
           </p>

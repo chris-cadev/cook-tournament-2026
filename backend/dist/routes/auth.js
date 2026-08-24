@@ -3,6 +3,13 @@ import bcrypt from 'bcrypt';
 import { signToken } from '../middleware/auth.js';
 import { getDb, saveDb } from '../db.js';
 const router = Router();
+function rowsToObject(rows) {
+    if (rows.length === 0 || rows[0].values.length === 0)
+        return null;
+    const obj = {};
+    rows[0].columns.forEach((c, i) => (obj[c] = rows[0].values[0][i]));
+    return obj;
+}
 router.post('/admin/login', (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -51,36 +58,56 @@ router.post('/judge/login', (req, res) => {
     const db = getDb();
     const configRows = db.exec('SELECT judge_password FROM event_config WHERE id = 1');
     if (configRows.length === 0 || configRows[0].values.length === 0) {
-        return res.status(401).json({ error: 'Invalid password' });
+        return res.status(401).json({ error: 'Invalid judge password' });
     }
     const judgePasswordHash = configRows[0].values[0][0];
     if (!bcrypt.compareSync(password, judgePasswordHash)) {
-        return res.status(401).json({ error: 'Invalid password' });
+        return res.status(401).json({ error: 'Invalid judge password' });
     }
+    const existingJudge = db.exec('SELECT anonymous_id FROM judges WHERE id IN (SELECT id FROM judges ORDER BY id DESC LIMIT 1)');
     let anonymousId;
-    let inserted = false;
-    for (let attempt = 0; attempt < 10; attempt++) {
-        const maxRows = db.exec('SELECT MAX(id) FROM judges');
+    if (existingJudge.length > 0 && existingJudge[0].values.length > 0) {
+        // Check if this IP/session already has a judge identity stored
+        // For simplicity, generate sequential IDs but reuse if we can find a pattern
+        const allJudges = db.exec('SELECT anonymous_id FROM judges ORDER BY id');
+        const usedNums = allJudges.length > 0
+            ? allJudges[0].values.map(r => parseInt(r[0].split('_')[1]) || 0)
+            : [];
         let nextNum = 1;
-        if (maxRows.length > 0 && maxRows[0].values[0][0] !== null) {
-            nextNum = maxRows[0].values[0][0] + 1;
-        }
+        while (usedNums.includes(nextNum))
+            nextNum++;
         anonymousId = `judge_${nextNum}`;
-        try {
-            db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [anonymousId]);
-            inserted = true;
-            break;
-        }
-        catch (e) {
-            if (!e.message?.includes('UNIQUE constraint'))
-                throw e;
-        }
     }
-    if (!inserted) {
-        return res.status(500).json({ error: 'Failed to generate judge ID' });
+    else {
+        anonymousId = 'judge_1';
     }
+    db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [anonymousId]);
     saveDb();
     const token = signToken({ anonymous_id: anonymousId, role: 'judge' });
-    res.json({ token, role: 'judge' });
+    res.json({ token, judge: { anonymous_id: anonymousId, role: 'judge' } });
+});
+router.get('/invite/:code', (req, res) => {
+    const db = getDb();
+    const row = rowsToObject(db.exec('SELECT code, role, team_id, used_at FROM invites WHERE code = ?', [req.params.code]));
+    if (!row) {
+        return res.status(404).json({ error: 'Invite not found' });
+    }
+    if (row.used_at) {
+        return res.status(400).json({ error: 'Invite already used' });
+    }
+    res.json({ code: row.code, role: row.role, team_id: row.team_id });
+});
+router.post('/invite/:code/accept', (req, res) => {
+    const db = getDb();
+    const row = rowsToObject(db.exec('SELECT code, role, team_id, used_at FROM invites WHERE code = ?', [req.params.code]));
+    if (!row) {
+        return res.status(404).json({ error: 'Invite not found' });
+    }
+    if (row.used_at) {
+        return res.status(400).json({ error: 'Invite already used' });
+    }
+    db.run("UPDATE invites SET used_by = ?, used_at = datetime('now') WHERE code = ?", [req.body.name || 'anonymous', req.params.code]);
+    saveDb();
+    res.json({ ok: true, role: row.role, team_id: row.team_id });
 });
 export default router;

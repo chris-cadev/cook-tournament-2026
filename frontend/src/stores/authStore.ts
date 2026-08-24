@@ -6,7 +6,7 @@ interface AuthUser {
   team_id?: number
   name?: string
   anonymous_id?: string
-  role: 'admin' | 'team' | 'judge'
+  role: 'admin' | 'team' | 'judge' | 'guest'
 }
 
 interface AuthState {

@@ -16,15 +16,8 @@ import teamsRoutes from './routes/teams.js';
 import judgesRoutes from './routes/judges.js';
 import scoresRoutes from './routes/scores.js';
 import chatRoutes from './routes/chat.js';
-import emailRoutes from './routes/email.js';
-<<<<<<< HEAD
 import uploadRoutes from './routes/upload.js';
-import todoRoutes from './routes/todo.js';
-import inviteRoutes from './routes/invite.js';
-import checklistRoutes from './routes/checklist.js';
-=======
-import inviteRoutes from './routes/invites.js';
->>>>>>> orchestrator/task-7-milestone-7-email-system
+import adminRoutes from './routes/admin.js';
 const app = express();
 const server = createServer(app);
 const frontendPort = process.env.PORT || 3000;
@@ -37,16 +30,8 @@ app.use('/api/teams', teamsRoutes);
 app.use('/api/judges', judgesRoutes);
 app.use('/api/scores', scoresRoutes);
 app.use('/api/chat', chatRoutes);
-<<<<<<< HEAD
-app.use('/api/admin', emailRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/admin/todo', todoRoutes);
-app.use('/api/invite', inviteRoutes);
-app.use('/api/teams', checklistRoutes);
-=======
-app.use('/api/admin/email', emailRoutes);
-app.use('/api/invites', inviteRoutes);
->>>>>>> orchestrator/task-7-milestone-7-email-system
+app.use('/api/admin', adminRoutes);
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 async function start() {
     await initDb();

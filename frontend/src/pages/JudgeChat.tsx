@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuthStore } from '../stores/authStore'
 import { socket } from '../lib/socket'
+import ChatInput from '../components/ChatInput'
 
 interface ChatMessage {
   id: number
@@ -9,6 +10,8 @@ interface ChatMessage {
   sender_name: string
   sender_role: string
   content: string
+  attachment_url: string | null
+  attachment_type: string | null
   created_at: string
 }
 
@@ -19,9 +22,7 @@ interface JudgeChatProps {
 export default function JudgeChat({ onBack }: JudgeChatProps) {
   const { token, user } = useAuthStore()
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = useCallback(() => {
@@ -48,57 +49,60 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
   useEffect(() => {
     fetchMessages()
 
-    if (token) {
-      socket.auth = { token }
-      socket.connect()
-      socket.emit('chat:join', { channel: 'judge' })
+    const channel = 'judge'
+    socket.auth = { token }
+    socket.connect()
+    socket.emit('chat:join', { channel })
 
-      socket.on('chat:message', (data: { message: ChatMessage }) => {
-        if (data.message.channel === 'judge') {
-          setMessages((prev) => [...prev, data.message])
-        }
-      })
-
-      return () => {
-        socket.off('chat:message')
-        socket.emit('chat:leave', { channel: 'judge' })
-        socket.disconnect()
+    const handleMessage = (data: { message: ChatMessage }) => {
+      if (data.message.channel === channel) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.message.id)) return prev
+          return [...prev, data.message]
+        })
       }
     }
-  }, [fetchMessages, token])
+
+    const handleHistory = (data: { channel: string; messages: ChatMessage[] }) => {
+      if (data.channel === channel && data.messages.length > 0) {
+        setMessages(data.messages)
+      }
+    }
+
+    socket.on('chat:message', handleMessage)
+    socket.on('chat:new', handleMessage)
+    socket.on('chat:history', handleHistory)
+
+    return () => {
+      socket.emit('chat:leave', { channel })
+      socket.off('chat:message', handleMessage)
+      socket.off('chat:new', handleMessage)
+      socket.off('chat:history', handleHistory)
+      socket.disconnect()
+    }
+  }, [token, fetchMessages])
 
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || sending || !token) return
-    setSending(true)
-    try {
-      const res = await fetch('/api/chat/judge/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: newMessage.trim() }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setMessages((prev) => [...prev, data.message])
-        setNewMessage('')
-      }
-    } catch (err) {
-      console.error('Failed to send message:', err)
-    } finally {
-      setSending(false)
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
+  const sendMessage = async (content: string, attachment?: { url: string; type: string }) => {
+    if (!token) return
+    const res = await fetch('/api/chat/judge/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        content: content || (attachment ? '[attachment]' : ''),
+        attachment_url: attachment?.url || null,
+        attachment_type: attachment?.type || null,
+      }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setMessages(prev => [...prev, data.message])
     }
   }
 
@@ -109,7 +113,6 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-surface border-b border-gray-200 px-4 py-3 flex items-center gap-3">
         {onBack && (
           <button onClick={onBack} className="text-gray-500 hover:text-secondary">
@@ -126,13 +129,9 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
         </div>
       </header>
 
-      {/* Messages */}
       <main className="flex-1 overflow-y-auto px-4 py-4">
         {loading ? (
-          <div className="text-center text-gray-400 py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent mx-auto mb-2" />
-            Loading messages...
-          </div>
+          <div className="text-center text-gray-400 py-8">Loading messages...</div>
         ) : messages.length === 0 ? (
           <div className="text-center text-gray-400 py-8">No messages yet. Start the conversation!</div>
         ) : (
@@ -149,6 +148,12 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
                       </div>
                       <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3 text-gray-900 shadow-sm">
                         {msg.content}
+                        {msg.attachment_url && msg.attachment_type === 'image' && (
+                          <img src={msg.attachment_url} alt="attachment" className="mt-2 max-w-xs rounded-xl" />
+                        )}
+                        {msg.attachment_url && msg.attachment_type === 'audio' && (
+                          <audio src={msg.attachment_url} controls className="mt-2 max-w-xs" />
+                        )}
                       </div>
                     </div>
                   )}
@@ -160,6 +165,12 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
                       </div>
                       <div className="bg-primary text-white border-2 border-primary rounded-2xl rounded-tr-sm p-3 shadow-sm">
                         {msg.content}
+                        {msg.attachment_url && msg.attachment_type === 'image' && (
+                          <img src={msg.attachment_url} alt="attachment" className="mt-2 max-w-xs rounded-xl opacity-90" />
+                        )}
+                        {msg.attachment_url && msg.attachment_type === 'audio' && (
+                          <audio src={msg.attachment_url} controls className="mt-2 max-w-xs" />
+                        )}
                       </div>
                     </div>
                   )}
@@ -171,27 +182,11 @@ export default function JudgeChat({ onBack }: JudgeChatProps) {
         <div ref={messagesEndRef} />
       </main>
 
-      {/* Input */}
-      <div className="sticky bottom-0 bg-surface/90 backdrop-blur-md border-t border-gray-200 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-end gap-2">
-          <textarea
-            className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[40px] max-h-[120px]"
-            placeholder="Discuss entry with judges..."
-            rows={1}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={sending}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={!newMessage.trim() || sending}
-            className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm hover:bg-primary-dark active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span className="material-symbols-outlined">send</span>
-          </button>
-        </div>
-      </div>
+      <ChatInput
+        placeholder="Discuss entry with judges..."
+        onSend={sendMessage}
+        token={token}
+      />
     </div>
   )
 }

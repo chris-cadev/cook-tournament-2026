@@ -33,6 +33,15 @@ function validateChannelAccess(user: AuthUser, channel: string): boolean {
   return false
 }
 
+function rowsToArray(rows: any[]): Record<string, any>[] {
+  if (rows.length === 0) return []
+  return rows[0].values.map((vals: any[]) => {
+    const obj: Record<string, any> = {}
+    rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
+    return obj
+  })
+}
+
 export function initSocket(httpServer: HttpServer) {
   io = new Server(httpServer, {
     cors: {
@@ -68,13 +77,22 @@ export function initSocket(httpServer: HttpServer) {
       }
       socket.join(`chat:${data.channel}`)
       socket.emit('chat:joined', { channel: data.channel })
+
+      // Emit chat:history with recent messages
+      const db = getDb()
+      const rows = db.exec(
+        'SELECT * FROM chat_messages WHERE channel = ? ORDER BY created_at DESC LIMIT 50',
+        [data.channel]
+      )
+      const history = rowsToArray(rows).reverse()
+      socket.emit('chat:history', { channel: data.channel, messages: history })
     })
 
     socket.on('chat:leave', (data: { channel: string }) => {
       socket.leave(`chat:${data.channel}`)
     })
 
-    socket.on('chat:send', (data: { channel: string; content: string }) => {
+    socket.on('chat:send', (data: { channel: string; content: string; attachment_url?: string; attachment_type?: string }) => {
       if (!validateChannelAccess(user, data.channel)) {
         socket.emit('chat:error', { error: 'Access denied to this channel' })
         return
@@ -93,13 +111,15 @@ export function initSocket(httpServer: HttpServer) {
       const db = getDb()
 
       db.run(
-        'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           data.channel,
           user.id || user.team_id || user.anonymous_id || null,
           user.name || user.email || user.anonymous_id || 'Unknown',
           user.role,
           data.content.trim(),
+          data.attachment_url || null,
+          data.attachment_type || null,
         ]
       )
       saveDb()
@@ -109,6 +129,7 @@ export function initSocket(httpServer: HttpServer) {
       const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [messageId]))
 
       io.to(`chat:${data.channel}`).emit('chat:message', { message })
+      io.to(`chat:${data.channel}`).emit('chat:new', { message })
     })
 
     socket.on('disconnect', () => {

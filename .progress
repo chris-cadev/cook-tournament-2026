@@ -261,6 +261,7 @@ Mark a category as revealed in EventConfig (store revealed categories as JSON). 
 **Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:56:44Z
+<<<<<<< HEAD
 Deliverable: Admin can reveal scoring categories one-by-one with dramatic animation.
 
 ### score-reveal-admin-page
@@ -276,3 +277,17 @@ After confirmation, call `POST /api/scores/reveal`. Show ProgressBar animation (
 Update Results page (`src/pages/Results.tsx`) to listen for Socket.io `score:reveal` events and update leaderboard in real time. Show "Aún no hay puntuaciones" when empty. Files: update `src/pages/Results.tsx`.
 
 ---|PASS|10|opencode-go/mimo-v2.5|2026-08-23T23:09:13Z
+=======
+Deliverable: Users can upload images and audio in chat messages.
+
+### upload-backend-endpoint
+Create `POST /api/upload` endpoint with multer for multipart handling. Validate file type (jpeg/png/gif/webp ≤5MB, mp3/wav/ogg ≤2MB) and size. Upload to MinIO, return public URL. Files: new `backend/src/routes/upload.ts`, update `backend/src/index.ts`.
+
+### chat-file-picker
+Add file picker button (paperclip icon) to chat input area in all chat components. Accept images and audio. Show preview before send. Files: update `src/pages/Chat.tsx`, `src/pages/TeamChat.tsx`, `src/pages/JudgeChat.tsx`.
+
+### chat-attachment-send
+On chat send, if file attached: upload via `POST /api/upload`, then send message with `attachment_url` and `attachment_type` via Socket.io `chat:send`. Display attachments inline in message bubbles. Files: update chat components and `src/lib/socket.ts`.
+
+---|PASS|8|opencode-go/mimo-v2.5|2026-08-24T00:23:33Z
+>>>>>>> orchestrator/task-8-milestone-8-file-upload-multimedia-chat

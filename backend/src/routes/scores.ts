@@ -29,7 +29,7 @@ router.get('/leaderboard', (_req: Request, res: Response) => {
   const categories: string[] = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
   const revealed: string[] = config.revealed_categories ? JSON.parse(config.revealed_categories as string) : []
 
-  const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'deleted' ORDER BY name")
+  const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'disqualified' ORDER BY name")
   const teams = rowsToArray(teamRows)
 
   const scoreRows = db.exec(`

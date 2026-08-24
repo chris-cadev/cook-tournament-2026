@@ -1,10 +1,14 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> orchestrator/task-8-milestone-8-file-upload-multimedia-chat
 FROM node:20-alpine
 
 WORKDIR /app
 
+<<<<<<< HEAD
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
@@ -12,12 +16,20 @@ COPY tsconfig.json ./
 COPY src ./src
 
 RUN npx tsc
+=======
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
+
+COPY dist/ ./dist/
+COPY src/migrations/ ./dist/migrations/
+>>>>>>> orchestrator/task-8-milestone-8-file-upload-multimedia-chat
 
 RUN mkdir -p data
 
 EXPOSE 3001
 
 CMD ["node", "dist/index.js"]
+<<<<<<< HEAD
 =======
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -58,3 +70,5 @@ CMD ["node", "dist/index.js"]
 >>>>>>> orchestrator/task-6-milestone-6-score-reveal-ux
 =======
 >>>>>>> orchestrator/task-6-milestone-6-score-reveal-ux
+=======
+>>>>>>> orchestrator/task-8-milestone-8-file-upload-multimedia-chat

@@ -45,32 +45,27 @@ router.put('/', authMiddleware, requireRole('admin'), (req: Request, res: Respon
   const db = getDb()
   const {
     event_date, event_title, event_description, rules,
-    scoring_categories, judge_password, team_password,
-    landing_page_content,
+    scoring_categories, judge_password, team_password, landing_page_content,
   } = req.body
 
-  const fields: string[] = []
+  const updates: string[] = []
   const values: any[] = []
 
-  if (event_date !== undefined) { fields.push('event_date = ?'); values.push(event_date) }
-  if (event_title !== undefined) { fields.push('event_title = ?'); values.push(event_title) }
-  if (event_description !== undefined) { fields.push('event_description = ?'); values.push(event_description) }
-  if (rules !== undefined) { fields.push('rules = ?'); values.push(rules) }
-  if (scoring_categories !== undefined) { fields.push('scoring_categories = ?'); values.push(JSON.stringify(scoring_categories)) }
-  if (landing_page_content !== undefined) { fields.push('landing_page_content = ?'); values.push(landing_page_content) }
-  if (judge_password !== undefined && judge_password !== '') {
-    fields.push('judge_password = ?'); values.push(bcrypt.hashSync(judge_password, 10))
-  }
-  if (team_password !== undefined && team_password !== '') {
-    fields.push('team_password = ?'); values.push(bcrypt.hashSync(team_password, 10))
-  }
+  if (event_date !== undefined) { updates.push('event_date = ?'); values.push(event_date) }
+  if (event_title !== undefined) { updates.push('event_title = ?'); values.push(event_title) }
+  if (event_description !== undefined) { updates.push('event_description = ?'); values.push(event_description) }
+  if (rules !== undefined) { updates.push('rules = ?'); values.push(rules) }
+  if (scoring_categories !== undefined) { updates.push('scoring_categories = ?'); values.push(JSON.stringify(scoring_categories)) }
+  if (judge_password !== undefined && judge_password !== '') { updates.push('judge_password = ?'); values.push(bcrypt.hashSync(judge_password, 10)) }
+  if (team_password !== undefined && team_password !== '') { updates.push('team_password = ?'); values.push(bcrypt.hashSync(team_password, 10)) }
+  if (landing_page_content !== undefined) { updates.push('landing_page_content = ?'); values.push(landing_page_content) }
 
-  if (fields.length === 0) {
+  if (updates.length === 0) {
     return res.status(400).json({ error: 'No fields to update' })
   }
 
-  fields.push("updated_at = datetime('now')")
-  db.run(`UPDATE event_config SET ${fields.join(', ')} WHERE id = 1`, values)
+  updates.push("updated_at = datetime('now')")
+  db.run(`UPDATE event_config SET ${updates.join(', ')} WHERE id = 1`, values)
   saveDb()
 
   res.json({ ok: true })

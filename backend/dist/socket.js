@@ -28,6 +28,15 @@ function validateChannelAccess(user, channel) {
     }
     return false;
 }
+function rowsToArray(rows) {
+    if (rows.length === 0)
+        return [];
+    return rows[0].values.map((vals) => {
+        const obj = {};
+        rows[0].columns.forEach((c, i) => (obj[c] = vals[i]));
+        return obj;
+    });
+}
 export function initSocket(httpServer) {
     io = new Server(httpServer, {
         cors: {
@@ -38,12 +47,8 @@ export function initSocket(httpServer) {
     io.use((socket, next) => {
         const token = socket.handshake.auth.token;
         if (!token) {
-<<<<<<< HEAD
             socket.data.user = { role: 'guest' };
             return next();
-=======
-            return next(new Error('Authentication required'));
->>>>>>> orchestrator/task-7-milestone-7-email-system
         }
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
@@ -51,21 +56,13 @@ export function initSocket(httpServer) {
             next();
         }
         catch {
-<<<<<<< HEAD
             socket.data.user = { role: 'guest' };
             next();
-=======
-            next(new Error('Invalid token'));
->>>>>>> orchestrator/task-7-milestone-7-email-system
         }
     });
     io.on('connection', (socket) => {
         const user = socket.data.user;
-<<<<<<< HEAD
         console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email || 'guest'})`);
-=======
-        console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email})`);
->>>>>>> orchestrator/task-7-milestone-7-email-system
         socket.on('chat:join', (data) => {
             if (!validateChannelAccess(user, data.channel)) {
                 socket.emit('chat:error', { error: 'Access denied to this channel' });
@@ -73,6 +70,11 @@ export function initSocket(httpServer) {
             }
             socket.join(`chat:${data.channel}`);
             socket.emit('chat:joined', { channel: data.channel });
+            // Emit chat:history with recent messages
+            const db = getDb();
+            const rows = db.exec('SELECT * FROM chat_messages WHERE channel = ? ORDER BY created_at DESC LIMIT 50', [data.channel]);
+            const history = rowsToArray(rows).reverse();
+            socket.emit('chat:history', { channel: data.channel, messages: history });
         });
         socket.on('chat:leave', (data) => {
             socket.leave(`chat:${data.channel}`);
@@ -91,18 +93,21 @@ export function initSocket(httpServer) {
                 return;
             }
             const db = getDb();
-            db.run('INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)', [
+            db.run('INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)', [
                 data.channel,
                 user.id || user.team_id || user.anonymous_id || null,
                 user.name || user.email || user.anonymous_id || 'Unknown',
                 user.role,
                 data.content.trim(),
+                data.attachment_url || null,
+                data.attachment_type || null,
             ]);
             saveDb();
             const idRows = db.exec('SELECT last_insert_rowid() as id');
             const messageId = idRows[0].values[0][0];
             const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [messageId]));
             io.to(`chat:${data.channel}`).emit('chat:message', { message });
+            io.to(`chat:${data.channel}`).emit('chat:new', { message });
         });
         socket.on('disconnect', () => {
             console.log(`Socket disconnected: ${user.role}`);

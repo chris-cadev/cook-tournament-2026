@@ -8,6 +8,8 @@ interface ChatMessage {
   sender_name: string
   sender_role: string
   content: string
+  attachment_url: string | null
+  attachment_type: string | null
   created_at: string
 }
 
@@ -86,13 +88,16 @@ export default function ChatModeration() {
   const deleteMessage = async (messageId: number) => {
     if (!token || !confirm('Delete this message?')) return
     try {
-      let channel = 'global'
-      if (activeTab === 'team' && selectedTeamId) {
-        channel = `team:${selectedTeamId}`
+      let url = ''
+      if (activeTab === 'global') {
+        url = `/api/chat/global/messages/${messageId}`
+      } else if (activeTab === 'team' && selectedTeamId) {
+        url = `/api/chat/team/${selectedTeamId}/messages/${messageId}`
       } else if (activeTab === 'judge') {
-        channel = 'judge'
+        url = `/api/chat/judge/messages/${messageId}`
       }
-      const res = await fetch(`/api/chat/${channel}/messages/${messageId}`, {
+      if (!url) return
+      const res = await fetch(url, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -198,6 +203,12 @@ export default function ChatModeration() {
                         <span className="text-xs text-gray-400">{formatTime(msg.created_at)}</span>
                       </div>
                       <p className="text-gray-800 text-sm break-words">{msg.content}</p>
+                      {msg.attachment_url && msg.attachment_type === 'image' && (
+                        <img src={msg.attachment_url} alt="attachment" className="mt-2 max-w-xs rounded-xl shadow-sm" />
+                      )}
+                      {msg.attachment_url && msg.attachment_type === 'audio' && (
+                        <audio src={msg.attachment_url} controls className="mt-2 max-w-xs" />
+                      )}
                     </div>
                     <button
                       onClick={() => deleteMessage(msg.id)}

@@ -1,110 +1,176 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 
-interface InviteLink {
+interface Invite {
   id: number
   code: string
-  invite_url: string
   created_by: string
-  uses: number
+  role: string
+  team_id: number | null
+  used_by: string | null
+  used_at: string | null
   created_at: string
 }
 
 export default function Invites() {
   const { token } = useAuthStore()
-  const [links, setLinks] = useState<InviteLink[]>([])
+  const [invites, setInvites] = useState<Invite[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [copied, setCopied] = useState<string | null>(null)
+  const [inviteRole, setInviteRole] = useState('guest')
+  const [lastCreated, setLastCreated] = useState<{ code: string; url: string } | null>(null)
 
-  const fetchLinks = useCallback(async () => {
+  const fetchInvites = useCallback(async () => {
     if (!token) return
     try {
-      const res = await fetch('/api/invites', {
+      const res = await fetch('/api/admin/invites', {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (res.ok) {
-        setLinks(await res.json())
+        const data = await res.json()
+        setInvites(data)
       }
+    } catch (err) {
+      console.error('Failed to fetch invites:', err)
     } finally {
       setLoading(false)
     }
   }, [token])
 
-  useEffect(() => { fetchLinks() }, [fetchLinks])
+  useEffect(() => {
+    fetchInvites()
+  }, [fetchInvites])
 
-  const createLink = async () => {
-    if (!token) return
+  const createInvite = async () => {
     setCreating(true)
     try {
-      const res = await fetch('/api/invites/create', {
+      const res = await fetch('/api/admin/invites', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ role: inviteRole }),
       })
       if (res.ok) {
-        const link = await res.json()
-        setLinks(prev => [{ ...link, uses: 0, created_at: new Date().toISOString() }, ...prev])
+        const data = await res.json()
+        setLastCreated({ code: data.code, url: data.invite_url })
+        fetchInvites()
       }
+    } catch (err) {
+      console.error('Failed to create invite:', err)
     } finally {
       setCreating(false)
     }
   }
 
-  const copyLink = (url: string, code: string) => {
-    navigator.clipboard.writeText(url)
-    setCopied(code)
-    setTimeout(() => setCopied(null), 2000)
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).catch(() => {})
+  }
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    } catch {
+      return dateStr
+    }
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
-      </div>
-    )
+    return <div className="text-center py-12 text-gray-400">Cargando...</div>
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Enlaces de Invitación</h1>
-        <p className="text-gray-500 mb-6">Genera enlaces únicos para que los invitados se registren.</p>
+    <div className="space-y-6">
+      <h2 className="font-headline text-2xl font-black text-secondary">Invitaciones</h2>
 
-        <button
-          onClick={createLink}
-          disabled={creating}
-          className="mb-6 bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors disabled:opacity-50"
-        >
-          {creating ? 'Creando...' : 'Crear Nuevo Enlace'}
-        </button>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        <p className="text-sm text-gray-600">Genera enlaces únicos para invitar participantes al evento.</p>
 
-        <div className="space-y-3">
-          {links.map(link => (
-            <div key={link.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-mono text-secondary truncate">{link.invite_url}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Usado {link.uses} {link.uses === 1 ? 'vez' : 'veces'} · {new Date(link.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <button
-                  onClick={() => copyLink(link.invite_url, link.code)}
-                  className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                    copied === link.code
-                      ? 'bg-tertiary text-white'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {copied === link.code ? 'Copiado' : 'Copiar'}
-                </button>
-              </div>
-            </div>
-          ))}
-          {links.length === 0 && (
-            <p className="text-center text-gray-400 py-8">No hay enlaces aún. Crea uno para empezar.</p>
-          )}
+        <div className="flex items-center gap-3">
+          <select
+            value={inviteRole}
+            onChange={(e) => setInviteRole(e.target.value)}
+            className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="guest">Invitado / Espectador</option>
+            <option value="team">Cocinero (Equipo)</option>
+          </select>
+          <button
+            onClick={createInvite}
+            disabled={creating}
+            className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
+          >
+            {creating ? 'Creando...' : 'Crear Enlace'}
+          </button>
         </div>
+
+        {lastCreated && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-2">
+            <p className="text-sm font-medium text-green-700">Enlace creado:</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs bg-white border border-green-200 rounded-lg px-3 py-2 break-all">{lastCreated.url}</code>
+              <button
+                onClick={() => copyToClipboard(lastCreated.url)}
+                className="px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+              >
+                Copiar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h3 className="font-headline text-lg font-bold text-secondary">Invitaciones Generadas</h3>
+        </div>
+        {invites.length === 0 ? (
+          <p className="text-center text-gray-400 py-8 text-sm">No hay invitaciones aún.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="text-left px-6 py-3 font-medium text-gray-600">Código</th>
+                  <th className="text-left px-6 py-3 font-medium text-gray-600">Rol</th>
+                  <th className="text-left px-6 py-3 font-medium text-gray-600">Estado</th>
+                  <th className="text-left px-6 py-3 font-medium text-gray-600">Creado</th>
+                  <th className="px-6 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {invites.map((invite) => (
+                  <tr key={invite.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-3 font-mono text-xs">{invite.code}</td>
+                    <td className="px-6 py-3">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                        invite.role === 'team' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {invite.role === 'team' ? 'Cocinero' : 'Invitado'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3">
+                      {invite.used_at ? (
+                        <span className="text-xs text-gray-500">Usado por {invite.used_by}</span>
+                      ) : (
+                        <span className="text-xs text-green-600 font-medium">Disponible</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-3 text-xs text-gray-500">{formatDate(invite.created_at)}</td>
+                    <td className="px-6 py-3">
+                      {!invite.used_at && (
+                        <button
+                          onClick={() => copyToClipboard(`${window.location.origin}/invite/${invite.code}`)}
+                          className="text-primary hover:text-primary-dark text-xs font-medium"
+                        >
+                          Copiar enlace
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )

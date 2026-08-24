@@ -1,17 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { useToastStore } from '../../stores/toastStore'
-import Navbar from '../../components/Navbar'
 
 export default function EmailReminders() {
   const { token } = useAuthStore()
-  const { addToast } = useToastStore()
   const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ sent: number; errors?: string[] } | null>(null)
+  const [result, setResult] = useState<{ sent: number; total: number } | null>(null)
+  const [error, setError] = useState('')
+  const [emailAvailable, setEmailAvailable] = useState(true)
 
-  const sendReminders = async () => {
-    if (!token) return
+  useEffect(() => {
+    fetch('/api/admin/email/health')
+      .then((r) => r.json())
+      .then((d) => setEmailAvailable(d.available))
+      .catch(() => setEmailAvailable(false))
+  }, [])
+
+  const handleSend = async () => {
     setSending(true)
+    setError('')
     setResult(null)
     try {
       const res = await fetch('/api/admin/send-reminders', {
@@ -19,58 +25,49 @@ export default function EmailReminders() {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to send')
+        return
+      }
       setResult(data)
-      addToast(`Recordatorios enviados a ${data.sent} equipos`, 'success')
     } catch {
-      addToast('Error al enviar recordatorios', 'error')
+      setError('Network error')
     } finally {
       setSending(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      <Navbar />
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-6">Email Reminders</h1>
+    <div className="space-y-6">
+      <h2 className="font-headline text-2xl font-black text-secondary">Enviar Recordatorios</h2>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-          <h2 className="font-headline text-lg font-bold text-secondary mb-4">Preview</h2>
-          <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
-            <p className="font-bold mb-2">Asunto: Recordatorio: The Crust Competition 2026</p>
-            <p>Hola, [Team Name]</p>
-            <p>Este es un recordatorio del Campeonato de Sándwiches 2026.</p>
-            <p>Tu sándwich: [Sandwich Name]</p>
-            <p>Asegúrate de estar preparado para el día del evento. ¡Buena suerte!</p>
-            <p className="mt-2 text-gray-500">— El Equipo Organizador</p>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        {!emailAvailable ? (
+          <div className="bg-yellow-50 text-yellow-700 text-sm p-4 rounded-xl">
+            El correo no está configurado. Configura las variables SMTP_HOST, SMTP_USER y SMTP_PASS.
           </div>
-        </div>
+        ) : (
+          <>
+            <p className="text-sm text-gray-600">
+              Envía un correo de recordatorio a todos los capitanes de equipos confirmados.
+            </p>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="font-headline text-lg font-bold text-secondary mb-4">Enviar Recordatorios</h2>
-          <p className="text-gray-500 text-sm mb-4">
-            Enviarás un email de recordatorio a todos los capitanes de equipos confirmados.
-          </p>
-          <button
-            onClick={sendReminders}
-            disabled={sending}
-            className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
-          >
-            {sending ? 'Enviando...' : 'Enviar a todos los equipos'}
-          </button>
+            {result && (
+              <div className="bg-green-50 text-green-700 text-sm p-3 rounded-xl">
+                Correos enviados: {result.sent} de {result.total}
+              </div>
+            )}
 
-          {result && (
-            <div className="mt-4 p-4 rounded-xl bg-tertiary/10 text-tertiary text-sm">
-              <p className="font-bold">Enviados: {result.sent}</p>
-              {result.errors && result.errors.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-error font-bold">Errores:</p>
-                  {result.errors.map((e, i) => <p key={i} className="text-xs text-error">{e}</p>)}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+            {error && (
+              <div className="bg-red-50 text-red-700 text-sm p-3 rounded-xl">{error}</div>
+            )}
+
+            <button onClick={handleSend} disabled={sending}
+              className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors disabled:opacity-50">
+              {sending ? 'Enviando...' : 'Enviar a todos los equipos'}
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

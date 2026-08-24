@@ -1,12 +1,5 @@
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '../stores/authStore'
-import { useToast } from '../components/ui/Toast'
-
-interface Category {
-  name: string
-  description?: string
-  max?: number
-}
 
 interface Team {
   id: number
@@ -14,231 +7,148 @@ interface Team {
   sandwich_name: string
 }
 
+interface ScoreEntry {
+  category: string
+  value: number
+  notes: string
+}
+
 export default function JudgePanel() {
-  const { token, user, login, logout } = useAuthStore()
-  const { toast } = useToast()
-  const [password, setPassword] = useState('')
-  const [authError, setAuthError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const [categories, setCategories] = useState<Category[]>([])
+  const { token } = useAuthStore()
   const [teams, setTeams] = useState<Team[]>([])
-  const [scores, setScores] = useState<Record<string, number>>({})
-  const [notes, setNotes] = useState<Record<string, string>>({})
+  const [categories, setCategories] = useState<string[]>([])
+  const [selectedTeam, setSelectedTeam] = useState<number | null>(null)
+  const [scores, setScores] = useState<ScoreEntry[]>([])
   const [submitted, setSubmitted] = useState<Record<string, boolean>>({})
-  const [submitting, setSubmitting] = useState<number | null>(null)
-
-  const isAuthed = !!token && user?.role === 'judge'
-
-  async function handleLogin(e: FormEvent) {
-    e.preventDefault()
-    setAuthError('')
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth/judge/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setAuthError(data.error || 'Contraseña inválida')
-        return
-      }
-      login(data.token, { anonymous_id: data.judge.anonymous_id, role: 'judge' })
-    } catch {
-      setAuthError('Error de conexión')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [msg, setMsg] = useState('')
 
   useEffect(() => {
-    if (!isAuthed) return
-    const headers = { Authorization: `Bearer ${token}` }
+    Promise.all([
+      fetch('/api/teams', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
+      fetch('/api/judges/rubric', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
+    ]).then(([teamsData, rubric]) => {
+      setTeams(teamsData.filter((t: Team & { status: string }) => t.status === 'confirmed'))
+      setCategories(rubric.categories || [])
+    }).finally(() => setLoading(false))
+  }, [token])
 
-    fetch('/api/judges/rubric', { headers })
-      .then(r => r.json())
-      .then(d => setCategories(d.categories || []))
-      .catch(() => {})
-
-    fetch('/api/teams', { headers: { ...headers, 'Content-Type': 'application/json' } })
-      .then(r => {
-        if (!r.ok) return []
-        return r.json()
+  useEffect(() => {
+    if (!selectedTeam) return
+    fetch(`/api/judges/scores/${selectedTeam}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then((data) => {
+        const map: Record<string, boolean> = {}
+        data.forEach((s: { category: string; judge_anonymous_id: string }) => {
+          map[s.category] = true
+        })
+        setSubmitted(map)
+        setScores(categories.map((c) => ({ category: c, value: 5, notes: '' })))
       })
-      .then(d => {
-        if (Array.isArray(d)) setTeams(d)
-      })
-      .catch(() => {})
+  }, [selectedTeam, token, categories])
 
-    fetch('/api/scores/leaderboard')
-      .then(r => r.json())
-      .then(() => {})
-      .catch(() => {})
-  }, [isAuthed, token])
+  const updateScore = (category: string, field: 'value' | 'notes', val: number | string) => {
+    setScores((prev) => prev.map((s) => s.category === category ? { ...s, [field]: val } : s))
+  }
 
-  async function handleSubmitScores(teamId: number) {
-    setSubmitting(teamId)
+  const handleSubmit = async () => {
+    if (!selectedTeam) return
+    setSubmitting(true)
+    setMsg('')
     try {
-      const scoresPayload = categories
-        .filter(c => scores[`${teamId}:${c.name}`] !== undefined)
-        .map(c => ({
-          category: c.name,
-          value: scores[`${teamId}:${c.name}`],
-          notes: notes[`${teamId}:${c.name}`] || undefined,
-        }))
-
-      if (scoresPayload.length === 0) {
-        toast('No hay puntuaciones para enviar', 'error')
-        return
-      }
-
       const res = await fetch('/api/judges/scores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ team_id: teamId, scores: scoresPayload }),
+        body: JSON.stringify({
+          team_id: selectedTeam,
+          scores: scores.filter((s) => !submitted[s.category]),
+        }),
       })
       const data = await res.json()
-
       if (!res.ok) {
-        toast(data.error || 'Error al enviar', 'error')
+        setMsg(data.error || 'Error al enviar')
         return
       }
-
+      setMsg('¡Puntuaciones enviadas!')
       const newSubmitted = { ...submitted }
-      categories.forEach(c => { newSubmitted[`${teamId}:${c.name}`] = true })
+      scores.forEach((s) => { newSubmitted[s.category] = true })
       setSubmitted(newSubmitted)
-      toast('¡Puntuaciones enviadas!', 'success')
     } catch {
-      toast('Error de conexión', 'error')
+      setMsg('Error de red')
     } finally {
-      setSubmitting(null)
+      setSubmitting(false)
     }
   }
 
-  // Access gate
-  if (!isAuthed) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <h1 className="font-headline text-3xl font-black text-secondary text-center mb-6">
-            Acceso de Jueces
-          </h1>
-          <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de jueces</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-              />
-            </div>
-            {authError && (
-              <div className="bg-error/10 border border-error/30 text-error text-sm rounded-xl px-4 py-2">{authError}</div>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
-        </div>
-      </div>
-    )
+  if (loading) {
+    return <div className="text-center py-12 text-gray-400">Cargando...</div>
   }
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="font-headline text-3xl font-black text-secondary">Panel de Juez</h1>
-            <p className="text-sm text-gray-500 mt-1">ID: {user?.anonymous_id}</p>
-          </div>
-          <button onClick={logout} className="text-sm font-medium text-gray-500 hover:text-error transition-colors">
-            Cerrar sesión
-          </button>
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        <div>
+          <h1 className="font-headline text-3xl font-black text-secondary">Panel de Juez</h1>
+          <p className="text-gray-500 text-sm mt-1">Selecciona un equipo y puntúa cada categoría</p>
         </div>
 
-        {/* Rubric */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
-          <h2 className="font-headline text-xl font-bold text-secondary mb-3">Rúbrica de Puntuación</h2>
-          <div className="grid gap-2">
-            {categories.map(c => (
-              <div key={c.name} className="flex items-center justify-between text-sm">
-                <span className="font-medium">{c.name}</span>
-                <span className="text-gray-500">1–10</span>
-              </div>
+        {/* Team selector */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Seleccionar equipo</label>
+          <select value={selectedTeam || ''} onChange={(e) => setSelectedTeam(parseInt(e.target.value, 10))}
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+            <option value="">-- Selecciona un equipo --</option>
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>{t.name} — {t.sandwich_name}</option>
             ))}
-          </div>
+          </select>
         </div>
 
-        {/* Score entry */}
-        <div className="space-y-4">
-          {teams.map(team => (
-            <div key={team.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-headline font-bold text-secondary">{team.name}</h3>
-                  <p className="text-sm text-gray-500">{team.sandwich_name}</p>
-                </div>
-                {submitted[`${team.id}:${categories[0]?.name}`] && (
-                  <span className="text-xs font-medium text-tertiary bg-tertiary/10 px-3 py-1 rounded-full">Enviado</span>
-                )}
+        {selectedTeam && (
+          <>
+            {msg && (
+              <div className={`text-sm p-3 rounded-xl ${msg.includes('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                {msg}
               </div>
+            )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                {categories.map(c => {
-                  const key = `${team.id}:${c.name}`
-                  const isScored = submitted[key]
-                  return (
-                    <div key={c.name}>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">{c.name}</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={10}
-                        disabled={isScored}
-                        value={scores[key] ?? ''}
-                        onChange={e => setScores({ ...scores, [key]: Math.min(10, Math.max(1, Number(e.target.value))) })}
-                        className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:bg-gray-50"
-                      />
-                      <input
-                        type="text"
-                        disabled={isScored}
-                        placeholder="Notas (opcional)"
-                        value={notes[key] ?? ''}
-                        onChange={e => setNotes({ ...notes, [key]: e.target.value })}
-                        className="w-full border border-gray-300 rounded-xl px-3 py-1.5 text-xs mt-1 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:bg-gray-50"
-                      />
+            {/* Rubric */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="font-headline text-lg font-bold text-secondary mb-4">Rubrica de puntuación</h2>
+              <div className="space-y-4">
+                {categories.map((cat) => (
+                  <div key={cat} className={`p-4 rounded-xl border ${submitted[cat] ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-sm">{cat}</span>
+                      {submitted[cat] && <span className="text-xs font-medium text-green-600">Enviado</span>}
                     </div>
-                  )
-                })}
+                    <div className="flex items-center gap-4">
+                      <input type="range" min={1} max={10} step={1}
+                        value={scores.find((s) => s.category === cat)?.value || 5}
+                        onChange={(e) => updateScore(cat, 'value', parseInt(e.target.value))}
+                        disabled={submitted[cat]}
+                        className="flex-1 accent-primary" />
+                      <span className="font-headline text-xl font-black text-secondary w-8 text-center">
+                        {scores.find((s) => s.category === cat)?.value || 5}
+                      </span>
+                    </div>
+                    <input type="text" placeholder="Notas (opcional)"
+                      value={scores.find((s) => s.category === cat)?.notes || ''}
+                      onChange={(e) => updateScore(cat, 'notes', e.target.value)}
+                      disabled={submitted[cat]}
+                      className="w-full mt-2 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary/50 disabled:bg-green-50" />
+                  </div>
+                ))}
               </div>
-
-              {!submitted[`${team.id}:${categories[0]?.name}`] && (
-                <button
-                  onClick={() => handleSubmitScores(team.id)}
-                  disabled={submitting === team.id}
-                  className="bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors disabled:opacity-50"
-                >
-                  {submitting === team.id ? 'Enviando...' : 'Enviar puntuación'}
-                </button>
-              )}
             </div>
-          ))}
 
-          {teams.length === 0 && (
-            <div className="text-center py-12 text-gray-500 bg-white rounded-2xl">
-              No hay equipos registrados aún.
-            </div>
-          )}
-        </div>
+            <button onClick={handleSubmit} disabled={submitting || categories.every((c) => submitted[c])}
+              className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {submitting ? 'Enviando...' : 'Enviar Puntuaciones'}
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

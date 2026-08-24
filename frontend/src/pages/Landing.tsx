@@ -47,14 +47,15 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-surface">
       {/* Navbar */}
-      <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-headline font-black text-secondary text-lg">El Campeonato</Link>
+          <Link to="/" className="font-headline text-lg font-black text-secondary">🏆 El Campeonato</Link>
           <div className="flex items-center gap-4 text-sm">
-            <a href="#reglas" className="text-gray-600 hover:text-primary font-medium">Reglas</a>
-            <Link to="/register" className="text-gray-600 hover:text-primary font-medium">Registro</Link>
-            <Link to="/chat" className="text-gray-600 hover:text-primary font-medium">Chat</Link>
-            <Link to="/login" className="text-gray-600 hover:text-primary font-medium">Iniciar sesión</Link>
+            <a href="#cronograma" className="text-gray-600 hover:text-primary transition-colors hidden sm:block">Cronograma</a>
+            <a href="#reglas" className="text-gray-600 hover:text-primary transition-colors hidden sm:block">Reglas</a>
+            <Link to="/register" className="text-gray-600 hover:text-primary transition-colors">Registrar</Link>
+            <Link to="/chat" className="text-gray-600 hover:text-primary transition-colors">Chat</Link>
+            <Link to="/login" className="bg-primary/10 text-primary-dark font-semibold px-3 py-1.5 rounded-xl hover:bg-primary/20 transition-colors">Entrar</Link>
           </div>
         </div>
       </nav>
@@ -82,21 +83,21 @@ export default function Landing() {
             ))}
           </div>
 
-          <div className="flex justify-center gap-3 pt-4 flex-wrap">
+          <div className="flex justify-center gap-3 pt-4">
             <Link to="/register" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors">
-              Registrar tu Equipo
+              Registrar Tu Equipo
             </Link>
             <Link to="/chat" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
-              Unirse al Chat
+              Unirse al Chat Global
             </Link>
-            <Link to="/results" className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
+            <Link to="/results" className="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
               Ver Resultados
             </Link>
           </div>
         </section>
 
         {/* Regla #1 */}
-        <section className="bg-error/10 border-2 border-error/30 rounded-2xl p-6 text-center">
+        <section id="reglas" className="bg-error/10 border-2 border-error/30 rounded-2xl p-6 text-center">
           <p className="font-headline text-lg font-black text-error uppercase tracking-wide">
             Regla #1: No se permiten hamburguesas
           </p>
@@ -120,7 +121,7 @@ export default function Landing() {
         </section>
 
         {/* Cronograma */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <section id="cronograma" className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-headline text-2xl font-black text-secondary">Cronograma</h2>
           </div>

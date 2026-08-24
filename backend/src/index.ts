@@ -18,8 +18,8 @@ import teamsRoutes from './routes/teams.js'
 import judgesRoutes from './routes/judges.js'
 import scoresRoutes from './routes/scores.js'
 import chatRoutes from './routes/chat.js'
-import emailRoutes from './routes/email.js'
-import inviteRoutes from './routes/invites.js'
+import uploadRoutes from './routes/upload.js'
+import adminRoutes from './routes/admin.js'
 
 const app = express()
 const server = createServer(app)
@@ -36,8 +36,8 @@ app.use('/api/teams', teamsRoutes)
 app.use('/api/judges', judgesRoutes)
 app.use('/api/scores', scoresRoutes)
 app.use('/api/chat', chatRoutes)
-app.use('/api/admin/email', emailRoutes)
-app.use('/api/invites', inviteRoutes)
+app.use('/api/upload', uploadRoutes)
+app.use('/api/admin', adminRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

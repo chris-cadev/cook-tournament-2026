@@ -1,163 +1,81 @@
-import { useState, useEffect, useRef } from 'react'
-import { useAuthStore } from '../../stores/authStore'
+import { useState } from 'react'
 
 interface Team {
   id: number
   name: string
   sandwich_name: string
   captain_email: string
-  status: 'pending' | 'confirmed' | 'disqualified'
+  status: string
   station: string | null
+  members?: string
 }
 
 interface Props {
-  open: boolean
+  team: Team
   onClose: () => void
-  team: Team | null
   onSaved: () => void
 }
 
-export default function TeamEditModal({ open, onClose, team, onSaved }: Props) {
-  const { token } = useAuthStore()
-  const dialogRef = useRef<HTMLDialogElement>(null)
-  const [name, setName] = useState('')
-  const [sandwichName, setSandwichName] = useState('')
-  const [status, setStatus] = useState<Team['status']>('pending')
-  const [station, setStation] = useState('')
+export default function TeamEditModal({ team, onClose, onSaved }: Props) {
+  const [status, setStatus] = useState(team.status)
+  const [station, setStation] = useState(team.station || '')
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    const el = dialogRef.current
-    if (!el) return
-    if (open && !el.open) el.showModal()
-    if (!open && el.open) el.close()
-  }, [open])
-
-  useEffect(() => {
-    if (team) {
-      setName(team.name)
-      setSandwichName(team.sandwich_name)
-      setStatus(team.status)
-      setStation(team.station || '')
-      setError('')
-    }
-  }, [team])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!team || !token) return
+  const handleSave = async () => {
     setSaving(true)
-    setError('')
     try {
       const res = await fetch(`/api/teams/${team.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({
-          name,
-          sandwich_name: sandwichName,
-          status,
-          station: station || null,
-        }),
+        body: JSON.stringify({ status, station: station || null }),
       })
-      if (!res.ok) {
-        const err = await res.json()
-        setError(err.error || 'Error al guardar')
-        return
-      }
-      onSaved()
-      onClose()
-    } catch {
-      setError('Error de red — intenta de nuevo')
+      if (res.ok) onSaved()
     } finally {
       setSaving(false)
     }
   }
 
-  return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      className="backdrop:bg-black/40 bg-transparent rounded-2xl shadow-xl p-0 max-w-lg w-full"
-    >
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6">
-        <h2 className="font-headline text-xl font-bold text-secondary mb-4">Editar Equipo</h2>
+  const members = team.members ? JSON.parse(team.members) : []
 
-        {error && (
-          <div className="mb-4 p-3 bg-error/10 border border-error/30 rounded-xl text-sm text-error">
-            {error}
-          </div>
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-headline text-xl font-black text-secondary">{team.name}</h3>
+        <p className="text-sm text-gray-500">Sándwich: {team.sandwich_name}</p>
+        <p className="text-sm text-gray-500">Capitán: {team.captain_email}</p>
+        {members.length > 0 && (
+          <p className="text-sm text-gray-500">Miembros: {members.join(', ')}</p>
         )}
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del equipo</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del sándwich</label>
-            <input
-              type="text"
-              value={sandwichName}
-              onChange={(e) => setSandwichName(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Team['status'])}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              <option value="pending">Pendiente</option>
-              <option value="confirmed">Confirmado</option>
-              <option value="disqualified">Descalificado</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estación</label>
-            <input
-              type="text"
-              value={station}
-              onChange={(e) => setStation(e.target.value)}
-              placeholder="Ej: Estación A"
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+            <option value="pending">Pendiente</option>
+            <option value="confirmed">Confirmado</option>
+            <option value="disqualified">Descalificado</option>
+          </select>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
-          >
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Estación</label>
+          <input type="text" value={station} onChange={(e) => setStation(e.target.value)} placeholder="Ej: Estación A"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-xl transition-colors disabled:opacity-50"
-          >
+          <button onClick={handleSave} disabled={saving}
+            className="flex-1 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50">
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
         </div>
-      </form>
-    </dialog>
+      </div>
+    </div>
   )
 }

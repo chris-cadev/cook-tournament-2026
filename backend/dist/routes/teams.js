@@ -2,7 +2,6 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { getDb, saveDb } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
-import { loadTemplates, sendEmail, markdownToHtml } from '../email.js';
 const router = Router();
 function rowsToArray(rows) {
     if (rows.length === 0)
@@ -29,38 +28,16 @@ router.post('/register', (req, res) => {
     saveDb();
     const idRows = db.exec('SELECT last_insert_rowid() as id');
     const id = idRows[0].values[0][0];
-    res.status(201).json({ id, name, status: 'pending' });
-<<<<<<< HEAD
-=======
-    // Auto-send confirmation email
-    const templates = loadTemplates();
-    const confirmationTemplate = templates.find(t => t.id === 'team-confirmation' && t.enabled);
-    if (confirmationTemplate) {
-        const configRows = db.exec('SELECT event_title, event_date FROM event_config WHERE id = 1');
-        const eventTitle = configRows.length > 0 ? configRows[0].values[0][0] : '';
-        const eventDate = configRows.length > 0 ? configRows[0].values[0][1] : '';
-        let captainName = captain_email;
-        try {
-            const parsed = JSON.parse(JSON.stringify(members || []));
-            if (Array.isArray(parsed) && parsed.length > 0)
-                captainName = parsed[0];
-        }
-        catch { /* keep email as fallback */ }
-        const vars = { team_name: name, captain_name: captainName, captain_email, event_title: eventTitle, event_date: eventDate };
-        const subject = confirmationTemplate.subject.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
-        const htmlBody = markdownToHtml(confirmationTemplate.body.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`));
-        sendEmail(captain_email, subject, htmlBody).catch(() => { });
-    }
->>>>>>> orchestrator/task-7-milestone-7-email-system
+    res.status(201).json({ id, name, sandwich_name, status: 'pending' });
 });
 router.get('/', authMiddleware, requireRole('admin'), (_req, res) => {
     const db = getDb();
-    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams ORDER BY name');
+    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, status, station, registered_at FROM teams ORDER BY name');
     res.json(rowsToArray(rows));
 });
 router.get('/:id', authMiddleware, (req, res) => {
     const db = getDb();
-    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, status, station, registered_at FROM teams WHERE id = ?', [req.params.id]);
+    const rows = db.exec('SELECT id, name, sandwich_name, captain_email, members, status, station, registered_at FROM teams WHERE id = ?', [req.params.id]);
     const teams = rowsToArray(rows);
     if (teams.length === 0)
         return res.status(404).json({ error: 'Team not found' });
@@ -86,5 +63,31 @@ router.delete('/:id', authMiddleware, requireRole('admin'), (req, res) => {
     db.run('DELETE FROM teams WHERE id = ?', [req.params.id]);
     saveDb();
     res.json({ success: true });
+});
+router.get('/:id/checklist', authMiddleware, (req, res) => {
+    const db = getDb();
+    const rows = db.exec('SELECT id, checklist FROM teams WHERE id = ?', [req.params.id]);
+    const teams = rowsToArray(rows);
+    if (teams.length === 0)
+        return res.status(404).json({ error: 'Team not found' });
+    const team = teams[0];
+    if (req.user?.role !== 'admin' && req.user?.team_id !== team.id) {
+        return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    res.json({ checklist: JSON.parse(team.checklist || '[]') });
+});
+router.put('/:id/checklist', authMiddleware, (req, res) => {
+    const { checklist } = req.body;
+    if (!Array.isArray(checklist)) {
+        return res.status(400).json({ error: 'checklist array required' });
+    }
+    const db = getDb();
+    const rows = db.exec('SELECT id FROM teams WHERE id = ?', [req.params.id]);
+    if (rows.length === 0 || rows[0].values.length === 0) {
+        return res.status(404).json({ error: 'Team not found' });
+    }
+    db.run('UPDATE teams SET checklist = ? WHERE id = ?', [JSON.stringify(checklist), req.params.id]);
+    saveDb();
+    res.json({ ok: true });
 });
 export default router;
