@@ -1,265 +1,102 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
-import Spinner from '../../components/ui/Spinner'
 
-interface Team {
-  id: number
-  name: string
-  sandwich_name: string
-  captain_email: string
-  status: 'pending' | 'confirmed' | 'disqualified'
-  station: number | null
-}
+const navItems = [
+  { to: '/admin/teams', label: 'Equipos', icon: 'group' },
+  { to: '/admin/settings', label: 'Configuración', icon: 'settings' },
+  { to: '/admin/emails', label: 'Emails', icon: 'mail' },
+  { to: '/admin/chat', label: 'Chat Moderation', icon: 'chat' },
+  { to: '/admin/score-reveal', label: 'Score Reveal', icon: 'leaderboard' },
+  { to: '/admin/todo', label: 'To-Do', icon: 'checklist' },
+]
 
 export default function Dashboard() {
-  const { token, logout } = useAuthStore()
-  const navigate = useNavigate()
-  const [teams, setTeams] = useState<Team[]>([])
-  const [loading, setLoading] = useState(true)
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null)
-  const [editForm, setEditForm] = useState({ name: '', sandwich_name: '', status: '', station: '' })
+  const { logout } = useAuthStore()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const location = useLocation()
 
-  const fetchTeams = useCallback(async () => {
-    if (!token) return
-    try {
-      const res = await fetch('/api/teams', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setTeams(data.teams || data || [])
-      }
-    } catch (err) {
-      console.error('Failed to fetch teams:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
+  const activeLabel = navItems.find(i => location.pathname === i.to)?.label || 'Admin'
 
-  useEffect(() => {
-    fetchTeams()
-  }, [fetchTeams])
+  const navLinkClass = (to: string) =>
+    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+      location.pathname === to
+        ? 'bg-primary/10 text-primary-dark font-bold'
+        : 'text-gray-600 hover:bg-gray-100'
+    }`
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
-  const updateTeamStatus = async (id: number, status: string) => {
-    if (!token) return
-    try {
-      const res = await fetch(`/api/teams/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      })
-      if (res.ok) {
-        setTeams(prev => prev.map(t => (t.id === id ? { ...t, status: status as Team['status'] } : t)))
-      }
-    } catch (err) {
-      console.error('Failed to update team:', err)
-    }
-  }
-
-  const deleteTeam = async (id: number) => {
-    if (!token || !confirm('¿Estás seguro de que quieres eliminar este equipo?')) return
-    try {
-      const res = await fetch(`/api/teams/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (res.ok) {
-        setTeams(prev => prev.filter(t => t.id !== id))
-      }
-    } catch (err) {
-      console.error('Failed to delete team:', err)
-    }
-  }
-
-  const openEdit = (team: Team) => {
-    setEditingTeam(team)
-    setEditForm({
-      name: team.name,
-      sandwich_name: team.sandwich_name,
-      status: team.status,
-      station: team.station?.toString() || '',
-    })
-  }
-
-  const saveEdit = async () => {
-    if (!token || !editingTeam) return
-    const body: Record<string, unknown> = {}
-    if (editForm.name !== editingTeam.name) body.name = editForm.name
-    if (editForm.sandwich_name !== editingTeam.sandwich_name) body.sandwich_name = editForm.sandwich_name
-    if (editForm.status !== editingTeam.status) body.status = editForm.status
-    if (editForm.station !== (editingTeam.station?.toString() || '')) body.station = editForm.station || null
-
-    if (Object.keys(body).length === 0) {
-      setEditingTeam(null)
-      return
-    }
-
-    try {
-      const res = await fetch(`/api/teams/${editingTeam.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      })
-      if (res.ok) {
-        setTeams(prev => prev.map(t => (t.id === editingTeam.id ? { ...t, ...body } : t)))
-      }
-    } catch (err) {
-      console.error('Failed to update team:', err)
-    } finally {
-      setEditingTeam(null)
-    }
-  }
-
-  const statusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      disqualified: 'bg-red-100 text-red-800',
-    }
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status === 'pending' ? 'Pendiente' : status === 'confirmed' ? 'Confirmado' : 'Descalificado'}
-      </span>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner />
+  const sidebar = (
+    <nav className="flex flex-col gap-1 p-4">
+      {navItems.map(item => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          className={navLinkClass(item.to)}
+          onClick={() => setDrawerOpen(false)}
+        >
+          <span className="material-symbols-outlined text-xl">{item.icon}</span>
+          {item.label}
+        </NavLink>
+      ))}
+      <div className="mt-auto pt-4 border-t border-gray-200">
+        <NavLink to="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          <span className="material-symbols-outlined text-xl">home</span>
+          Inicio
+        </NavLink>
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors w-full"
+        >
+          <span className="material-symbols-outlined text-xl">logout</span>
+          Salir
+        </button>
       </div>
-    )
-  }
+    </nav>
+  )
 
   return (
-    <div className="min-h-screen bg-surface">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-          <h1 className="font-headline text-xl font-black text-secondary">Panel de Admin</h1>
-          <div className="flex items-center gap-6">
-            <Link to="/admin/dashboard" className="text-sm font-bold text-primary border-b-2 border-primary pb-0.5">Equipos</Link>
-            <Link to="/admin/chat" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Chat</Link>
-            <Link to="/admin/score-reveal" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Puntuaciones</Link>
-            <Link to="/admin/settings" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Configuración</Link>
-            <button onClick={handleLogout} className="text-sm font-bold text-error hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
-              Cerrar sesión
-            </button>
-          </div>
+    <div className="min-h-screen bg-surface flex">
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex lg:flex-col w-64 bg-white border-r border-gray-200 min-h-screen sticky top-0">
+        <div className="px-4 py-5 border-b border-gray-200">
+          <h1 className="font-headline text-lg font-black text-secondary">Admin Dashboard</h1>
         </div>
-      </nav>
+        {sidebar}
+      </aside>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="font-headline text-lg font-bold text-secondary">Equipos Registrados</h2>
-            <p className="text-sm text-gray-500 mt-1">{teams.length} equipos en total</p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Nombre</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Sándwich</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Capitán</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Estado</th>
-                  <th className="text-left px-6 py-3 font-bold text-gray-600">Estación</th>
-                  <th className="text-right px-6 py-3 font-bold text-gray-600">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {teams.map(team => (
-                  <tr key={team.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-secondary">{team.name}</td>
-                    <td className="px-6 py-4 text-gray-700">{team.sandwich_name}</td>
-                    <td className="px-6 py-4 text-gray-700">{team.captain_email}</td>
-                    <td className="px-6 py-4">{statusBadge(team.status)}</td>
-                    <td className="px-6 py-4 text-gray-700">{team.station ?? '—'}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        {team.status !== 'confirmed' && (
-                          <button onClick={() => updateTeamStatus(team.id, 'confirmed')} className="px-3 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-                            Confirmar
-                          </button>
-                        )}
-                        <button onClick={() => openEdit(team)} className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
-                          Editar
-                        </button>
-                        {team.status !== 'disqualified' && (
-                          <button onClick={() => updateTeamStatus(team.id, 'disqualified')} className="px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
-                            Descalificar
-                          </button>
-                        )}
-                        <button onClick={() => deleteTeam(team.id)} className="px-3 py-1 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-                          Eliminar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {teams.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No hay equipos registrados aún.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {editingTeam && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-100">
-              <h3 className="font-headline text-lg font-bold text-secondary">Editar Equipo</h3>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                <input type="text" value={editForm.name} onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sándwich</label>
-                <input type="text" value={editForm.sandwich_name} onChange={e => setEditForm(prev => ({ ...prev, sandwich_name: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                <select value={editForm.status} onChange={e => setEditForm(prev => ({ ...prev, status: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  <option value="pending">Pendiente</option>
-                  <option value="confirmed">Confirmado</option>
-                  <option value="disqualified">Descalificado</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estación</label>
-                <input type="number" value={editForm.station} onChange={e => setEditForm(prev => ({ ...prev, station: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
-            </div>
-            <div className="p-6 border-t border-gray-100 flex justify-end gap-3">
-              <button onClick={() => setEditingTeam(null)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-                Cancelar
-              </button>
-              <button onClick={saveEdit} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-xl transition-colors">
-                Guardar
+      {/* Mobile drawer overlay */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 w-72 bg-white shadow-xl z-50 flex flex-col">
+            <div className="px-4 py-5 border-b border-gray-200 flex items-center justify-between">
+              <h1 className="font-headline text-lg font-black text-secondary">Admin</h1>
+              <button onClick={() => setDrawerOpen(false)} className="p-1 text-gray-500 hover:text-gray-700">
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-          </div>
+            {sidebar}
+          </aside>
         </div>
       )}
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {/* Mobile header */}
+        <header className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="p-1 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+          <h1 className="font-headline text-lg font-bold text-secondary">{activeLabel}</h1>
+        </header>
+
+        <main className="p-4 lg:p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

@@ -19,7 +19,6 @@ import judgesRoutes from './routes/judges.js'
 import scoresRoutes from './routes/scores.js'
 import chatRoutes from './routes/chat.js'
 import uploadRoutes from './routes/upload.js'
-import todoRoutes from './routes/todo.js'
 
 const app = express()
 const server = createServer(app)
@@ -37,7 +36,6 @@ app.use('/api/judges', judgesRoutes)
 app.use('/api/scores', scoresRoutes)
 app.use('/api/chat', chatRoutes)
 app.use('/api/upload', uploadRoutes)
-app.use('/api/todo', todoRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

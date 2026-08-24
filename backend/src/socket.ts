@@ -69,6 +69,20 @@ export function initSocket(httpServer: HttpServer) {
       }
       socket.join(`chat:${data.channel}`)
       socket.emit('chat:joined', { channel: data.channel })
+
+      const db = getDb()
+      const rows = db.exec(
+        'SELECT * FROM chat_messages WHERE channel = ? ORDER BY created_at DESC LIMIT 50',
+        [data.channel]
+      )
+      const messages = rows.length > 0
+        ? rows[0].values.map((vals: any[]) => {
+            const obj: Record<string, any> = {}
+            rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
+            return obj
+          }).reverse()
+        : []
+      socket.emit('chat:history', { channel: data.channel, messages })
     })
 
     socket.on('chat:leave', (data: { channel: string }) => {
@@ -114,7 +128,7 @@ export function initSocket(httpServer: HttpServer) {
       const messageId = idRows[0].values[0][0]
       const message = rowsToObject(db.exec('SELECT * FROM chat_messages WHERE id = ?', [messageId]))
 
-      io.to(`chat:${data.channel}`).emit('chat:message', { message })
+      io.to(`chat:${data.channel}`).emit('chat:new', { message })
     })
 
     socket.on('disconnect', () => {

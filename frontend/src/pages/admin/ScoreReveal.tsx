@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { useToastStore } from '../../stores/toastStore'
-import AdminNavbar from '../../components/admin/AdminNavbar'
 
 interface CategoryStatus {
   category: string
@@ -10,7 +8,6 @@ interface CategoryStatus {
 
 export default function ScoreReveal() {
   const { token } = useAuthStore()
-  const addToast = useToastStore((s) => s.add)
   const [categories, setCategories] = useState<CategoryStatus[]>([])
   const [revealedCount, setRevealedCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -24,11 +21,10 @@ export default function ScoreReveal() {
     try {
       const res = await fetch('/api/config')
       const config = await res.json()
-      const rawCats: any[] = config.scoring_categories || []
-      const catNames: string[] = rawCats.map((c: any) => typeof c === 'string' ? c : c.name)
+      const cats: string[] = config.scoring_categories || []
       const revealed: string[] = config.revealed_categories || []
 
-      setCategories(catNames.map(c => ({ category: c, revealed: revealed.includes(c) })))
+      setCategories(cats.map(c => ({ category: c, revealed: revealed.includes(c) })))
       setRevealedCount(revealed.length)
     } catch (err) {
       console.error('Failed to fetch config:', err)
@@ -51,7 +47,7 @@ export default function ScoreReveal() {
 
       if (!res.ok) {
         const err = await res.json()
-        addToast(err.error || 'Failed to reveal category', 'error')
+        alert(err.error || 'Failed to reveal category')
         return
       }
 
@@ -59,10 +55,9 @@ export default function ScoreReveal() {
         prev.map(c => (c.category === category ? { ...c, revealed: true } : c))
       )
       setRevealedCount(prev => prev + 1)
-      addToast(`Scores revealed: ${category}`, 'success')
     } catch (err) {
       console.error('Failed to reveal category:', err)
-      addToast('Network error — try again', 'error')
+      alert('Network error — try again')
     } finally {
       setRevealing(null)
     }
@@ -73,16 +68,15 @@ export default function ScoreReveal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      <AdminNavbar />
-      <div className="max-w-3xl mx-auto px-4 py-8">
+    <>
+      <div className="max-w-3xl">
         <h1 className="font-headline text-3xl font-black text-secondary mb-2">
           Score Reveal Control
         </h1>
@@ -147,6 +141,6 @@ export default function ScoreReveal() {
           </div>
         )}
       </div>
-    </div>
+    </>
   )
 }

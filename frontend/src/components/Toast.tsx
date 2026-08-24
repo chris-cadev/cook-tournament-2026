@@ -1,25 +1,28 @@
 import { useToastStore } from '../stores/toastStore'
 
-const styles: Record<string, string> = {
-  success: 'bg-green-50 border-green-200 text-green-700',
-  error: 'bg-red-50 border-red-200 text-red-700',
-  info: 'bg-blue-50 border-blue-200 text-blue-700',
-}
-
-export default function ToastContainer() {
-  const { toasts, dismiss } = useToastStore()
+export default function Toast() {
+  const { toasts, removeToast } = useToastStore()
 
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
-      {toasts.map((t) => (
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      {toasts.map((toast) => (
         <div
-          key={t.id}
-          className={`border px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center justify-between gap-3 ${styles[t.type] || styles.info}`}
+          key={toast.id}
+          className={`px-4 py-3 rounded-xl shadow-lg text-white text-sm font-medium flex items-center gap-2 animate-in slide-in-from-right ${
+            toast.type === 'success' ? 'bg-green-600' :
+            toast.type === 'error' ? 'bg-red-600' :
+            'bg-gray-800'
+          }`}
         >
-          <span>{t.message}</span>
-          <button onClick={() => dismiss(t.id)} className="text-current opacity-50 hover:opacity-100 text-lg leading-none">&times;</button>
+          <span>{toast.message}</span>
+          <button
+            onClick={() => removeToast(toast.id)}
+            className="ml-2 text-white/70 hover:text-white"
+          >
+            &times;
+          </button>
         </div>
       ))}
     </div>

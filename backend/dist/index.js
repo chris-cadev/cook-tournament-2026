@@ -16,6 +16,7 @@ import teamsRoutes from './routes/teams.js';
 import judgesRoutes from './routes/judges.js';
 import scoresRoutes from './routes/scores.js';
 import chatRoutes from './routes/chat.js';
+import uploadRoutes from './routes/upload.js';
 const app = express();
 const server = createServer(app);
 const frontendPort = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use('/api/teams', teamsRoutes);
 app.use('/api/judges', judgesRoutes);
 app.use('/api/scores', scoresRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/upload', uploadRoutes);
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 async function start() {
     await initDb();

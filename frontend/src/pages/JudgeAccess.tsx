@@ -1,41 +1,39 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 
 export default function JudgeAccess() {
-  const { user } = useAuthStore()
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const login = useAuthStore((s) => s.login)
+  const { token, user, login } = useAuthStore()
   const navigate = useNavigate()
 
-  if (user?.role === 'judge') {
-    navigate('/judge/panel', { replace: true })
-    return null
-  }
+  useEffect(() => {
+    if (token && user?.role === 'judge') {
+      navigate('/judge/panel', { replace: true })
+    }
+  }, [token, user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const body: Record<string, string> = { password }
-      if (user?.anonymous_id) body.anonymous_id = user.anonymous_id
       const res = await fetch('/api/auth/judge/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ password }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Invalid password')
+        setError(data.error || 'Contraseña inválida')
         return
       }
-      login(data.token, { anonymous_id: data.judge.anonymous_id, role: 'judge' })
+      login(data.token, { role: 'judge' })
       navigate('/judge/panel')
     } catch {
-      setError('Network error')
+      setError('Error de conexión')
     } finally {
       setLoading(false)
     }
@@ -47,29 +45,25 @@ export default function JudgeAccess() {
         <h1 className="font-headline text-2xl font-black text-secondary text-center mb-2">Acceso de Juez</h1>
         <p className="text-sm text-gray-500 text-center mb-6">Ingresa la contraseña de juez para acceder al panel de puntuación.</p>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2">{error}</p>}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               required
-              autoFocus
             />
           </div>
+          {error && <p className="text-error text-sm text-center">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white font-bold py-2.5 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50"
+            className="w-full bg-primary hover:bg-primary-dark text-white font-headline font-bold py-3 rounded-2xl transition-colors disabled:opacity-50"
           >
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          <Link to="/" className="text-primary hover:underline">Volver al inicio</Link>
-        </p>
       </div>
     </div>
   )

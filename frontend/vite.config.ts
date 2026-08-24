@@ -2,9 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import fs from 'fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-try { process.loadEnvFile(path.resolve(__dirname, '../.env')) } catch { /* no .env file */ }
+const envPath = path.resolve(__dirname, '../.env')
+if (fs.existsSync(envPath)) {
+  process.loadEnvFile(envPath)
+}
 
 const frontendPort = Number(process.env.PORT) || 3000
 const backendPort = Number(process.env.BACKEND_PORT) || 3001

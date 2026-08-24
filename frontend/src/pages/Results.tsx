@@ -80,7 +80,7 @@ export default function Results() {
     <div className="min-h-screen bg-surface">
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="font-headline text-4xl font-black text-secondary mb-2 text-center">
-          The Crust Competition 2026
+          El Campeonato de Sandwiches
         </h1>
         <p className="text-gray-500 text-center mb-8">Live Leaderboard</p>
 

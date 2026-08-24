@@ -85,14 +85,12 @@ export default function ChatModeration() {
 
   const deleteMessage = async (messageId: number) => {
     if (!token || !confirm('Delete this message?')) return
+    let channelPath: string = activeTab
+    if (activeTab === 'team' && selectedTeamId) {
+      channelPath = `team:${selectedTeamId}`
+    }
     try {
-      let channel = 'global'
-      if (activeTab === 'team' && selectedTeamId) {
-        channel = `team/${selectedTeamId}`
-      } else if (activeTab === 'judge') {
-        channel = 'judge'
-      }
-      const res = await fetch(`/api/chat/${channel}/messages/${messageId}`, {
+      const res = await fetch(`/api/chat/${channelPath}/messages/${messageId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -126,8 +124,8 @@ export default function ChatModeration() {
   ]
 
   return (
-    <div className="min-h-screen bg-surface">
-      <div className="max-w-[1200px] mx-auto px-4 py-6">
+    <div>
+      <div className="max-w-[1200px]">
         {/* Header */}
         <div className="mb-6">
           <h1 className="font-headline text-3xl font-black text-secondary mb-2">Chat Moderation</h1>

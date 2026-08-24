@@ -261,15 +261,18 @@ Mark a category as revealed in EventConfig (store revealed categories as JSON). 
 **Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:56:44Z
-Deliverable: Judges can view the scoring rubric and submit scores for teams.
+Deliverable: Admin can manage teams, view email config, and navigate to moderation/reveal pages.
 
-### judge-rubric-view
-Create protected page at `/jueces` showing scoring rubric in an Accordion layout. Fetch categories from `GET /api/judges/rubric`. Each category shows name + description, expandable. Files: new `src/pages/judges/Panel.tsx`, update routes.
+### admin-dashboard-layout
+Create protected admin layout at `/admin` with Sidebar (desktop) and Drawer (mobile). Navigation sections: Equipos, Emails, Chat Moderation, Score Reveal, To-Do. Use Tabs within sections. Files: new `src/pages/admin/Dashboard.tsx` with sidebar/drawer, update routes.
 
-### judge-score-submission
-Add scoring form below rubric: team selector dropdown (fetch `GET /api/teams`), category score inputs (1-10 range), optional notes field per category. Submit to `POST /api/judges/scores`. Show success/error alerts. Files: update `src/pages/judges/Panel.tsx`.
+### admin-team-list
+Build team management table in admin dashboard. Columns: name, captain email, status badge (pending/confirmed/disqualified), station, action buttons. Fetch from `GET /api/teams`. Responsive: stacks on mobile. Files: new `src/components/admin/TeamTable.tsx`.
 
-### judge-double-score-handling
-Handle 409 response from score submission (judge already scored this category for this team). Display Spanish error message "Ya puntuaste esta categoría para este equipo". Disable submitted category inputs. Frontend-only logic in `src/pages/judges/Panel.tsx`.
+### admin-team-edit
+Add edit modal for teams: fields for name, sandwich name, status, station. Submit to `PUT /api/teams/:id`. Refresh table on success. Files: new `src/components/admin/TeamEditModal.tsx`.
 
----|PASS|10|opencode-go/mimo-v2.5|2026-08-23T22:51:44Z
+### admin-team-delete
+Add delete button per team row with confirmation Modal. Submit to `DELETE /api/teams/:id`. Refresh table on success. Files: update `src/components/admin/TeamTable.tsx`, new `src/components/Modal.tsx`.
+
+---|PASS|4|opencode-go/mimo-v2.5|2026-08-23T22:32:03Z

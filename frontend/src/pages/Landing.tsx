@@ -46,6 +46,21 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-surface">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="font-headline text-lg font-black text-secondary">
+            Sandwich Championship
+          </Link>
+          <div className="flex items-center gap-4 text-sm font-medium">
+            <Link to="/" className="text-gray-600 hover:text-secondary transition-colors">Reglas</Link>
+            <Link to="/register" className="text-gray-600 hover:text-secondary transition-colors">Registrar</Link>
+            <Link to="/chat" className="text-gray-600 hover:text-secondary transition-colors">Chat</Link>
+            <Link to="/results" className="text-gray-600 hover:text-secondary transition-colors">Resultados</Link>
+          </div>
+        </div>
+      </nav>
+
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
 
         {/* Hero */}
@@ -69,17 +84,17 @@ export default function Landing() {
             ))}
           </div>
 
-          <div className="flex justify-center gap-3 pt-4">
+          <div className="flex justify-center gap-3 pt-4 flex-wrap">
             <Link to="/register" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors">
-              Registrar Tu Equipo
+              Registrar Equipo
             </Link>
             <Link to="/chat" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
-              Unirse al Chat Global
+              Chat Global
             </Link>
             <Link to="/results" className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
               Ver Resultados
             </Link>
-            <Link to="/admin/score-reveal" className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
+            <Link to="/admin" className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
               Admin
             </Link>
           </div>

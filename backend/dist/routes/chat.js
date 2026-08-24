@@ -121,10 +121,9 @@ router.post('/judge/messages', authMiddleware, validateChannelAccess, (req, res)
     }
     const db = getDb();
     const user = req.user;
-    db.run('INSERT INTO chat_messages (channel, sender_id, sender_anonymous_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?, ?)', [
+    db.run('INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)', [
         'judge',
-        user.id || null,
-        user.anonymous_id || null,
+        user.id || user.anonymous_id || null,
         user.name || user.anonymous_id || 'Judge',
         user.role,
         content.trim(),

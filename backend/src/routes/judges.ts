@@ -20,16 +20,6 @@ function rowsToObject(rows: any[]): Record<string, any> {
   return obj
 }
 
-router.get('/teams', authMiddleware, (req: Request, res: Response) => {
-  if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
-    return res.status(403).json({ error: 'Judge or admin access required' })
-  }
-
-  const db = getDb()
-  const rows = db.exec('SELECT id, name, sandwich_name FROM teams ORDER BY name')
-  res.json(rowsToArray(rows))
-})
-
 router.get('/rubric', authMiddleware, (req: Request, res: Response) => {
   if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Judge or admin access required' })
@@ -38,10 +28,7 @@ router.get('/rubric', authMiddleware, (req: Request, res: Response) => {
   const db = getDb()
   const rows = db.exec('SELECT scoring_categories FROM event_config WHERE id = 1')
   const config = rowsToObject(rows)
-  const raw: any[] = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
-  const categories = raw.map((c: any) =>
-    typeof c === 'string' ? { name: c, description: '' } : c
-  )
+  const categories = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
   res.json({ categories })
 })
 
@@ -55,19 +42,17 @@ router.post('/scores', authMiddleware, (req: Request, res: Response) => {
     return res.status(400).json({ error: 'team_id and scores array required' })
   }
 
-  for (const s of scores) {
-    if (typeof s.value !== 'number' || s.value < 1 || s.value > 10 || !Number.isInteger(s.value)) {
-      return res.status(400).json({ error: `Invalid score value for category: ${s.category}. Must be integer 1-10.` })
-    }
-  }
-
   const db = getDb()
 
   for (const s of scores) {
+    const value = Number(s.value)
+    if (!Number.isInteger(value) || value < 1 || value > 10) {
+      return res.status(400).json({ error: `Score value for ${s.category} must be an integer between 1 and 10` })
+    }
     try {
       db.run(
         'INSERT INTO scores (team_id, judge_anonymous_id, category, value, notes) VALUES (?, ?, ?, ?, ?)',
-        [team_id, req.user!.anonymous_id, s.category, s.value, s.notes || null]
+        [team_id, req.user!.anonymous_id, s.category, value, s.notes || null]
       )
     } catch (e: any) {
       if (e.message?.includes('UNIQUE constraint')) {
@@ -87,18 +72,16 @@ router.get('/scores/:teamId', authMiddleware, (req: Request, res: Response) => {
   }
 
   const db = getDb()
-  let rows
+  let query = 'SELECT * FROM scores WHERE team_id = ?'
+  const params: any[] = [req.params.teamId]
+
   if (req.user?.role === 'judge') {
-    rows = db.exec(
-      'SELECT judge_anonymous_id, category, value, notes FROM scores WHERE team_id = ? AND judge_anonymous_id = ? ORDER BY category',
-      [req.params.teamId, req.user!.anonymous_id]
-    )
-  } else {
-    rows = db.exec(
-      'SELECT judge_anonymous_id, category, value, notes FROM scores WHERE team_id = ? ORDER BY category, judge_anonymous_id',
-      [req.params.teamId]
-    )
+    query += ' AND judge_anonymous_id = ?'
+    params.push(req.user.anonymous_id)
   }
+
+  query += ' ORDER BY category, judge_anonymous_id'
+  const rows = db.exec(query, params)
   res.json(rowsToArray(rows))
 })
 

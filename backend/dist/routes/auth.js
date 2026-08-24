@@ -44,73 +44,43 @@ router.post('/team/login', (req, res) => {
     res.json({ token, team: { id: team.id, name: team.name, sandwich_name: team.sandwich_name, role: 'team' } });
 });
 router.post('/judge/login', (req, res) => {
-    const { password, anonymous_id } = req.body;
+    const { password } = req.body;
     if (!password) {
         return res.status(400).json({ error: 'Password required' });
     }
     const db = getDb();
     const configRows = db.exec('SELECT judge_password FROM event_config WHERE id = 1');
     if (configRows.length === 0 || configRows[0].values.length === 0) {
-        return res.status(401).json({ error: 'Invalid judge password' });
+        return res.status(401).json({ error: 'Invalid password' });
     }
     const judgePasswordHash = configRows[0].values[0][0];
     if (!bcrypt.compareSync(password, judgePasswordHash)) {
         return res.status(401).json({ error: 'Invalid password' });
     }
-    let resolvedId;
-    if (anonymous_id) {
-        const existing = db.exec('SELECT anonymous_id FROM judges WHERE anonymous_id = ?', [anonymous_id]);
-        if (existing.length > 0 && existing[0].values.length > 0) {
-            resolvedId = anonymous_id;
-        }
-        else {
-            const allRows = db.exec('SELECT anonymous_id FROM judges ORDER BY id DESC LIMIT 1');
-            let nextNum = 1;
-            if (allRows.length > 0 && allRows[0].values.length > 0) {
-                nextNum = parseInt(allRows[0].values[0][0].split('_')[1]) + 1;
-            }
-            resolvedId = `judge_${nextNum}`;
-            try {
-                db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
-                saveDb();
-            }
-            catch (e) {
-                if (e.message?.includes('UNIQUE constraint')) {
-                    nextNum++;
-                    resolvedId = `judge_${nextNum}`;
-                    db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
-                    saveDb();
-                }
-                else {
-                    throw e;
-                }
-            }
-        }
-    }
-    else {
-        const allRows = db.exec('SELECT anonymous_id FROM judges ORDER BY id DESC LIMIT 1');
+    let anonymousId;
+    let inserted = false;
+    for (let attempt = 0; attempt < 10; attempt++) {
+        const maxRows = db.exec('SELECT MAX(id) FROM judges');
         let nextNum = 1;
-        if (allRows.length > 0 && allRows[0].values.length > 0) {
-            nextNum = parseInt(allRows[0].values[0][0].split('_')[1]) + 1;
+        if (maxRows.length > 0 && maxRows[0].values[0][0] !== null) {
+            nextNum = maxRows[0].values[0][0] + 1;
         }
-        resolvedId = `judge_${nextNum}`;
+        anonymousId = `judge_${nextNum}`;
         try {
-            db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
-            saveDb();
+            db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [anonymousId]);
+            inserted = true;
+            break;
         }
         catch (e) {
-            if (e.message?.includes('UNIQUE constraint')) {
-                nextNum++;
-                resolvedId = `judge_${nextNum}`;
-                db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [resolvedId]);
-                saveDb();
-            }
-            else {
+            if (!e.message?.includes('UNIQUE constraint'))
                 throw e;
-            }
         }
     }
-    const token = signToken({ anonymous_id: resolvedId, role: 'judge' });
-    res.json({ token, judge: { anonymous_id: resolvedId, role: 'judge' } });
+    if (!inserted) {
+        return res.status(500).json({ error: 'Failed to generate judge ID' });
+    }
+    saveDb();
+    const token = signToken({ anonymous_id: anonymousId, role: 'judge' });
+    res.json({ token, role: 'judge' });
 });
 export default router;
