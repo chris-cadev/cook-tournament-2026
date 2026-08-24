@@ -14,6 +14,11 @@ import Teams from './pages/admin/Teams'
 import AdminLogin from './pages/admin/Login'
 import TeamLogin from './pages/team/Login'
 import JudgeLogin from './pages/judges/Login'
+import ToDo from './pages/admin/ToDo'
+import EmailReminders from './pages/admin/EmailReminders'
+import Invites from './pages/admin/Invites'
+import StationManager from './pages/admin/Stations'
+import TeamChecklist from './pages/TeamChecklist'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuthStore } from './stores/authStore'
 
@@ -57,10 +62,50 @@ export default function App() {
           }
         />
         <Route
+          path="/admin/todos"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <ToDo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/email"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <EmailReminders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/invites"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Invites />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/stations"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <StationManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/equipo"
           element={
             <ProtectedRoute allowedRoles={['team']}>
               <TeamDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/equipo/checklist"
+          element={
+            <ProtectedRoute allowedRoles={['team']}>
+              <TeamChecklist />
             </ProtectedRoute>
           }
         />
@@ -148,6 +193,22 @@ function AdminDashboard() {
             <p className="font-headline text-lg font-bold text-secondary">Leaderboard</p>
             <p className="text-sm text-gray-500 mt-1">Ver puntuaciones en tiempo real</p>
           </a>
+          <a href="/admin/todos" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:border-primary/50 transition-colors">
+            <p className="font-headline text-lg font-bold text-secondary">Tareas</p>
+            <p className="text-sm text-gray-500 mt-1">Lista de pendientes del evento</p>
+          </a>
+          <a href="/admin/email" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:border-primary/50 transition-colors">
+            <p className="font-headline text-lg font-bold text-secondary">Emails</p>
+            <p className="text-sm text-gray-500 mt-1">Enviar recordatorios a equipos</p>
+          </a>
+          <a href="/admin/invites" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:border-primary/50 transition-colors">
+            <p className="font-headline text-lg font-bold text-secondary">Invitaciones</p>
+            <p className="text-sm text-gray-500 mt-1">Crear enlaces de invitación</p>
+          </a>
+          <a href="/admin/stations" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:border-primary/50 transition-colors">
+            <p className="font-headline text-lg font-bold text-secondary">Estaciones</p>
+            <p className="text-sm text-gray-500 mt-1">Gestionar estaciones de cocina</p>
+          </a>
         </div>
       </div>
     </div>
@@ -168,6 +229,10 @@ function TeamDashboard() {
               <p className="text-sm text-gray-500 mt-1">Coordina con tu equipo</p>
             </a>
           )}
+          <a href="/equipo/checklist" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:border-primary/50 transition-colors">
+            <p className="font-headline text-lg font-bold text-secondary">Lista de Preparación</p>
+            <p className="text-sm text-gray-500 mt-1">Checklist de ingredientes y equipo</p>
+          </a>
           <a href="/results" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:border-primary/50 transition-colors">
             <p className="font-headline text-lg font-bold text-secondary">Resultados</p>
             <p className="text-sm text-gray-500 mt-1">Ver puntuaciones</p>

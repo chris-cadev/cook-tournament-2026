@@ -261,3 +261,21 @@ Mark a category as revealed in EventConfig (store revealed categories as JSON). 
 **Deliverable:** Host reveals categories one by one. All connected clients see scores appear in real-time. Final leaderboard displays after all categories revealed.
 
 ---|PASS|1|opencode-go/mimo-v2.5|2026-08-23T16:56:44Z
+Deliverable: Users can log in from all three roles and see an updated landing page with role-based navigation.
+
+### login-page-admin
+Create admin login page at `/admin/login` with email + password form. Wire to existing `POST /api/auth/admin/login`. Store JWT in Zustand auth store. Redirect to `/admin` on success. Files: new `src/pages/admin/Login.tsx`, update `src/App.tsx` routes.
+
+### login-page-team
+Create team login page at `/team/login` with captain email + password form. Wire to `POST /api/auth/team/login`. Store JWT and team data in auth store. Redirect to `/equipo` on success. Files: new `src/pages/team/Login.tsx`, update routes.
+
+### login-page-judge
+Create judge login page at `/jueces/login` with shared password field. Wire to `POST /api/auth/judge/login`. Store JWT and judge anonymous_id in auth store. Redirect to `/jueces` on success. Files: new `src/pages/judges/Login.tsx`, update routes.
+
+### landing-page-login-links
+Update landing page (`src/pages/Landing.tsx`) to show role-based login/register buttons: "Admin" → `/admin/login`, "Equipo" → `/team/login` or `/register`, "Jueces" → `/jueces/login`. Add the event title from `GET /api/config`.
+
+### navbar-component
+Create reusable Navbar component with role-based links. Desktop: horizontal links. Mobile: hamburger menu. Show logout button when authenticated. Files: new `src/components/Navbar.tsx`, integrate into all page layouts.
+
+---|PASS|5|opencode-go/mimo-v2.5|2026-08-23T20:31:53Z

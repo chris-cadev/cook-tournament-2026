@@ -72,7 +72,7 @@ export function initSocket(httpServer: HttpServer) {
       socket.leave(`chat:${data.channel}`)
     })
 
-    socket.on('chat:send', (data: { channel: string; content: string }) => {
+    socket.on('chat:send', (data: { channel: string; content: string; attachment_url?: string; attachment_type?: string }) => {
       if (!validateChannelAccess(user, data.channel)) {
         socket.emit('chat:error', { error: 'Access denied to this channel' })
         return
@@ -91,13 +91,15 @@ export function initSocket(httpServer: HttpServer) {
       const db = getDb()
 
       db.run(
-        'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           data.channel,
           user.id || user.team_id || user.anonymous_id || null,
           user.name || user.email || user.anonymous_id || 'Unknown',
           user.role,
           data.content.trim(),
+          data.attachment_url || null,
+          data.attachment_type || null,
         ]
       )
       saveDb()

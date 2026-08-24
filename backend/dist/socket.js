@@ -77,12 +77,14 @@ export function initSocket(httpServer) {
                 return;
             }
             const db = getDb();
-            db.run('INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content) VALUES (?, ?, ?, ?, ?)', [
+            db.run('INSERT INTO chat_messages (channel, sender_id, sender_name, sender_role, content, attachment_url, attachment_type) VALUES (?, ?, ?, ?, ?, ?, ?)', [
                 data.channel,
                 user.id || user.team_id || user.anonymous_id || null,
                 user.name || user.email || user.anonymous_id || 'Unknown',
                 user.role,
                 data.content.trim(),
+                data.attachment_url || null,
+                data.attachment_type || null,
             ]);
             saveDb();
             const idRows = db.exec('SELECT last_insert_rowid() as id');

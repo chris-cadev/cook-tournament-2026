@@ -9,6 +9,8 @@ interface ChatMessage {
   sender_name: string
   sender_role: string
   content: string
+  attachment_url: string | null
+  attachment_type: string | null
   created_at: string
 }
 
@@ -115,6 +117,54 @@ export default function Chat() {
     }
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const presignRes = await fetch('/api/upload/presign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, content_type: file.type }),
+      })
+
+      if (!presignRes.ok) {
+        const err = await presignRes.json()
+        alert(err.error || 'Upload not available')
+        return
+      }
+
+      const { upload_url, file_url } = await presignRes.json()
+
+      await fetch(upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+
+      const attachmentType = file.type.startsWith('image/') ? 'image' : 'audio'
+      const res = await fetch('/api/chat/global/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender_name: senderName.trim() || 'Anonymous',
+          content: newMessage.trim() || `${attachmentType === 'image' ? '📸' : '🎵'} ${file.name}`,
+          attachment_url: file_url,
+          attachment_type: attachmentType,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(prev => [...prev, data.message])
+        setNewMessage('')
+        localStorage.setItem('chat_name', senderName.trim())
+      }
+    } catch (err) {
+      console.error('Failed to upload:', err)
+    }
+    e.target.value = ''
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -196,6 +246,12 @@ export default function Chat() {
                       <span className="text-xs text-gray-400">{formatTime(msg.created_at)}</span>
                     </div>
                     <p className="text-gray-800 text-sm break-words">{msg.content}</p>
+                    {msg.attachment_url && msg.attachment_type === 'image' && (
+                      <img src={msg.attachment_url} alt="attachment" className="mt-2 max-w-xs rounded-xl" />
+                    )}
+                    {msg.attachment_url && msg.attachment_type === 'audio' && (
+                      <audio controls src={msg.attachment_url} className="mt-2 max-w-xs" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -212,7 +268,7 @@ export default function Chat() {
               type="file"
               accept="image/*,audio/*"
               className="hidden"
-              onChange={() => {/* upload handled by backend when ready */}}
+              onChange={handleFileUpload}
             />
             <button
               onClick={() => fileInputRef.current?.click()}

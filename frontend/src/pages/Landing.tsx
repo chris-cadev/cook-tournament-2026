@@ -61,6 +61,10 @@ export default function Landing() {
   const eventDate = config.event_date || FALLBACK_DATE
   const { days, hours, minutes, seconds } = useCountdown(eventDate)
 
+  const eventTime = new Date(eventDate).getTime()
+  const diff = eventTime - Date.now()
+  const isApproaching = diff > 0 && diff < 86400000
+
   return (
     <div className="min-h-screen bg-surface">
       <Navbar />
@@ -112,6 +116,26 @@ export default function Landing() {
             </Link>
           </div>
         </section>
+
+        {/* Sticky countdown widget when approaching */}
+        {isApproaching && (
+          <div className="fixed bottom-4 right-4 z-50 bg-white rounded-2xl shadow-lg border border-primary/30 p-4">
+            <p className="text-xs font-bold text-primary-dark uppercase mb-2">Evento en:</p>
+            <div className="flex gap-2">
+              {[
+                { label: 'd', value: days },
+                { label: 'h', value: hours },
+                { label: 'm', value: minutes },
+                { label: 's', value: seconds },
+              ].map((unit) => (
+                <div key={unit.label} className="text-center">
+                  <p className="font-headline text-xl font-black text-secondary">{String(unit.value).padStart(2, '0')}</p>
+                  <p className="text-[10px] text-gray-500">{unit.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Regla #1 */}
         <section className="bg-error/10 border-2 border-error/30 rounded-2xl p-6 text-center">
