@@ -1,96 +1,82 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useToastStore } from '../stores/toastStore'
-import Navbar from '../components/Navbar'
+import { useState, FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useToast } from '../components/ui/Toast'
 
 export default function Registration() {
   const navigate = useNavigate()
-  const addToast = useToastStore((s) => s.addToast)
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({
-    name: '',
-    sandwich_name: '',
-    captain_email: '',
-    password: '',
-    members: ['', ''],
-    equipment_needs: '',
-  })
+  const [error, setError] = useState('')
 
-  const update = (field: string, value: string | string[]) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
-  }
+  const [name, setName] = useState('')
+  const [sandwichName, setSandwichName] = useState('')
+  const [captainEmail, setCaptainEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [members, setMembers] = useState(['', ''])
+  const [equipmentNeeds, setEquipmentNeeds] = useState('')
 
-  const updateMember = (index: number, value: string) => {
-    const members = [...form.members]
-    members[index] = value
-    update('members', members)
-  }
-
-  const addMember = () => {
-    if (form.members.length < 3) {
-      update('members', [...form.members, ''])
-    }
-  }
-
-  const removeMember = (index: number) => {
-    if (form.members.length > 2) {
-      update('members', form.members.filter((_, i) => i !== index))
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!form.name || !form.sandwich_name || !form.captain_email || !form.password) {
-      addToast('Completa todos los campos requeridos', 'error')
-      return
-    }
-
+    setError('')
     setLoading(true)
+
     try {
       const res = await fetch('/api/teams/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...form,
-          members: form.members.filter((m) => m.trim()),
+          name,
+          sandwich_name: sandwichName,
+          captain_email: captainEmail,
+          password,
+          members: members.filter(m => m.trim()),
+          equipment_needs: equipmentNeeds || null,
         }),
       })
-
       const data = await res.json()
 
       if (!res.ok) {
-        addToast(data.error || 'Error al registrar', 'error')
+        setError(data.error || 'Error al registrar')
         return
       }
 
-      addToast('Equipo registrado!', 'success')
-      navigate('/')
+      toast('¡Equipo registrado!', 'success')
+      navigate('/login?role=team')
     } catch {
-      addToast('Error de red', 'error')
+      setError('Error de conexión')
     } finally {
       setLoading(false)
     }
   }
 
+  function addMember() {
+    if (members.length < 3) setMembers([...members, ''])
+  }
+
+  function removeMember() {
+    if (members.length > 2) setMembers(members.slice(0, -1))
+  }
+
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
-      <div className="max-w-lg mx-auto px-4 py-12">
-        <h1 className="font-headline text-3xl font-black text-secondary text-center mb-2">
-          Registro de Equipo
-        </h1>
-        <p className="text-gray-500 text-center mb-8">Registra tu equipo para la competencia</p>
+      <div className="max-w-lg mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Link to="/" className="text-sm text-gray-500 hover:text-primary">&larr; Inicio</Link>
+        </div>
+
+        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Registrar Equipo</h1>
+        <p className="text-gray-500 mb-6">Completa los datos de tu equipo para inscribirte en el campeonato.</p>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del equipo *</label>
             <input
               type="text"
-              value={form.name}
-              onChange={(e) => update('name', e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Los Tripanadores"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              placeholder="Ej: Los Panaderos"
             />
           </div>
 
@@ -98,11 +84,11 @@ export default function Registration() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del sándwich *</label>
             <input
               type="text"
-              value={form.sandwich_name}
-              onChange={(e) => update('sandwich_name', e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="El Reina del Sur"
+              value={sandwichName}
+              onChange={e => setSandwichName(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              placeholder="Ej: El Reina del Fuego"
             />
           </div>
 
@@ -110,11 +96,11 @@ export default function Registration() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Email del capitán *</label>
             <input
               type="email"
-              value={form.captain_email}
-              onChange={(e) => update('captain_email', e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="capitan@email.com"
+              value={captainEmail}
+              onChange={e => setCaptainEmail(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              placeholder="capitan@ejemplo.com"
             />
           </div>
 
@@ -122,57 +108,56 @@ export default function Registration() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña del equipo *</label>
             <input
               type="password"
-              value={form.password}
-              onChange={(e) => update('password', e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Comparte con tu equipo"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              placeholder="Mínimo 4 caracteres"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Miembros del equipo</label>
-            {form.members.map((member, i) => (
-              <div key={i} className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={member}
-                  onChange={(e) => updateMember(i, e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder={`Miembro ${i + 1}`}
-                />
-                {form.members.length > 2 && (
-                  <button
-                    type="button"
-                    onClick={() => removeMember(i)}
-                    className="text-gray-400 hover:text-error px-2"
-                  >
-                    ×
-                  </button>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-700">Miembros del equipo</label>
+              <div className="flex gap-2">
+                {members.length < 3 && (
+                  <button type="button" onClick={addMember} className="text-xs text-primary font-medium hover:text-primary-dark">+ Agregar</button>
+                )}
+                {members.length > 2 && (
+                  <button type="button" onClick={removeMember} className="text-xs text-error font-medium hover:text-error/80">- Quitar</button>
                 )}
               </div>
+            </div>
+            {members.map((m, i) => (
+              <input
+                key={i}
+                type="text"
+                value={m}
+                onChange={e => {
+                  const next = [...members]
+                  next[i] = e.target.value
+                  setMembers(next)
+                }}
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary mb-2"
+                placeholder={`Miembro ${i + 1}`}
+              />
             ))}
-            {form.members.length < 3 && (
-              <button
-                type="button"
-                onClick={addMember}
-                className="text-sm text-primary-dark hover:text-primary font-medium"
-              >
-                + Agregar miembro
-              </button>
-            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Equipo / Utensilios (opcional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Necesidades de equipo (opcional)</label>
             <textarea
-              value={form.equipment_needs}
-              onChange={(e) => update('equipment_needs', e.target.value)}
+              value={equipmentNeeds}
+              onChange={e => setEquipmentNeeds(e.target.value)}
               rows={3}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-              placeholder="Describe qué equipo o utensilios necesitas..."
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              placeholder="Ej: Necesitamos enchufe extra, plancha grande..."
             />
           </div>
+
+          {error && (
+            <div className="bg-error/10 border border-error/30 text-error text-sm rounded-xl px-4 py-2">{error}</div>
+          )}
 
           <button
             type="submit"

@@ -1,154 +1,134 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import Spinner from '../../components/ui/Spinner'
 
-interface Invite {
+interface InviteCode {
   id: number
   code: string
-  message: string | null
-  created_by: string | null
+  created_by: string
+  role: string
   uses: number
   created_at: string
 }
 
 export default function InviteManager() {
-  const { token, logout } = useAuthStore()
-  const [invites, setInvites] = useState<Invite[]>([])
+  const { token } = useAuthStore()
+  const [invites, setInvites] = useState<InviteCode[]>([])
   const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState('')
-  const [created, setCreated] = useState<{ code: string; url: string } | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
-  const fetchInvites = useCallback(async () => {
-    if (!token) return
+  const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+
+  useEffect(() => { fetchInvites() }, [])
+
+  async function fetchInvites() {
     try {
-      const res = await fetch('/api/invites', { headers: { Authorization: `Bearer ${token}` } })
+      const res = await fetch('/api/invites', { headers: authHeaders })
       if (res.ok) setInvites(await res.json())
-    } finally { setLoading(false) }
-  }, [token])
-
-  useEffect(() => { fetchInvites() }, [fetchInvites])
-
-  const generateInvite = async () => {
-    if (!token) return
-    const res = await fetch('/api/invites/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ message: message || undefined }),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      const url = `${window.location.origin}/invite/${data.code}`
-      setCreated({ code: data.code, url })
-      setMessage('')
-      fetchInvites()
+    } catch (err) {
+      console.error('Failed to fetch invites:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const copyUrl = async (url: string) => {
-    await navigator.clipboard.writeText(url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  async function generateInvite(role: string) {
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/invites/generate', {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ role }),
+      })
+      if (res.ok) {
+        await fetchInvites()
+      }
+    } catch (err) {
+      console.error('Failed to generate invite:', err)
+    } finally {
+      setGenerating(false)
+    }
   }
 
-  const baseUrl = window.location.origin
+  async function deleteInvite(id: number) {
+    try {
+      await fetch(`/api/invites/${id}`, { method: 'DELETE', headers: authHeaders })
+      setInvites(prev => prev.filter(i => i.id !== id))
+    } catch (err) {
+      console.error('Failed to delete invite:', err)
+    }
+  }
+
+  function copyLink(code: string) {
+    const url = `${window.location.origin}/?ref=${code}`
+    navigator.clipboard.writeText(url)
+    setCopiedCode(code)
+    setTimeout(() => setCopiedCode(null), 2000)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-surface">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-          <h1 className="font-headline text-xl font-black text-secondary">Panel de Admin</h1>
-          <div className="flex items-center gap-6">
-            <Link to="/admin/dashboard" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Equipos</Link>
-            <Link to="/admin/chat" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Chat</Link>
-            <Link to="/admin/score-reveal" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Puntuaciones</Link>
-            <Link to="/admin/settings" className="text-sm font-bold text-gray-500 hover:text-secondary transition-colors">Configuración</Link>
-            <button onClick={() => { logout() }} className="text-sm font-bold text-error hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
-              Cerrar sesión
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <h1 className="font-headline text-3xl font-black text-secondary mb-2">Invitaciones</h1>
+        <p className="text-gray-600 mb-6">Genera enlaces únicos para invitar personas al evento.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+          {[
+            { role: 'guest', label: 'Invitar Invitado', desc: 'Acceso al chat global y landing page' },
+            { role: 'team', label: 'Invitar Equipo', desc: 'Link de registro para nuevos equipos' },
+            { role: 'judge', label: 'Invitar Juez', desc: 'Acceso al panel de puntuación' },
+          ].map(opt => (
+            <button
+              key={opt.role}
+              onClick={() => generateInvite(opt.role)}
+              disabled={generating}
+              className="bg-white rounded-2xl border-2 border-gray-200 p-4 text-left hover:border-primary transition-colors disabled:opacity-50"
+            >
+              <p className="font-headline font-bold text-secondary text-sm">{opt.label}</p>
+              <p className="text-xs text-gray-500 mt-1">{opt.desc}</p>
             </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="font-headline text-lg font-bold text-secondary mb-1">Invitaciones</h2>
-          <p className="text-sm text-gray-500">Genera enlaces únicos para invitar personas al evento.</p>
+          ))}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h3 className="font-headline text-base font-bold text-secondary">Generar nueva invitación</h3>
-          <input
-            type="text"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            placeholder="Mensaje opcional (ej: ¡Te esperamos!)"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          <button
-            onClick={generateInvite}
-            className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors"
-          >
-            Generar enlace
-          </button>
-
-          {created && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-2">
-              <p className="text-sm font-medium text-green-800">Invitación creada:</p>
-              <div className="flex items-center gap-2">
-                <code className="text-sm bg-white px-3 py-1.5 rounded-lg border border-green-200 flex-1 truncate">{created.url}</code>
-                <button
-                  onClick={() => copyUrl(created.url)}
-                  className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-4 py-1.5 rounded-lg transition-colors whitespace-nowrap"
-                >
-                  {copied ? 'Copiado' : 'Copiar'}
-                </button>
+        {invites.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">No hay invitaciones creadas aún.</div>
+        ) : (
+          <div className="space-y-3">
+            {invites.map(inv => (
+              <div key={inv.id} className="bg-white rounded-2xl border-2 border-gray-200 p-4 flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase">{inv.role}</span>
+                    <span className="text-xs text-gray-400">{inv.uses} usos</span>
+                  </div>
+                  <p className="text-sm font-mono text-gray-600 truncate">{inv.code}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => copyLink(inv.code)}
+                    className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    {copiedCode === inv.code ? 'Copiado' : 'Copiar'}
+                  </button>
+                  <button
+                    onClick={() => deleteInvite(inv.id)}
+                    className="px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 className="font-headline text-base font-bold text-secondary mb-4">Invitaciones existentes</h3>
-          {loading ? (
-            <Spinner />
-          ) : invites.length === 0 ? (
-            <p className="text-sm text-gray-500">No hay invitaciones aún.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left py-2 font-medium text-gray-500">Código</th>
-                    <th className="text-left py-2 font-medium text-gray-500">Mensaje</th>
-                    <th className="text-center py-2 font-medium text-gray-500">Usos</th>
-                    <th className="text-left py-2 font-medium text-gray-500">Creado</th>
-                    <th className="text-right py-2 font-medium text-gray-500">Enlace</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {invites.map(inv => (
-                    <tr key={inv.id}>
-                      <td className="py-2 font-mono text-xs">{inv.code}</td>
-                      <td className="py-2 text-gray-600">{inv.message || '—'}</td>
-                      <td className="py-2 text-center">{inv.uses}</td>
-                      <td className="py-2 text-gray-500 text-xs">{new Date(inv.created_at).toLocaleDateString()}</td>
-                      <td className="py-2 text-right">
-                        <button
-                          onClick={() => copyUrl(`${baseUrl}/invite/${inv.code}`)}
-                          className="text-primary hover:text-primary-dark text-xs font-bold"
-                        >
-                          {copied ? 'Copiado' : 'Copiar enlace'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

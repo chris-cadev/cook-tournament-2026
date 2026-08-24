@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-import { AuthUser } from './auth.js'
 
 export function validateChannelAccess(req: Request, res: Response, next: NextFunction) {
   const user = req.user

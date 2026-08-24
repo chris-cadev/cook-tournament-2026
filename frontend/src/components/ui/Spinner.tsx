@@ -1,11 +1,7 @@
-interface SpinnerProps {
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
-}
-
-export default function Spinner({ size = 'md', className = '' }: SpinnerProps) {
-  const sizes = { sm: 'h-6 w-6 border-2', md: 'h-12 w-12 border-4', lg: 'h-16 w-16 border-4' }
+export default function Spinner({ className = '' }: { className?: string }) {
   return (
-    <div className={`animate-spin rounded-full ${sizes[size]} border-primary border-t-transparent ${className}`} />
+    <div className={`flex items-center justify-center ${className}`}>
+      <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent" />
+    </div>
   )
 }

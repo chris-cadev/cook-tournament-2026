@@ -1,0 +1,30 @@
+[
+  {
+    "id": "team-confirmation",
+    "name": "Confirmación de registro",
+    "subject": "¡Registro confirmado! — {{event_title}}",
+    "body": "Hola {{captain_name}},\n\nTu equipo **{{team_name}}** se ha registrado exitosamente en **{{event_title}}**.\n\n**Detalles de tu equipo:**\n- Nombre del equipo: {{team_name}}\n- Email del capitán: {{captain_email}}\n\n**Credenciales de acceso al chat:**\n- Email: {{captain_email}}\n- Contraseña: (la que usaste al registrarte)\n\nIngresa al chat de tu equipo para coordinar con los demás miembros.\n\n¡Nos vemos en el evento!",
+    "enabled": true
+  },
+  {
+    "id": "team-reminder",
+    "name": "Recordatorio a equipos",
+    "subject": "Recordatorio: {{event_title}} — {{event_date}}",
+    "body": "Hola {{team_name}},\n\nEste es un recordatorio del evento **{{event_title}}** que se celebrará el **{{event_date}}**.\n\nPor favor, asegúrense de traer todos sus ingredientes y equipo de cocina.\n\n¡Nos vemos pronto!",
+    "enabled": true
+  },
+  {
+    "id": "judge-reminder",
+    "name": "Recordatorio a jueces",
+    "subject": "Recordatorio: Eres juez en {{event_title}}",
+    "body": "Hola,\n\nRecuerda que estás como juez en el evento **{{event_title}}** el **{{event_date}}**.\n\nPor favor, llega a tiempo para la sesión de degustación.\n\n¡Gracias por participar!",
+    "enabled": true
+  },
+  {
+    "id": "general-announcement",
+    "name": "Anuncio general",
+    "subject": "{{event_title}} — Información importante",
+    "body": "Hola,\n\nAquí hay información importante sobre el evento **{{event_title}}**:\n\n[Edita este mensaje con la información que quieras comunicar]\n\n¡Te esperamos!",
+    "enabled": false
+  }
+]

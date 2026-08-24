@@ -25,11 +25,15 @@ router.get('/leaderboard', (_req, res) => {
     const config = rowsToObject(configRows);
     const categories = config.scoring_categories ? JSON.parse(config.scoring_categories) : [];
     const revealed = config.revealed_categories ? JSON.parse(config.revealed_categories) : [];
+<<<<<<< HEAD
     const revealedMap = {};
     for (const cat of categories) {
         revealedMap[cat] = revealed.includes(cat);
     }
     const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'disqualified' ORDER BY name");
+=======
+    const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'deleted' ORDER BY name");
+>>>>>>> orchestrator/task-7-milestone-7-email-system
     const teams = rowsToArray(teamRows);
     const scoreRows = db.exec(`
     SELECT team_id, category, AVG(value) as avg_score, COUNT(*) as judge_count
@@ -94,6 +98,10 @@ router.post('/reveal', authMiddleware, requireRole('admin'), (req, res) => {
     const scores = rowsToArray(scoreRows);
     const io = getIO();
     io.emit('score:reveal', { category, scores });
+<<<<<<< HEAD
     res.json({ ok: true, revealed_category: category });
+=======
+    res.json({ ok: true, revealed_category: category, revealed: revealedList });
+>>>>>>> orchestrator/task-7-milestone-7-email-system
 });
 export default router;

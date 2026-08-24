@@ -1,129 +1,123 @@
-import { useState } from 'react'
+import { useState, FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
-import { useToastStore } from '../stores/toastStore'
-import Navbar from '../components/Navbar'
 
-type LoginType = 'admin' | 'team' | 'judge'
+type Role = 'admin' | 'team' | 'judge'
 
 export default function Login() {
   const [searchParams] = useSearchParams()
-  const initial = (searchParams.get('as') as LoginType) || 'admin'
-  const [loginType, setLoginType] = useState<LoginType>(initial)
+  const initialRole = (searchParams.get('role') as Role) || 'admin'
+  const [role, setRole] = useState<Role>(initialRole)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
-  const addToast = useToastStore((s) => s.addToast)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setError('')
     setLoading(true)
 
+    const endpoint =
+      role === 'admin' ? '/api/auth/admin/login'
+      : role === 'team' ? '/api/auth/team/login'
+      : '/api/auth/judge/login'
+
+    const body =
+      role === 'judge' ? { password }
+      : { email, password }
+
     try {
-      let url = ''
-      let body: Record<string, string> = {}
-
-      if (loginType === 'admin') {
-        url = '/api/auth/admin/login'
-        body = { email, password }
-      } else if (loginType === 'team') {
-        url = '/api/auth/team/login'
-        body = { email, password }
-      } else {
-        url = '/api/auth/judge/login'
-        body = { password }
-      }
-
-      const res = await fetch(url, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-
       const data = await res.json()
 
       if (!res.ok) {
-        addToast(data.error || 'Login failed', 'error')
+        setError(data.error || 'Credenciales inválidas')
         return
       }
 
-      if (loginType === 'admin') {
-        login(data.token, { id: data.user.id, email: data.user.email, role: 'admin', name: data.user.name })
+      if (role === 'admin') {
+        login(data.token, { id: data.user.id, email: data.user.email, name: data.user.name, role: 'admin' })
         navigate('/admin')
-      } else if (loginType === 'team') {
+      } else if (role === 'team') {
         login(data.token, { team_id: data.team.id, name: data.team.name, role: 'team' })
         navigate(`/chat/team/${data.team.id}`)
       } else {
         login(data.token, { anonymous_id: data.judge.anonymous_id, role: 'judge' })
         navigate('/judge')
       }
-
-      addToast('Bienvenido!', 'success')
     } catch {
-      addToast('Error de red', 'error')
+      setError('Error de conexión')
     } finally {
       setLoading(false)
     }
   }
 
-  const tabs: { key: LoginType; label: string }[] = [
-    { key: 'admin', label: 'Admin' },
-    { key: 'team', label: 'Equipo' },
-    { key: 'judge', label: 'Juez' },
-  ]
-
   return (
-    <div className="min-h-screen bg-surface">
-      <Navbar />
-      <div className="max-w-md mx-auto px-4 py-12">
-        <h1 className="font-headline text-3xl font-black text-secondary text-center mb-8">Iniciar Sesión</h1>
+    <div className="min-h-screen bg-surface flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <h1 className="font-headline text-3xl font-black text-secondary text-center mb-6">
+          El Campeonato de Sándwiches
+        </h1>
 
-        {/* Role tabs */}
-        <div className="flex bg-white rounded-2xl border border-gray-200 p-1 mb-6">
-          {tabs.map((tab) => (
+        <div className="flex justify-center gap-2 mb-6">
+          {(['admin', 'team', 'judge'] as Role[]).map((r) => (
             <button
-              key={tab.key}
-              onClick={() => setLoginType(tab.key)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                loginType === tab.key
+              key={r}
+              onClick={() => { setRole(r); setError('') }}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                role === r
                   ? 'bg-primary text-white'
-                  : 'text-gray-500 hover:text-secondary'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
               }`}
             >
-              {tab.label}
+              {r === 'admin' ? 'Organizador' : r === 'team' ? 'Equipo' : 'Juez'}
             </button>
           ))}
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          {loginType !== 'judge' && (
+          {role !== 'judge' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {role === 'admin' ? 'Correo electrónico' : 'Correo del capitán'}
+              </label>
               <input
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="tu@email.com"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                placeholder={role === 'admin' ? 'admin@ejemplo.com' : 'capitan@ejemplo.com'}
               />
             </div>
           )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {loginType === 'judge' ? 'Contraseña del juez' : 'Contraseña'}
+              {role === 'judge' ? 'Contraseña de jueces' : 'Contraseña'}
             </label>
             <input
               type="password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="••••••••"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
           </div>
+
+          {error && (
+            <div className="bg-error/10 border border-error/30 text-error text-sm rounded-xl px-4 py-2">
+              {error}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}

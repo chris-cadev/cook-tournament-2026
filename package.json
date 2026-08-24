@@ -1,15 +1,27 @@
 {
   "name": "cook-tournament-2026",
   "private": true,
-  "workspaces": ["backend", "frontend"],
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend",
     "build": "npm run build -w backend && npm run build -w frontend",
-    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend"
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "lint": "eslint backend/src/ frontend/src/",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^10.9.0",
+    "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0"
   }
 }

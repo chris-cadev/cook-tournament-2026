@@ -9,12 +9,20 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+<<<<<<< HEAD
     "bcrypt": "^5.1.1",
+=======
+    "@types/nodemailer": "^8.0.1",
+    "bcrypt": "^6.0.0",
+>>>>>>> orchestrator/task-7-milestone-7-email-system
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
+<<<<<<< HEAD
     "minio": "^8.0.7",
+=======
+>>>>>>> orchestrator/task-7-milestone-7-email-system
     "nodemailer": "^9.0.5",
     "socket.io": "^4.8.0",
     "sql.js": "^1.11.0"

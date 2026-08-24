@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar'
 
 const EVENT_DATE = import.meta.env.VITE_EVENT_DATETIME || '2026-10-10T14:00:00'
 
@@ -47,7 +46,19 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
+      {/* Navbar */}
+      <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="font-headline font-black text-secondary text-lg">El Campeonato</Link>
+          <div className="flex items-center gap-4 text-sm">
+            <a href="#reglas" className="text-gray-600 hover:text-primary font-medium">Reglas</a>
+            <Link to="/register" className="text-gray-600 hover:text-primary font-medium">Registro</Link>
+            <Link to="/chat" className="text-gray-600 hover:text-primary font-medium">Chat</Link>
+            <Link to="/login" className="text-gray-600 hover:text-primary font-medium">Iniciar sesión</Link>
+          </div>
+        </div>
+      </nav>
+
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
 
         {/* Hero */}
@@ -73,12 +84,12 @@ export default function Landing() {
 
           <div className="flex justify-center gap-3 pt-4 flex-wrap">
             <Link to="/register" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl transition-colors">
-              Registrar Tu Equipo
+              Registrar tu Equipo
             </Link>
             <Link to="/chat" className="bg-secondary/10 hover:bg-secondary/20 text-secondary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
               Unirse al Chat
             </Link>
-            <Link to="/results" className="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
+            <Link to="/results" className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-headline font-semibold px-6 py-3 rounded-2xl transition-colors">
               Ver Resultados
             </Link>
           </div>

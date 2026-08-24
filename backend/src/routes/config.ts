@@ -45,7 +45,8 @@ router.put('/', authMiddleware, requireRole('admin'), (req: Request, res: Respon
   const db = getDb()
   const {
     event_date, event_title, event_description, rules,
-    scoring_categories, judge_password, team_password, landing_page_content,
+    scoring_categories, judge_password, team_password,
+    landing_page_content,
   } = req.body
 
   const fields: string[] = []

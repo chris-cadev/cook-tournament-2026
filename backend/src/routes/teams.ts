@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { getDb, saveDb } from '../db.js'
 import { authMiddleware, requireRole } from '../middleware/auth.js'
+import { loadTemplates, sendEmail, markdownToHtml } from '../email.js'
 
 const router = Router()
 
@@ -37,6 +38,26 @@ router.post('/register', (req: Request, res: Response) => {
   const idRows = db.exec('SELECT last_insert_rowid() as id')
   const id = idRows[0].values[0][0]
   res.status(201).json({ id, name, status: 'pending' })
+
+  // Auto-send confirmation email
+  const templates = loadTemplates()
+  const confirmationTemplate = templates.find(t => t.id === 'team-confirmation' && t.enabled)
+  if (confirmationTemplate) {
+    const configRows = db.exec('SELECT event_title, event_date FROM event_config WHERE id = 1')
+    const eventTitle = configRows.length > 0 ? (configRows[0].values[0][0] as string) : ''
+    const eventDate = configRows.length > 0 ? (configRows[0].values[0][1] as string) : ''
+
+    let captainName = captain_email
+    try {
+      const parsed = JSON.parse(JSON.stringify(members || []))
+      if (Array.isArray(parsed) && parsed.length > 0) captainName = parsed[0]
+    } catch { /* keep email as fallback */ }
+
+    const vars = { team_name: name, captain_name: captainName, captain_email, event_title: eventTitle, event_date: eventDate }
+    const subject = confirmationTemplate.subject.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`)
+    const htmlBody = markdownToHtml(confirmationTemplate.body.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`))
+    sendEmail(captain_email, subject, htmlBody).catch(() => {})
+  }
 })
 
 router.get('/', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {

@@ -38,8 +38,12 @@ export function initSocket(httpServer) {
     io.use((socket, next) => {
         const token = socket.handshake.auth.token;
         if (!token) {
+<<<<<<< HEAD
             socket.data.user = { role: 'guest' };
             return next();
+=======
+            return next(new Error('Authentication required'));
+>>>>>>> orchestrator/task-7-milestone-7-email-system
         }
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
@@ -47,13 +51,21 @@ export function initSocket(httpServer) {
             next();
         }
         catch {
+<<<<<<< HEAD
             socket.data.user = { role: 'guest' };
             next();
+=======
+            next(new Error('Invalid token'));
+>>>>>>> orchestrator/task-7-milestone-7-email-system
         }
     });
     io.on('connection', (socket) => {
         const user = socket.data.user;
+<<<<<<< HEAD
         console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email || 'guest'})`);
+=======
+        console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email})`);
+>>>>>>> orchestrator/task-7-milestone-7-email-system
         socket.on('chat:join', (data) => {
             if (!validateChannelAccess(user, data.channel)) {
                 socket.emit('chat:error', { error: 'Access denied to this channel' });

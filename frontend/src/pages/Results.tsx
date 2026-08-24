@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { socket } from '../lib/socket'
-import { useToastStore } from '../stores/toastStore'
-import Navbar from '../components/Navbar'
 
 interface LeaderboardEntry {
   team_id: number
@@ -9,35 +7,17 @@ interface LeaderboardEntry {
   sandwich_name: string
   total_score: number
   category_scores: Record<string, number>
-  revealed: Record<string, boolean>
 }
 
-function rankBadge(idx: number) {
-  if (idx === 0) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-white">1st</span>
-  if (idx === 1) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-gray-400 text-white">2nd</span>
-  if (idx === 2) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-700 text-white">3rd</span>
-  return <span className="text-gray-400 font-bold">{idx + 1}th</span>
-}
-
-function CategoryBar({ value, max = 10 }: { value: number; max?: number }) {
-  const pct = Math.min(100, (value / max) * 100)
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-tertiary rounded-full transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="text-xs font-medium text-gray-600">{value.toFixed(1)}</span>
-    </div>
-  )
+interface LeaderboardData {
+  leaderboard: LeaderboardEntry[]
+  categories: string[]
+  revealed: string[]
 }
 
 export default function Results() {
-  const [data, setData] = useState<LeaderboardEntry[] | null>(null)
+  const [data, setData] = useState<LeaderboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const addToast = useToastStore((s) => s.addToast)
 
   const fetchLeaderboard = useCallback(async () => {
     try {
@@ -58,16 +38,15 @@ export default function Results() {
   useEffect(() => {
     socket.connect()
 
-    socket.on('score:reveal', (payload: { category: string }) => {
+    socket.on('score:reveal', () => {
       fetchLeaderboard()
-      addToast(`Puntuación revelada: ${payload.category}`, 'success')
     })
 
     return () => {
       socket.off('score:reveal')
       socket.disconnect()
     }
-  }, [fetchLeaderboard, addToast])
+  }, [fetchLeaderboard])
 
   // Fallback: poll every 30s
   useEffect(() => {
@@ -86,47 +65,39 @@ export default function Results() {
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Error al cargar la clasificación.
+        Failed to load leaderboard.
       </div>
     )
   }
 
-  const leaderboard = data ?? []
-  const allCategories = leaderboard.length > 0 ? Object.keys(leaderboard[0].category_scores) : []
-  const revealedMap = leaderboard.length > 0 ? leaderboard[0].revealed : {}
-  const revealedCats = allCategories.filter(c => revealedMap[c])
-  const allRevealed = revealedCats.length === allCategories.length
+  const { leaderboard, categories, revealed } = data
+  const revealedCats = categories.filter(c => revealed.includes(c))
 
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="font-headline text-4xl font-black text-secondary mb-2 text-center">
           The Crust Competition 2026
         </h1>
         <p className="text-gray-500 text-center mb-8">Live Leaderboard</p>
 
-        {/* Scores being revealed live banner */}
-        {!allRevealed && leaderboard.length > 0 && (
-          <div className="mb-6 p-4 bg-primary/10 border-2 border-primary/30 rounded-2xl flex items-center justify-center gap-3">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
-            </span>
-              <span className="font-headline font-bold text-secondary">
+        {/* Live reveal banner */}
+        {revealedCats.length > 0 && revealedCats.length < categories.length && (
+          <div className="mb-6 p-4 bg-primary/10 border-2 border-primary/30 rounded-2xl text-center">
+            <p className="font-headline font-bold text-primary-dark">
               Puntuaciones siendo reveladas en vivo
-            </span>
-            <span className="text-sm text-gray-500">
-              ({revealedCats.length}/{allCategories.length} categorías)
-            </span>
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              {revealedCats.length} de {categories.length} categorías reveladas
+            </p>
           </div>
         )}
 
         {/* Winner spotlight */}
-        {leaderboard.length > 0 && allRevealed && (
+        {leaderboard.length > 0 && revealedCats.length === categories.length && (
           <div className="mb-8 p-6 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border-2 border-primary/30 text-center">
             <p className="text-sm font-medium text-primary-dark uppercase tracking-wide mb-1">
-              Champion
+              🏆 Champion
             </p>
             <h2 className="font-headline text-3xl font-black text-secondary">
               {leaderboard[0].team_name}
@@ -162,12 +133,14 @@ export default function Results() {
                   <tr
                     key={entry.team_id}
                     className={`border-b border-gray-100 last:border-0 ${
-                      idx === 0 && allRevealed
+                      idx === 0 && revealedCats.length === categories.length
                         ? 'bg-primary/5'
                         : 'hover:bg-gray-50'
                     }`}
                   >
-                    <td className="px-4 py-3">{rankBadge(idx)}</td>
+                    <td className="px-4 py-3 font-bold text-gray-400">
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="font-semibold">{entry.team_name}</div>
                       <div className="text-sm text-gray-500 sm:hidden">{entry.sandwich_name}</div>
@@ -177,8 +150,8 @@ export default function Results() {
                       {entry.total_score.toFixed(2)}
                     </td>
                     {revealedCats.map(cat => (
-                      <td key={cat} className="px-4 py-3 text-right">
-                        <CategoryBar value={entry.category_scores[cat] ?? 0} />
+                      <td key={cat} className="px-4 py-3 text-right text-sm">
+                        {entry.category_scores[cat]?.toFixed(1) ?? '—'}
                       </td>
                     ))}
                   </tr>
@@ -188,13 +161,13 @@ export default function Results() {
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500 bg-white rounded-2xl">
-            Aun no hay puntuaciones
+            No teams registered yet.
           </div>
         )}
 
-        {!allRevealed && (
+        {revealedCats.length < categories.length && (
           <p className="text-center text-sm text-gray-400 mt-6">
-            {allCategories.length - revealedCats.length} categorías por revelar
+            {categories.length - revealedCats.length} categories yet to be revealed
           </p>
         )}
       </div>

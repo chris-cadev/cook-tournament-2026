@@ -6,31 +6,35 @@ import Results from './pages/Results'
 import Chat from './pages/Chat'
 import TeamChat from './pages/TeamChat'
 import JudgeChat from './pages/JudgeChat'
-import JudgeAccess from './pages/JudgeAccess'
 import JudgePanel from './pages/JudgePanel'
-import Dashboard from './pages/admin/Dashboard'
-import Teams from './pages/admin/Teams'
-import Reveal from './pages/admin/Reveal'
-import EventSettings from './pages/admin/EventSettings'
+import AdminDashboard from './pages/admin/Dashboard'
+import ScoreReveal from './pages/admin/ScoreReveal'
 import ChatModeration from './pages/admin/ChatModeration'
-import EmailReminders from './pages/admin/EmailReminders'
+import EmailConfig from './components/admin/EmailConfig'
+import InviteManager from './pages/admin/InviteManager'
+import EventSettings from './pages/admin/EventSettings'
+import AdminTeams from './pages/admin/Teams'
 import ToDo from './pages/admin/ToDo'
-import Invite from './pages/Invite'
-import TeamChecklist from './pages/TeamChecklist'
 import ProtectedRoute from './components/ProtectedRoute'
-import Toast from './components/Toast'
 import { useAuthStore } from './stores/authStore'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Toast />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />
         <Route path="/results" element={<Results />} />
         <Route path="/chat" element={<Chat />} />
+        <Route
+          path="/judge"
+          element={
+            <ProtectedRoute allowedRoles={['judge']}>
+              <JudgePanel />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/chat/team/:teamId"
           element={
@@ -47,44 +51,19 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/judge" element={<JudgeAccess />} />
-        <Route
-          path="/judge/score"
-          element={
-            <ProtectedRoute allowedRoles={['judge']}>
-              <JudgePanel />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <Dashboard />
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/admin/teams"
+          path="/admin/score-reveal"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <Teams />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/reveal"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <Reveal />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/settings"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <EventSettings />
+              <ScoreReveal />
             </ProtectedRoute>
           }
         />
@@ -100,7 +79,31 @@ export default function App() {
           path="/admin/email"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <EmailReminders />
+              <EmailConfig />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/invites"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <InviteManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <EventSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/teams"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminTeams />
             </ProtectedRoute>
           }
         />
@@ -109,15 +112,6 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <ToDo />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/invite" element={<Invite />} />
-        <Route
-          path="/team/checklist"
-          element={
-            <ProtectedRoute allowedRoles={['team']}>
-              <TeamChecklist />
             </ProtectedRoute>
           }
         />

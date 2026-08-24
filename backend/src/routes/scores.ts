@@ -29,12 +29,7 @@ router.get('/leaderboard', (_req: Request, res: Response) => {
   const categories: string[] = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
   const revealed: string[] = config.revealed_categories ? JSON.parse(config.revealed_categories as string) : []
 
-  const revealedMap: Record<string, boolean> = {}
-  for (const cat of categories) {
-    revealedMap[cat] = revealed.includes(cat)
-  }
-
-  const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'disqualified' ORDER BY name")
+  const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'deleted' ORDER BY name")
   const teams = rowsToArray(teamRows)
 
   const scoreRows = db.exec(`
@@ -65,13 +60,16 @@ router.get('/leaderboard', (_req: Request, res: Response) => {
       sandwich_name: team.sandwich_name,
       total_score: Math.round(totalScore * 100) / 100,
       category_scores: categoryScores,
-      revealed: { ...revealedMap },
     }
   })
 
   leaderboard.sort((a: any, b: any) => b.total_score - a.total_score)
 
-  res.json(leaderboard)
+  res.json({
+    leaderboard,
+    categories,
+    revealed,
+  })
 })
 
 router.post('/reveal', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
@@ -115,7 +113,7 @@ router.post('/reveal', authMiddleware, requireRole('admin'), (req: Request, res:
   const io = getIO()
   io.emit('score:reveal', { category, scores })
 
-  res.json({ ok: true, revealed_category: category })
+  res.json({ ok: true, revealed_category: category, revealed: revealedList })
 })
 
 export default router
