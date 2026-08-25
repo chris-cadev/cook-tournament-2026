@@ -157,65 +157,6 @@ export default function Landing() {
 
         </section>
 
-        {/* Agregar al calendario */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-          <span className="text-4xl">📅</span>
-          <div className="flex-1">
-            <h2 className="font-headline text-lg font-black text-secondary">Agregar al calendario</h2>
-            <p className="text-sm text-gray-500">No olvides el evento — agrégalo a tu calendario favorito.</p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <a
-              href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Sandwich+Fest.+2026&dates=20261010T140000/20261010T170000&details=Competencia+de+cocina+en+vivo+%2B+Celebraci%C3%B3n+de+cumplea%C3%B1os&location=Parque+Morelos%2C+Tijuana%2C+Baja+California`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 text-secondary font-semibold text-xs px-3 py-2 rounded-xl border border-gray-200 shadow-sm transition-colors"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              Google
-            </a>
-            <a
-              href={`https://outlook.live.com/calendar/0/action/compose?subject=Sandwich+Fest.+2026&startdt=2026-10-10T14:00:00&enddt=2026-10-10T17:00:00&body=Competencia+de+cocina+en+vivo+%2B+Celebraci%C3%B3n+de+cumplea%C3%B1os&location=Parque+Morelos%2C+Tijuana%2C+Baja+California`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 text-secondary font-semibold text-xs px-3 py-2 rounded-xl border border-gray-200 shadow-sm transition-colors"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2" /><polyline points="22,4 12,13 2,4" />
-              </svg>
-              Outlook
-            </a>
-            <button
-              onClick={downloadICS}
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 text-secondary font-semibold text-xs px-3 py-2 rounded-xl border border-gray-200 shadow-sm transition-colors"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              .ics
-            </button>
-          </div>
-        </section>
-
-        {/* Lugar */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-          <span className="text-4xl">📍</span>
-          <div className="flex-1">
-            <h2 className="font-headline text-lg font-black text-secondary">Parque Morelos</h2>
-            <p className="text-sm text-gray-500">Sábado 10 de octubre · 2:00 – 5:00 PM</p>
-          </div>
-          <a
-            href="https://maps.app.goo.gl/v2dxUyGw9i2YyZRB7"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 bg-primary/10 hover:bg-primary/20 text-primary-dark font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
-          >
-            Ver en mapa
-          </a>
-        </section>
-
         {/* Regla #1 */}
         <section id="reglas" className="bg-error/10 border-2 border-error/30 rounded-2xl p-6 text-center">
           <p className="font-headline text-lg font-black text-error uppercase tracking-wide">
@@ -244,6 +185,43 @@ export default function Landing() {
                   className="text-sm bg-primary/10 text-primary-dark font-semibold px-4 py-2 rounded-xl hover:bg-primary/20 transition-colors">
                   {navigator.clipboard ? 'Copiar código' : 'Código copiado'}
                 </button>
+
+                <div className="pt-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-400 mb-2">Agrega el evento a tu calendario:</p>
+                  <div className="flex gap-2 justify-center flex-wrap">
+                    <a
+                      href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Sandwich+Fest.+2026&dates=20261010T140000/20261010T170000&details=Competencia+de+cocina+en+vivo+%2B+Celebraci%C3%B3n+de+cumplea%C3%B1os&location=Parque+Morelos%2C+Tijuana%2C+Baja+California`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 text-secondary font-semibold text-xs px-3 py-2 rounded-xl border border-gray-200 shadow-sm transition-colors"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                      Google
+                    </a>
+                    <a
+                      href={`https://outlook.live.com/calendar/0/action/compose?subject=Sandwich+Fest.+2026&startdt=2026-10-10T14:00:00&enddt=2026-10-10T17:00:00&body=Competencia+de+cocina+en+vivo+%2B+Celebraci%C3%B3n+de+cumplea%C3%B1os&location=Parque+Morelos%2C+Tijuana%2C+Baja+California`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 text-secondary font-semibold text-xs px-3 py-2 rounded-xl border border-gray-200 shadow-sm transition-colors"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" /><polyline points="22,4 12,13 2,4" />
+                      </svg>
+                      Outlook
+                    </a>
+                    <button
+                      onClick={downloadICS}
+                      className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 text-secondary font-semibold text-xs px-3 py-2 rounded-xl border border-gray-200 shadow-sm transition-colors"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      .ics
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleRsvp} className="space-y-3">
@@ -312,25 +290,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Cronograma */}
-        <section id="cronograma" className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="font-headline text-2xl font-black text-secondary">Cronograma</h2>
-            <p className="text-sm text-gray-500 mt-1">Sábado 10 de octubre, 2:00 – 5:00 PM</p>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {schedule.map((item) => (
-              <div key={item.time} className="flex items-start px-6 py-3 gap-4">
-                <span className="font-headline font-bold text-primary-dark text-sm whitespace-nowrap min-w-[100px]">{item.time}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">{item.activity}</p>
-                  <p className="text-xs text-gray-500">{item.who}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Actividades del público */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
@@ -355,6 +314,42 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* Cronograma */}
+        <section id="cronograma" className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h2 className="font-headline text-2xl font-black text-secondary">Cronograma</h2>
+            <p className="text-sm text-gray-500 mt-1">Sábado 10 de octubre, 2:00 – 5:00 PM</p>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {schedule.map((item) => (
+              <div key={item.time} className="flex items-start px-6 py-3 gap-4">
+                <span className="font-headline font-bold text-primary-dark text-sm whitespace-nowrap min-w-[100px]">{item.time}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-800">{item.activity}</p>
+                  <p className="text-xs text-gray-500">{item.who}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Lugar */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
+          <span className="text-4xl">📍</span>
+          <div className="flex-1">
+            <h2 className="font-headline text-lg font-black text-secondary">Parque Morelos</h2>
+            <p className="text-sm text-gray-500">Sábado 10 de octubre · 2:00 – 5:00 PM</p>
+          </div>
+          <a
+            href="https://maps.app.goo.gl/v2dxUyGw9i2YyZRB7"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 bg-primary/10 hover:bg-primary/20 text-primary-dark font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
+          >
+            Ver en mapa
+          </a>
         </section>
 
         <footer className="text-center text-xs text-gray-400 pb-8">

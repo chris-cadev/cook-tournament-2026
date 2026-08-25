@@ -89,7 +89,6 @@ ALTER TABLE users ADD COLUMN anonymous_id TEXT;
 ---
 
 ## 4. Scores — Categorías semilla
-
 ### Seed data (desde organizacion.md)
 
 | Categoría    | Ponderación | Pts. Máximos | Descripción                                           |

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 const TEAM_KEY = 'team_access_code'
@@ -12,6 +12,23 @@ export default function Registration() {
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [teamCode, setTeamCode] = useState<string | null>(() => localStorage.getItem(TEAM_KEY))
   const [loading, setLoading] = useState(false)
+  const [validating, setValidating] = useState(true)
+
+  useEffect(() => {
+    const code = localStorage.getItem(TEAM_KEY)
+    if (!code) { setValidating(false); return }
+
+    fetch(`/api/teams/validate-access-code?access_code=${encodeURIComponent(code)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.valid) {
+          localStorage.removeItem(TEAM_KEY)
+          setTeamCode(null)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setValidating(false))
+  }, [])
 
   const update = (field: string, value: string) => {
     setForm((f) => ({ ...f, [field]: value }))
@@ -106,7 +123,7 @@ export default function Registration() {
   const errorMsg = (field: string) =>
     touched[field] && errors[field] ? <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="inline-block w-1 h-1 bg-red-500 rounded-full" />{errors[field]}</p> : null
 
-  if (teamCode) {
+  if (!validating && teamCode) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">

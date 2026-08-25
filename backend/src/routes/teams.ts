@@ -55,6 +55,22 @@ router.post('/register', (req: Request, res: Response) => {
   res.status(201).json({ id, slug, name, sandwich_name, status: 'pending', access_code: accessCode })
 })
 
+router.get('/validate-access-code', (req: Request, res: Response) => {
+  const { access_code } = req.query
+  if (!access_code || typeof access_code !== 'string') {
+    return res.json({ valid: false })
+  }
+
+  const db = getDb()
+  const rows = db.exec('SELECT name FROM teams WHERE access_code = ?', [access_code.trim().toUpperCase()])
+  if (rows.length === 0 || rows[0].values.length === 0) {
+    return res.json({ valid: false })
+  }
+
+  const name = rows[0].values[0][0] as string
+  res.json({ valid: true, name })
+})
+
 router.get('/', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
   const db = getDb()
   const rows = db.exec('SELECT id, slug, name, sandwich_name, captain_email, members, status, station, registered_at FROM teams ORDER BY name')
