@@ -19,6 +19,26 @@ router.get('/templates', authMiddleware, requireRole('admin'), (_req: Request, r
   res.json(loadTemplates())
 })
 
+// POST /api/admin/email/templates
+router.post('/templates', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
+  const { name, subject, body } = req.body
+  if (!name || !subject || !body) {
+    return res.status(400).json({ error: 'name, subject, and body are required' })
+  }
+
+  const templates = loadTemplates()
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+  if (templates.some(t => t.id === id)) {
+    return res.status(409).json({ error: 'Template with similar name already exists' })
+  }
+
+  const template = { id, name, subject, body, enabled: false }
+  templates.push(template)
+  saveTemplates(templates)
+  res.status(201).json(template)
+})
+
 // PUT /api/admin/email/templates/:id
 router.put('/templates/:id', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
   const { id } = req.params
@@ -49,23 +69,24 @@ router.post('/send', authMiddleware, requireRole('admin'), async (req: Request, 
 
   const db = getDb()
 
-  let recipients: { name: string; email: string; team_name: string; captain_name: string; captain_email: string }[] = []
+  let recipients: { name: string; email: string; team_name: string; captain_name: string; captain_email: string; sandwich_name: string }[] = []
 
   if (template_id === 'judge-reminder') {
     // Judges don't have stored emails — send to admin
     const adminRow = db.exec("SELECT email FROM users WHERE role = 'admin' LIMIT 1")
     if (adminRow.length > 0 && adminRow[0].values[0]) {
-      recipients = [{ name: 'Admin', email: adminRow[0].values[0][0] as string, team_name: '', captain_name: 'Admin', captain_email: adminRow[0].values[0][0] as string }]
+      recipients = [{ name: 'Admin', email: adminRow[0].values[0][0] as string, team_name: '', captain_name: 'Admin', captain_email: adminRow[0].values[0][0] as string, sandwich_name: '' }]
     }
   } else {
-    const teamRows = db.exec('SELECT id, name, captain_email, members FROM teams')
+    const teamRows = db.exec('SELECT id, name, sandwich_name, captain_email, members FROM teams')
     if (teamRows.length === 0) return res.json({ sent: 0, failed: 0, details: [] })
 
     const allTeams = teamRows[0].values.map(row => ({
       id: row[0] as number,
       name: row[1] as string,
-      captain_email: row[2] as string,
-      members: row[3] as string,
+      sandwich_name: row[2] as string,
+      captain_email: row[3] as string,
+      members: row[4] as string,
     }))
 
     const teams = team_ids && team_ids.length > 0
@@ -79,7 +100,7 @@ router.post('/send', authMiddleware, requireRole('admin'), async (req: Request, 
         if (Array.isArray(members) && members.length > 0) captainName = members[0]
       } catch { /* keep email as fallback */ }
 
-      return { name: t.name, email: t.captain_email, team_name: t.name, captain_name: captainName, captain_email: t.captain_email }
+      return { name: t.name, email: t.captain_email, team_name: t.name, captain_name: captainName, captain_email: t.captain_email, sandwich_name: t.sandwich_name }
     })
   }
 
@@ -87,9 +108,11 @@ router.post('/send', authMiddleware, requireRole('admin'), async (req: Request, 
     return res.json({ sent: 0, failed: 0, details: [] })
   }
 
-  const eventConfig = db.exec('SELECT event_title, event_date FROM event_config LIMIT 1')
+  const eventConfig = db.exec('SELECT event_title, event_date, event_description FROM event_config LIMIT 1')
   const eventTitle = eventConfig.length > 0 ? (eventConfig[0].values[0][0] as string) : ''
   const eventDate = eventConfig.length > 0 ? (eventConfig[0].values[0][1] as string) : ''
+  const eventDescription = eventConfig.length > 0 ? (eventConfig[0].values[0][2] as string) : ''
+  const teamCount = db.exec('SELECT COUNT(*) FROM teams')[0]?.values[0][0] as number ?? 0
 
   const results: { email: string; ok: boolean; error?: string }[] = []
 
@@ -98,8 +121,11 @@ router.post('/send', authMiddleware, requireRole('admin'), async (req: Request, 
       team_name: r.team_name,
       captain_name: r.captain_name,
       captain_email: r.email,
+      sandwich_name: r.sandwich_name,
       event_title: eventTitle,
       event_date: eventDate,
+      event_description: eventDescription,
+      team_count: String(teamCount),
     }
 
     const subject = template.subject.replace(/\{\{(\w+)\}\}/g, (_, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`)
@@ -134,15 +160,21 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
   const templates = loadTemplates()
   const results: { template: string; sent: number; failed: number }[] = []
 
+  const eventTitle = configRows[0].values[0][1] as string
+  const eventDateStr = configRows[0].values[0][0] as string
+  const eventDesc = db.exec('SELECT event_description FROM event_config WHERE id = 1')[0]?.values[0][0] as string ?? ''
+  const teamCount = db.exec('SELECT COUNT(*) FROM teams')[0]?.values[0][0] as number ?? 0
+
   // 3 weeks or less: send preparation reminder to teams
   if (daysUntilEvent <= 21 && daysUntilEvent > 0) {
     const template = templates.find(t => t.id === 'team-reminder' && t.enabled)
     if (template) {
-      const teamRows = db.exec('SELECT name, captain_email, members FROM teams')
+      const teamRows = db.exec('SELECT name, sandwich_name, captain_email, members FROM teams')
       const teams = teamRows.length > 0 ? teamRows[0].values.map(row => ({
         name: row[0] as string,
-        captain_email: row[1] as string,
-        members: row[2] as string,
+        sandwich_name: row[1] as string,
+        captain_email: row[2] as string,
+        members: row[3] as string,
       })) : []
 
       let sent = 0, failed = 0
@@ -153,7 +185,7 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
           if (Array.isArray(parsed) && parsed.length > 0) captainName = parsed[0]
         } catch { /* keep email */ }
 
-        const vars = { team_name: t.name, captain_name: captainName, captain_email: t.captain_email, event_title: configRows[0].values[0][1] as string, event_date: configRows[0].values[0][0] as string }
+        const vars = { team_name: t.name, captain_name: captainName, captain_email: t.captain_email, sandwich_name: t.sandwich_name, event_title: eventTitle, event_date: eventDateStr, event_description: eventDesc, team_count: String(teamCount) }
         const subject = template.subject.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`)
         const htmlBody = markdownToHtml(template.body.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`))
         const result = await sendEmail(t.captain_email, subject, htmlBody)
@@ -167,11 +199,12 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
   if (daysUntilEvent <= 7 && daysUntilEvent > 0) {
     const announcement = templates.find(t => t.id === 'general-announcement' && t.enabled)
     if (announcement) {
-      const teamRows = db.exec('SELECT name, captain_email, members FROM teams')
+      const teamRows = db.exec('SELECT name, sandwich_name, captain_email, members FROM teams')
       const teams = teamRows.length > 0 ? teamRows[0].values.map(row => ({
         name: row[0] as string,
-        captain_email: row[1] as string,
-        members: row[2] as string,
+        sandwich_name: row[1] as string,
+        captain_email: row[2] as string,
+        members: row[3] as string,
       })) : []
 
       let sent = 0, failed = 0
@@ -182,7 +215,7 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
           if (Array.isArray(parsed) && parsed.length > 0) captainName = parsed[0]
         } catch { /* keep email */ }
 
-        const vars = { team_name: t.name, captain_name: captainName, captain_email: t.captain_email, event_title: configRows[0].values[0][1] as string, event_date: configRows[0].values[0][0] as string }
+        const vars = { team_name: t.name, captain_name: captainName, captain_email: t.captain_email, sandwich_name: t.sandwich_name, event_title: eventTitle, event_date: eventDateStr, event_description: eventDesc, team_count: String(teamCount) }
         const subject = announcement.subject.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`)
         const htmlBody = markdownToHtml(announcement.body.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`))
         const result = await sendEmail(t.captain_email, subject, htmlBody)
@@ -196,7 +229,7 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
       const adminRow = db.exec("SELECT email FROM users WHERE role = 'admin' LIMIT 1")
       if (adminRow.length > 0 && adminRow[0].values[0]) {
         const adminEmail = adminRow[0].values[0][0] as string
-        const vars = { team_name: '', captain_name: 'Admin', captain_email: adminEmail, event_title: configRows[0].values[0][1] as string, event_date: configRows[0].values[0][0] as string }
+        const vars = { team_name: '', captain_name: 'Admin', captain_email: adminEmail, sandwich_name: '', event_title: eventTitle, event_date: eventDateStr, event_description: eventDesc, team_count: String(teamCount) }
         const subject = judgeReminder.subject.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`)
         const htmlBody = markdownToHtml(judgeReminder.body.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => vars[key as keyof typeof vars] ?? `{{${key}}}`))
         const result = await sendEmail(adminEmail, subject, htmlBody)

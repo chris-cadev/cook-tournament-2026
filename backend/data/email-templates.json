@@ -3,21 +3,28 @@
     "id": "team-confirmation",
     "name": "Confirmación de registro",
     "subject": "¡Registro confirmado! — {{event_title}}",
-    "body": "Hola {{captain_name}},\n\nTu equipo **{{team_name}}** se ha registrado exitosamente en **{{event_title}}**.\n\n**Detalles de tu equipo:**\n- Nombre del equipo: {{team_name}}\n- Email del capitán: {{captain_email}}\n\n**Credenciales de acceso al chat:**\n- Email: {{captain_email}}\n- Contraseña: (la que usaste al registrarte)\n\nIngresa al chat de tu equipo para coordinar con los demás miembros.\n\n¡Nos vemos en el evento!",
+    "body": "Hola {{captain_name}},\n\nTu equipo **{{team_name}}** se ha registrado exitosamente en **{{event_title}}**.\n\n**Detalles de tu equipo:**\n- Nombre del equipo: {{team_name}}\n- Sándwich: {{sandwich_name}}\n- Email del capitán: {{captain_email}}\n\n**Credenciales de acceso al chat:**\n- Email: {{captain_email}}\n- Contraseña: (la que usaste al registrarte)\n\nIngresa al chat de tu equipo para coordinar con los demás miembros.\n\n¡Nos vemos en el evento!",
     "enabled": true
   },
   {
-    "id": "team-reminder",
-    "name": "Recordatorio a equipos",
-    "subject": "Recordatorio: {{event_title}} — {{event_date}}",
-    "body": "Hola {{team_name}},\n\nEste es un recordatorio del evento **{{event_title}}** que se celebrará el **{{event_date}}**.\n\nPor favor, asegúrense de traer todos sus ingredientes y equipo de cocina.\n\n¡Nos vemos pronto!",
+    "id": "team-preparation",
+    "name": "Lista de preparación (3 semanas antes)",
+    "subject": "🔪 {{event_title}} — ¡Lo que deben traer!",
+    "body": "Hola {{team_name}},\n\n¡Estamos emocionados por el gran día! Aquí tienen todo lo que necesitan saber para el **{{event_title}}** el **{{event_date}}**.\n\n---\n\n## Lo que NOSOTROS proporcionamos:\n\n- Espacio en una mesa (1 por equipo)\n- Enchufes (indíquennos si necesitan voltaje especial)\n- Nevera portátil compartida con hielo\n- Microondas (compartido)\n- Freidora de aire (compartida – por orden de llegada)\n- Botes de basura y suministros de limpieza\n- Platos para la presentación final\n\n---\n\n## Lo que USTEDES DEBEN TRAER:\n\n**Ingredientes:**\n- **TODOS los ingredientes** para su sándwich (pan, proteínas, verduras, salsas, especias, etc.). No proporcionamos ningún ingrediente.\n- **Proteínas preparadas con anticipación:** Si su receta requiere marinados, salmueras o cocciones largas, deben traerlas listas. El tiempo de cocción en el evento es de 60 minutos para el armado y cocción final.\n\n**Utensilios y equipo:**\n- Cuchillos, tablas de cortar, tazones, espátulas, pinzas, etc.\n- Cualquier cocina portátil que necesiten (plancha, hornilla de inducción, etc.) – **NO tenemos estufas**\n- Sus propias ollas, sartenes y espátulas\n- Su propia fuente para la presentación final\n\n**Consejo:** Etiqueten sus utensilios con cinta adhesiva y el nombre de su equipo para que no se mezclen.\n\n---\n\n## Equipo necesario\n\n¿Necesitan enchufe? ¿Freidora de aire? Por favor, respondan con:\n- Nombre del equipo\n- Integrantes del equipo (máximo 3)\n- ¿Necesitan enchufe? (Sí/No)\n- ¿Necesitan la freidora de aire? (Sí/No – asignaremos horarios)\n\n¡Nos vemos allá!",
+    "enabled": true
+  },
+  {
+    "id": "final-reminder",
+    "name": "Recordatorio final (1 semana antes)",
+    "subject": "📅 {{event_title}} — ¡Una semana!",
+    "body": "Hola {{team_name}},\n\n**¡Falta solo una semana para el {{event_title}}!**\n\nFecha: **{{event_date}}**\n\n---\n\n## Cronograma del día\n\n| Hora | Actividad |\n|------|-----------|\n| 0:00 – 0:10 | Llegada y instalación de estaciones |\n| 0:10 – 0:15 | Lectura de reglas y asignación de equipos |\n| 0:15 – 1:15 | **¡Comienza la cocina!** (60 minutos) |\n| 1:15 | **¡ALTO!** Emplatado y etiquetado (A–F) |\n| 1:20 – 1:40 | Ronda de degustación |\n| 1:50 – 2:00 | Ceremonia de premiación |\n\n---\n\n## Reglas importantes\n\n- **NO SE PERMITEN HAMBURGUESAS.** Cualquier hamburguesa = descalificación inmediata.\n- Los sándwiches se etiquetan como A, B, C, D, E, F (nombres ocultos).\n- Cada equipo tiene **60 minutos** para cocinar.\n- Traer TODOS los ingredientes y utensilios propios.\n\n---\n\n## Recordatorio final\n\n- Traer todos los ingredientes (pan, proteínas, verduras, salsas, etc.)\n- Traer utensilios de cocina propios\n- Traer fuente para la presentación final\n- Las proteínas con marinado deben venir preparadas\n\n¡Que comience la competencia!",
     "enabled": true
   },
   {
     "id": "judge-reminder",
     "name": "Recordatorio a jueces",
-    "subject": "Recordatorio: Eres juez en {{event_title}}",
-    "body": "Hola,\n\nRecuerda que estás como juez en el evento **{{event_title}}** el **{{event_date}}**.\n\nPor favor, llega a tiempo para la sesión de degustación.\n\n¡Gracias por participar!",
+    "subject": "Juez: {{event_title}} — {{event_date}}",
+    "body": "Hola,\n\nRecuerda que estás como juez en el evento **{{event_title}}** el **{{event_date}}**.\n\n## Instrucciones\n\n- Llega a tiempo para la sesión de degustación\n- Los sándwiches se degustan a ciegas (etiquetas A–F)\n- Usa galletas saladas y agua entre cada sándwich para limpiar tu paladar\n- Puntúa cada sándwich de forma independiente\n\n## Tarjeta de puntuación\n\n| Categoría | Ponderación |Pts. Máximos |\n|-----------|-------------|-------------|\n| Sabor | x2 | 20 |\n| Textura | x1 | 10 |\n| Creatividad | x1 | 10 |\n| Presentación | x1 | 10 |\n| Bonificación | opcional | +2 |\n| **TOTAL** | | **/52** |\n\n**Desempate:** el que tenga más puntos en la categoría \"Sabor\" gana.\n\n¡Gracias por participar!",
     "enabled": true
   },
   {
@@ -25,6 +32,13 @@
     "name": "Anuncio general",
     "subject": "{{event_title}} — Información importante",
     "body": "Hola,\n\nAquí hay información importante sobre el evento **{{event_title}}**:\n\n[Edita este mensaje con la información que quieras comunicar]\n\n¡Te esperamos!",
+    "enabled": false
+  },
+  {
+    "id": "invitation",
+    "name": "Invitación al evento",
+    "subject": "¡Estás invitado a {{event_title}}!",
+    "body": "Hola,\n\n¡Estás invitado a **{{event_title}}**!\n\n📅 **Fecha:** {{event_date}}\n📍 **Lugar:** [Agregar dirección del evento]\n\n## ¿Qué es esto?\n\nUna competencia de cocina en vivo de sándwiches + celebración de cumpleaños. Los participantes cocinan en vivo y los jueces puntúan a ciegas.\n\n## ¿Qué puedo hacer?\n\n- **Como espectador:** Ver la competencia, participar en actividades paralelas y probar las muestras.\n- **Como cocinero:** Registrar tu equipo y competir por el título de mejor sándwich.\n\n## ¿Cómo participo?\n\nHaz clic en el enlace de registro que recibiste o visita nuestra página para más información.\n\n¡Te esperamos!",
     "enabled": false
   }
 ]

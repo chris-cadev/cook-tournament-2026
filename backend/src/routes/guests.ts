@@ -78,6 +78,22 @@ router.post('/login', (req: Request, res: Response) => {
   res.json({ user: { id: guest.id, name: guest.name, email: guest.email, role: 'guest' } })
 })
 
+router.get('/validate-access-code', (req: Request, res: Response) => {
+  const { access_code } = req.query
+  if (!access_code || typeof access_code !== 'string') {
+    return res.json({ valid: false })
+  }
+
+  const db = getDb()
+  const rows = db.exec('SELECT name FROM guests WHERE access_code = ?', [access_code.trim().toUpperCase()])
+  if (rows.length === 0 || rows[0].values.length === 0) {
+    return res.json({ valid: false })
+  }
+
+  const name = rows[0].values[0][0] as string
+  res.json({ valid: true, name })
+})
+
 router.get('/', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
   const db = getDb()
   const rows = db.exec('SELECT id, name, email, num_people, access_code, created_at FROM guests ORDER BY created_at DESC')

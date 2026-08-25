@@ -41,10 +41,20 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Navbar />
-      <Umami />
-      <ToastContainer />
-      <Routes>
+      <div className="min-h-screen bg-surface relative">
+        <div
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ctext x='40' y='52' text-anchor='middle' font-size='36'%3E🥪%3C/text%3E%3C/svg%3E")`,
+            backgroundRepeat: 'repeat',
+            opacity: 0.04,
+          }}
+        />
+        <div className="relative z-10">
+          <Navbar />
+          <Umami />
+          <ToastContainer />
+          <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/results" element={<Results />} />
         <Route path="/chat" element={<Chat />} />
@@ -116,6 +126,8 @@ export default function App() {
 
         <Route path="*" element={<Results />} />
       </Routes>
+        </div>
+      </div>
     </BrowserRouter>
   )
 }

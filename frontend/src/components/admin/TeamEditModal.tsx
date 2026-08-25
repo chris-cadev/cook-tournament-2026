@@ -8,7 +8,7 @@ interface Team {
   captain_email: string
   status: string
   station: string | null
-  members?: string
+  members?: string | string[]
 }
 
 interface Props {
@@ -24,7 +24,12 @@ export default function TeamEditModal({ open, mode, team, onClose, onSaved }: Pr
   const [sandwichName, setSandwichName] = useState(team?.sandwich_name || '')
   const [captainEmail, setCaptainEmail] = useState(team?.captain_email || '')
   const [password, setPassword] = useState('')
-  const [members, setMembers] = useState(team?.members ? JSON.parse(team.members).join(', ') : '')
+  const parsedMembers = Array.isArray(team?.members)
+    ? team.members
+    : team?.members
+      ? JSON.parse(team.members)
+      : []
+  const [members, setMembers] = useState(parsedMembers.join(', '))
   const [equipmentNeeds, setEquipmentNeeds] = useState('')
   const [status, setStatus] = useState(team?.status || 'pending')
   const [station, setStation] = useState(team?.station || '')
@@ -89,8 +94,8 @@ export default function TeamEditModal({ open, mode, team, onClose, onSaved }: Pr
           <>
             <p className="text-sm text-gray-500">Sándwich: {team?.sandwich_name}</p>
             <p className="text-sm text-gray-500">Capitán: {team?.captain_email}</p>
-            {team?.members && JSON.parse(team.members).length > 0 && (
-              <p className="text-sm text-gray-500">Miembros: {JSON.parse(team.members).join(', ')}</p>
+            {team?.members && parsedMembers.length > 0 && (
+              <p className="text-sm text-gray-500">Miembros: {parsedMembers.join(', ')}</p>
             )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>

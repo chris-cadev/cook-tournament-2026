@@ -92,13 +92,13 @@ ALTER TABLE users ADD COLUMN anonymous_id TEXT;
 
 ### Seed data (desde organizacion.md)
 
-| Categoría | Ponderación | Pts. Máximos | Descripción |
-|-----------|-------------|--------------|-------------|
-| Sabor | x2 | 20 | Balance de sabores, sazón, nivel de delicia general |
-| Textura | x1 | 10 | Frescura del pan, crujiente, consistencia del relleno |
-| Creatividad | x1 | 10 | Combinaciones originales, técnicas ingeniosas |
-| Presentación | x1 | 10 | Emplatado, color, limpieza, atractivo visual |
-| Bonificación | opcional | +2 | Pan casero, pepinillos caseros, ingrediente "salvaje" |
+| Categoría    | Ponderación | Pts. Máximos | Descripción                                           |
+| ------------ | ----------- | ------------ | ----------------------------------------------------- |
+| Sabor        | x2          | 20           | Balance de sabores, sazón, nivel de delicia general   |
+| Textura      | x1          | 10           | Frescura del pan, crujiente, consistencia del relleno |
+| Creatividad  | x1          | 10           | Combinaciones originales, técnicas ingeniosas         |
+| Presentación | x1          | 10           | Emplatado, color, limpieza, atractivo visual          |
+| Bonificación | opcional    | +2           | Pan casero, pepinillos caseros, ingrediente "salvaje" |
 
 ### Schema
 

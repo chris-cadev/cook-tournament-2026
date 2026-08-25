@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import Markdown from 'react-markdown'
 
 interface EmailTemplate {
   id: string
@@ -28,6 +29,17 @@ interface EmailSchedule {
 
 type Tab = 'send' | 'schedule' | 'logs' | 'templates'
 
+const TEMPLATE_VARS = [
+  { key: 'team_name', label: 'Nombre del equipo', example: 'Los Tostadores' },
+  { key: 'captain_name', label: 'Nombre del capitán', example: 'María López' },
+  { key: 'captain_email', label: 'Email del capitán', example: 'maria@ejemplo.com' },
+  { key: 'sandwich_name', label: 'Nombre del sándwich', example: 'Tostado de個人資訊' },
+  { key: 'event_title', label: 'Título del evento', example: 'The Crust Competition 2026' },
+  { key: 'event_date', label: 'Fecha del evento', example: '10 de Octubre, 2026' },
+  { key: 'event_description', label: 'Descripción del evento', example: 'Campeonato de sándwiches...' },
+  { key: 'team_count', label: 'Cantidad de equipos', example: '6' },
+]
+
 export default function EmailReminders() {
   const [tab, setTab] = useState<Tab>('send')
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
@@ -45,10 +57,13 @@ export default function EmailReminders() {
   const [schedDate, setSchedDate] = useState('')
   const [scheduling, setScheduling] = useState(false)
 
-  // Template editing
+  // Template editing/creating
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null)
+  const [creating, setCreating] = useState(false)
+  const [editName, setEditName] = useState('')
   const [editSubject, setEditSubject] = useState('')
   const [editBody, setEditBody] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -136,14 +151,25 @@ export default function EmailReminders() {
   }
 
   const handleSaveTemplate = async () => {
-    if (!editingTemplate) return
-    await fetch(`/api/admin/email/templates/${editingTemplate.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subject: editSubject, body: editBody }),
-    })
-    setEditingTemplate(null)
-    fetchData()
+    if (creating) {
+      const res = await fetch('/api/admin/email/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, subject: editSubject, body: editBody }),
+      })
+      if (res.ok) {
+        setCreating(false)
+        fetchData()
+      }
+    } else if (editingTemplate) {
+      await fetch(`/api/admin/email/templates/${editingTemplate.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: editSubject, body: editBody }),
+      })
+      setEditingTemplate(null)
+      fetchData()
+    }
   }
 
   const handleToggleTemplate = async (t: EmailTemplate) => {
@@ -153,6 +179,41 @@ export default function EmailReminders() {
       body: JSON.stringify({ enabled: !t.enabled }),
     })
     fetchData()
+  }
+
+  const openCreateModal = () => {
+    setCreating(true)
+    setEditingTemplate(null)
+    setEditName('')
+    setEditSubject('')
+    setEditBody('')
+  }
+
+  const openEditModal = (t: EmailTemplate) => {
+    setCreating(false)
+    setEditingTemplate(t)
+    setEditName(t.name)
+    setEditSubject(t.subject)
+    setEditBody(t.body)
+  }
+
+  const insertMarkdown = (before: string, after: string = '') => {
+    const ta = textareaRef.current
+    if (!ta) return
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const selected = editBody.substring(start, end)
+    const newText = editBody.substring(0, start) + before + selected + after + editBody.substring(end)
+    setEditBody(newText)
+    setTimeout(() => {
+      ta.focus()
+      ta.setSelectionRange(start + before.length, start + before.length + selected.length)
+    }, 0)
+  }
+
+  const closeModal = () => {
+    setCreating(false)
+    setEditingTemplate(null)
   }
 
   if (!emailAvailable) {
@@ -322,8 +383,27 @@ export default function EmailReminders() {
       {/* Templates tab */}
       {tab === 'templates' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h3 className="font-headline text-lg font-bold text-secondary">Administrar Templates</h3>
-          <p className="text-sm text-gray-500">Edita el asunto y contenido de los correos. Variables: {'{{team_name}}'}, {'{{captain_name}}'}, {'{{event_date}}'}</p>
+          <div className="flex items-center justify-between">
+            <h3 className="font-headline text-lg font-bold text-secondary">Administrar Templates</h3>
+            <button onClick={openCreateModal}
+              className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark transition-colors">
+              + Nuevo
+            </button>
+          </div>
+
+          {/* Variable reference */}
+          <div className="bg-gray-50 rounded-xl p-3">
+            <p className="text-xs font-medium text-gray-700 mb-2">Variables disponibles (usa {'{{variable}}'}):</p>
+            <div className="flex flex-wrap gap-2">
+              {TEMPLATE_VARS.map(v => (
+                <span key={v.key} className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1" title={v.example}>
+                  <span className="font-mono text-primary font-medium">{`{{${v.key}}}`}</span>
+                  <span className="text-gray-500 ml-1">{v.label}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-3">
             {templates.map((t) => (
               <div key={t.id} className="p-4 bg-gray-50 rounded-xl space-y-2">
@@ -339,7 +419,7 @@ export default function EmailReminders() {
                       className="text-xs text-gray-500 hover:text-gray-700">
                       {t.enabled ? 'Desactivar' : 'Activar'}
                     </button>
-                    <button onClick={() => { setEditingTemplate(t); setEditSubject(t.subject); setEditBody(t.body) }}
+                    <button onClick={() => openEditModal(t)}
                       className="text-primary hover:text-primary-dark text-xs font-medium">
                       Editar
                     </button>
@@ -352,24 +432,74 @@ export default function EmailReminders() {
         </div>
       )}
 
-      {/* Edit template modal */}
-      {editingTemplate && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setEditingTemplate(null)}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-headline text-xl font-black text-secondary">Editar: {editingTemplate.name}</h3>
+      {/* Edit/Create template modal */}
+      {(editingTemplate || creating) && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={closeModal}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-headline text-xl font-black text-secondary">
+              {creating ? 'Nuevo Template' : `Editar: ${editingTemplate!.name}`}
+            </h3>
+
+            {creating && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Ej: Recordatorio de preparación"
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Asunto</label>
               <input type="text" value={editSubject} onChange={(e) => setEditSubject(e.target.value)}
+                placeholder="Ej: {{event_title}} — Recordatorio importante"
                 className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Cuerpo (Markdown)</label>
-              <textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} rows={12}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono" />
+
+              {/* Toolbar */}
+              <div className="flex gap-1 border border-b-0 border-gray-300 rounded-t-xl px-2 py-1 bg-gray-50">
+                <button type="button" onClick={() => insertMarkdown('**', '**')}
+                  className="px-2 py-1 text-xs font-bold text-gray-600 hover:bg-gray-200 rounded" title="Negrita">B</button>
+                <button type="button" onClick={() => insertMarkdown('*', '*')}
+                  className="px-2 py-1 text-xs italic text-gray-600 hover:bg-gray-200 rounded" title="Itálica">I</button>
+                <button type="button" onClick={() => insertMarkdown('[', '](url)')}
+                  className="px-2 py-1 text-xs text-gray-600 hover:bg-gray-200 rounded" title="Enlace">🔗</button>
+                <button type="button" onClick={() => insertMarkdown('- ')}
+                  className="px-2 py-1 text-xs text-gray-600 hover:bg-gray-200 rounded" title="Lista">•</button>
+                <button type="button" onClick={() => insertMarkdown('## ')}
+                  className="px-2 py-1 text-xs font-bold text-gray-600 hover:bg-gray-200 rounded" title="Título">H</button>
+                <div className="border-l border-gray-300 mx-1" />
+                {TEMPLATE_VARS.map(v => (
+                  <button key={v.key} type="button" onClick={() => insertMarkdown(`{{${v.key}}}`)}
+                    className="px-1.5 py-1 text-xs font-mono text-primary hover:bg-gray-200 rounded" title={v.label}>
+                    {v.key.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 border border-gray-300 rounded-b-xl rounded-tr-xl overflow-hidden">
+                <textarea ref={textareaRef} value={editBody} onChange={(e) => setEditBody(e.target.value)}
+                  placeholder="Escribe tu correo en Markdown..."
+                  className="w-full border-0 border-r border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none font-mono min-h-[250px]" />
+                <div className="px-3 py-2 text-sm prose prose-sm max-w-none overflow-auto max-h-[300px]">
+                  {editBody ? (
+                    <Markdown>{editBody}</Markdown>
+                  ) : (
+                    <span className="text-gray-400 italic">Vista previa del correo...</span>
+                  )}
+                </div>
+              </div>
             </div>
+
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setEditingTemplate(null)} className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>
-              <button onClick={handleSaveTemplate} className="flex-1 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold">Guardar</button>
+              <button onClick={closeModal} className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>
+              <button onClick={handleSaveTemplate} disabled={!editName || !editSubject || !editBody}
+                className="flex-1 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold disabled:opacity-50">
+                {creating ? 'Crear' : 'Guardar'}
+              </button>
             </div>
           </div>
         </div>

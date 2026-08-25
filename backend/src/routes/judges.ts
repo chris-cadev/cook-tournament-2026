@@ -21,15 +21,44 @@ function rowsToObject(rows: any[]): Record<string, any> {
   return obj
 }
 
+router.get('/teams', authMiddleware, (req: Request, res: Response) => {
+  if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Judge or admin access required' })
+  }
+
+  const db = getDb()
+  const rows = db.exec(
+    'SELECT id, name, sandwich_name, captain_email, members, station, registered_at FROM teams WHERE status = ? ORDER BY registered_at',
+    ['confirmed']
+  )
+  const teams = rowsToArray(rows).map(t => ({ ...t, members: JSON.parse((t.members as string) || '[]') }))
+
+  if (req.user?.role === 'judge') {
+    const scoreRows = db.exec(
+      'SELECT DISTINCT team_id FROM scores WHERE judge_anonymous_id = ?',
+      [req.user!.anonymous_id]
+    )
+    const scoredIds = new Set(scoreRows.length > 0 ? scoreRows[0].values.map((v: any[]) => v[0]) : [])
+    teams.forEach((t: any) => { t.scored = scoredIds.has(t.id) })
+  }
+
+  res.json(teams)
+})
+
 router.get('/rubric', authMiddleware, (req: Request, res: Response) => {
   if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Judge or admin access required' })
   }
 
   const db = getDb()
-  const rows = db.exec('SELECT scoring_categories FROM event_config WHERE id = 1')
-  const config = rowsToObject(rows)
-  const categories = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
+  const rows = db.exec('SELECT name, weight, max_points, description FROM scoring_categories ORDER BY sort_order, id')
+  if (rows.length === 0 || rows[0].values.length === 0) {
+    const fallback = db.exec('SELECT scoring_categories FROM event_config WHERE id = 1')
+    const config = rowsToObject(fallback)
+    const categories = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
+    return res.json({ categories: categories.map((c: string) => ({ name: c, weight: 1, max_points: 10, description: '' })) })
+  }
+  const categories = rowsToArray(rows)
   res.json({ categories })
 })
 
@@ -85,12 +114,13 @@ router.post('/scores', authMiddleware, (req: Request, res: Response) => {
   res.status(201).json({ ok: true })
 })
 
-router.get('/scores/:teamSlug', authMiddleware, (req: Request, res: Response) => {
+router.get('/scores/:teamIdOrSlug', authMiddleware, (req: Request, res: Response) => {
   if (req.user?.role !== 'judge' && req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Judge or admin access required' })
   }
 
-  const teamId = resolveTeamSlug(req.params.teamSlug as string)
+  const param = req.params.teamIdOrSlug as string
+  const teamId = /^\d+$/.test(param) ? parseInt(param, 10) : resolveTeamSlug(param)
   if (teamId === null) {
     return res.status(404).json({ error: 'Team not found' })
   }
