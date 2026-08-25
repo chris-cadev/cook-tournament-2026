@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
-import crypto from 'crypto'
 import { getDb, saveDb } from '../db.js'
 import { authMiddleware, requireRole } from '../middleware/auth.js'
 import { slugify } from '../team-utils.js'
@@ -27,17 +26,16 @@ router.post('/', authMiddleware, requireRole('admin'), (req: Request, res: Respo
   }
 
   const hash = bcrypt.hashSync(password, 10)
-  const accessCode = crypto.randomBytes(4).toString('hex').toUpperCase()
 
   db.run(
-    `INSERT INTO teams (name, slug, sandwich_name, captain_email, password_hash, members, equipment_needs, access_code, open_to_join, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
-    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipment_needs || null, accessCode, open_to_join ? 1 : 0]
+    `INSERT INTO teams (name, slug, sandwich_name, captain_email, password_hash, members, equipment_needs, open_to_join, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
+    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipment_needs || null, open_to_join ? 1 : 0]
   )
   saveDb()
 
   const idRows = db.exec('SELECT last_insert_rowid() as id')
-  res.status(201).json({ id: idRows[0].values[0][0], slug, name, access_code: accessCode })
+  res.status(201).json({ id: idRows[0].values[0][0], slug, name })
 })
 
 export default router

@@ -34,3 +34,5 @@ yarn-error.log*
 # Environment
 .env.local
 .env.*.local
+
+.envsitter

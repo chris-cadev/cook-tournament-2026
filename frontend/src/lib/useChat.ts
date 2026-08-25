@@ -32,9 +32,11 @@ export function useChat(channel: string, options?: UseChatOptions) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  const apiPath = channel === 'global' ? 'global' : channel.replace(':', '/')
+
   const fetchMessages = useCallback(async () => {
     try {
-      const res = await fetch(`/api/chat/${channel === 'global' ? 'global' : channel}/messages?limit=50`)
+      const res = await fetch(`/api/chat/${apiPath}/messages?limit=50`)
       if (res.ok) {
         const data = await res.json()
         setMessages(data.messages)
@@ -44,11 +46,11 @@ export function useChat(channel: string, options?: UseChatOptions) {
     } finally {
       setLoading(false)
     }
-  }, [channel])
+  }, [apiPath])
 
   const loadOlder = useCallback(async (beforeId: number) => {
     try {
-      const res = await fetch(`/api/chat/${channel === 'global' ? 'global' : channel}/messages?limit=50&before=${beforeId}`)
+      const res = await fetch(`/api/chat/${apiPath}/messages?limit=50&before=${beforeId}`)
       if (res.ok) {
         const data = await res.json()
         if (data.messages.length > 0) {
@@ -58,7 +60,7 @@ export function useChat(channel: string, options?: UseChatOptions) {
     } catch (err) {
       console.error('Failed to load older messages:', err)
     }
-  }, [channel])
+  }, [apiPath])
 
   const sendMessage = useCallback(async (content: string, senderName: string, senderRole: string, senderId?: number | null, attachment?: { url: string; type: string }) => {
     const tempId = -Date.now()
@@ -76,7 +78,7 @@ export function useChat(channel: string, options?: UseChatOptions) {
     setMessages(prev => [...prev, optimistic])
 
     try {
-      const apiUrl = channel === 'global' ? '/api/chat/global/messages' : `/api/chat/${channel}/messages`
+      const apiUrl = `/api/chat/${apiPath}/messages`
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,7 +108,7 @@ export function useChat(channel: string, options?: UseChatOptions) {
     } catch {
       setMessages(prev => prev.filter(m => m.id !== tempId))
     }
-  }, [channel, user])
+  }, [apiPath, user])
 
   useEffect(() => {
     fetchMessages()

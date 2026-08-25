@@ -97,7 +97,7 @@ router.post('/send', authMiddleware, requireRole('admin'), async (req: Request, 
       let captainName = t.captain_email
       try {
         const members = JSON.parse(t.members)
-        if (Array.isArray(members) && members.length > 0) captainName = members[0]
+        if (Array.isArray(members) && members.length > 0) captainName = members[0]?.name || captainName
       } catch { /* keep email as fallback */ }
 
       return { name: t.name, email: t.captain_email, team_name: t.name, captain_name: captainName, captain_email: t.captain_email, sandwich_name: t.sandwich_name }
@@ -182,7 +182,7 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
         let captainName = t.captain_email
         try {
           const parsed = JSON.parse(t.members)
-          if (Array.isArray(parsed) && parsed.length > 0) captainName = parsed[0]
+          if (Array.isArray(parsed) && parsed.length > 0) captainName = parsed[0]?.name || captainName
         } catch { /* keep email */ }
 
         const vars = { team_name: t.name, captain_name: captainName, captain_email: t.captain_email, sandwich_name: t.sandwich_name, event_title: eventTitle, event_date: eventDateStr, event_description: eventDesc, team_count: String(teamCount) }
@@ -212,7 +212,7 @@ router.post('/send-reminders', authMiddleware, requireRole('admin'), async (_req
         let captainName = t.captain_email
         try {
           const parsed = JSON.parse(t.members)
-          if (Array.isArray(parsed) && parsed.length > 0) captainName = parsed[0]
+          if (Array.isArray(parsed) && parsed.length > 0) captainName = parsed[0]?.name || captainName
         } catch { /* keep email */ }
 
         const vars = { team_name: t.name, captain_name: captainName, captain_email: t.captain_email, sandwich_name: t.sandwich_name, event_title: eventTitle, event_date: eventDateStr, event_description: eventDesc, team_count: String(teamCount) }

@@ -10,7 +10,11 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@backend/*": ["./src/*"]
+    },
+    "baseUrl": "."
   },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"]

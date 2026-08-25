@@ -10,7 +10,7 @@ interface TeamData {
   name: string
   sandwich_name: string
   captain_email: string
-  members: string[]
+  members: { name: string; email: string | null }[]
 }
 
 export default function TeamDashboard() {

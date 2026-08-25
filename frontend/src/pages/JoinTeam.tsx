@@ -6,7 +6,7 @@ interface Team {
   name: string
   sandwich_name: string
   captain_email: string
-  members: string[]
+  members: { name: string; email: string | null }[]
   status: string
 }
 
@@ -130,7 +130,7 @@ export default function JoinTeam() {
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-2">
-                {team.members.join(' · ')}
+                {team.members.map(m => m.name).join(' · ')}
               </p>
             </button>
           ))}

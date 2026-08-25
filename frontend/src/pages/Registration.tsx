@@ -1,34 +1,18 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-
-const TEAM_KEY = 'team_access_code'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../stores/authStore'
 
 export default function Registration() {
+  const navigate = useNavigate()
+  const login = useAuthStore((s) => s.login)
   const [form, setForm] = useState({
     name: '', sandwich_name: '', captain_name: '', captain_email: '', password: '', password_confirm: '',
-    member2: '', member3: '', equipment_needs: '', open_to_join: 'true',
+    member2: '', member2_email: '', member3: '', member3_email: '',
+    equipment_needs: '', open_to_join: 'true',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
-  const [teamCode, setTeamCode] = useState<string | null>(() => localStorage.getItem(TEAM_KEY))
   const [loading, setLoading] = useState(false)
-  const [validating, setValidating] = useState(true)
-
-  useEffect(() => {
-    const code = localStorage.getItem(TEAM_KEY)
-    if (!code) { setValidating(false); return }
-
-    fetch(`/api/teams/validate-access-code?access_code=${encodeURIComponent(code)}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (!data.valid) {
-          localStorage.removeItem(TEAM_KEY)
-          setTeamCode(null)
-        }
-      })
-      .catch(() => {})
-      .finally(() => setValidating(false))
-  }, [])
 
   const update = (field: string, value: string) => {
     setForm((f) => ({ ...f, [field]: value }))
@@ -78,7 +62,11 @@ export default function Registration() {
     if (!validate()) return
     setLoading(true)
     try {
-      const members = [form.captain_name.trim(), form.member2.trim(), form.member3.trim()].filter(Boolean)
+      const members = [
+        { name: form.captain_name.trim(), email: form.captain_email.trim() },
+        form.member2.trim() ? { name: form.member2.trim(), email: form.member2_email.trim() || null } : null,
+        form.member3.trim() ? { name: form.member3.trim(), email: form.member3_email.trim() || null } : null,
+      ].filter(Boolean)
       const res = await fetch('/api/teams/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,17 +85,13 @@ export default function Registration() {
         setErrors({ submit: data.error || 'Error al registrar' })
         return
       }
-      localStorage.setItem(TEAM_KEY, data.access_code)
-      setTeamCode(data.access_code)
+      login(data.team)
+      navigate('/team/dashboard')
     } catch {
       setErrors({ submit: 'Error de red' })
     } finally {
       setLoading(false)
     }
-  }
-
-  const copyCode = () => {
-    if (teamCode) navigator.clipboard.writeText(teamCode)
   }
 
   const fieldClass = (field: string) => {
@@ -122,34 +106,6 @@ export default function Registration() {
 
   const errorMsg = (field: string) =>
     touched[field] && errors[field] ? <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><span className="inline-block w-1 h-1 bg-red-500 rounded-full" />{errors[field]}</p> : null
-
-  if (!validating && teamCode) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-4">
-            <div className="text-4xl">🎉</div>
-            <h1 className="font-headline text-2xl font-black text-secondary">¡Equipo listo!</h1>
-            <p className="text-gray-500 text-sm">Tu equipo está registrado y pendiente de confirmación.</p>
-            <div className="bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl px-6 py-4">
-              <p className="text-xs text-gray-500 mb-1">Tu código de acceso</p>
-              <p className="font-mono text-3xl font-black text-primary tracking-widest">{teamCode}</p>
-            </div>
-            <p className="text-xs text-gray-400">Guárdalo, lo necesitas para entrar al evento.</p>
-            <button onClick={copyCode}
-              className="text-sm bg-primary/10 text-primary-dark font-semibold px-4 py-2 rounded-xl hover:bg-primary/20 transition-colors">
-              Copiar código
-            </button>
-            <div className="pt-2">
-              <Link to="/" className="bg-primary hover:bg-primary-dark text-white font-headline font-bold px-6 py-3 rounded-2xl inline-block transition-colors">
-                Volver al inicio
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-surface py-8 px-4">
@@ -237,10 +193,18 @@ export default function Registration() {
                 <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-green-700">
                   ✓ {form.captain_name || 'Tú'} — capitán
                 </div>
-                <input type="text" placeholder="Miembro 2" value={form.member2} onChange={(e) => update('member2', e.target.value)} maxLength={50}
+                <input type="text" placeholder="Miembro 2 — nombre" value={form.member2} onChange={(e) => update('member2', e.target.value)} maxLength={50}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
-                <input type="text" placeholder="Miembro 3" value={form.member3} onChange={(e) => update('member3', e.target.value)} maxLength={50}
+                {form.member2 && (
+                  <input type="email" placeholder="Miembro 2 — email (para poder entrar)" value={form.member2_email} onChange={(e) => update('member2_email', e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                )}
+                <input type="text" placeholder="Miembro 3 — nombre" value={form.member3} onChange={(e) => update('member3', e.target.value)} maxLength={50}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                {form.member3 && (
+                  <input type="email" placeholder="Miembro 3 — email (para poder entrar)" value={form.member3_email} onChange={(e) => update('member3_email', e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                )}
               </div>
             </fieldset>
 

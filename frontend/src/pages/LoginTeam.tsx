@@ -76,7 +76,6 @@ export default function LoginTeam() {
           </button>
         </form>
         <div className="text-center mt-4 text-sm text-gray-500 space-y-1">
-          <Link to="/login/admin" className="hover:text-primary block">Entrar como admin</Link>
           <Link to="/login/judge" className="hover:text-primary block">Entrar como juez</Link>
           <Link to="/" className="hover:text-primary block">← Volver al inicio</Link>
         </div>

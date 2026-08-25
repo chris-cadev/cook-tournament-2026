@@ -119,7 +119,7 @@ router.patch('/:id/accept', authMiddleware, (req: Request, res: Response) => {
     return res.status(403).json({ error: 'Only the captain can manage requests' })
   }
 
-  let members: string[]
+  let members: { name: string; email: string }[]
   try {
     members = JSON.parse(team.members || '[]')
   } catch {
@@ -129,7 +129,7 @@ router.patch('/:id/accept', authMiddleware, (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Team is full' })
   }
 
-  members.push(request.name)
+  members.push({ name: request.name, email: request.email })
 
   let rejectedCount = 0
   db.run('BEGIN')

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { signToken, setSessionCookie, SESSION_COOKIE_NAME } from '../middleware/auth.js'
+import { adminRateLimit, adminIpWhitelist, recordFailedAttempt, resetAttempts } from '../middleware/admin-rate-limit.js'
 import { getDb, saveDb } from '../db.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret'
@@ -15,7 +16,7 @@ function rowsToObject(rows: any[]): Record<string, any> | null {
   return obj
 }
 
-router.post('/admin/login', (req: Request, res: Response) => {
+router.post('/admin/login', adminIpWhitelist, adminRateLimit, (req: Request, res: Response) => {
   const { email, password } = req.body
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' })
@@ -24,6 +25,7 @@ router.post('/admin/login', (req: Request, res: Response) => {
   const db = getDb()
   const rows = db.exec('SELECT * FROM users WHERE email = ?', [email])
   if (rows.length === 0 || rows[0].values.length === 0) {
+    recordFailedAttempt(req)
     return res.status(401).json({ error: 'Invalid credentials' })
   }
 
@@ -33,9 +35,11 @@ router.post('/admin/login', (req: Request, res: Response) => {
   cols.forEach((c, i) => (user[c] = vals[i]))
 
   if (!bcrypt.compareSync(password, user.password_hash)) {
+    recordFailedAttempt(req)
     return res.status(401).json({ error: 'Invalid credentials' })
   }
 
+  resetAttempts(req)
   const token = signToken({ id: user.id, email: user.email, role: 'admin' })
   setSessionCookie(res, token)
   res.json({ user: { id: user.id, email: user.email, name: user.name, role: 'admin' } })
@@ -48,7 +52,34 @@ router.post('/team/login', (req: Request, res: Response) => {
   }
 
   const db = getDb()
-  const rows = db.exec('SELECT * FROM teams WHERE captain_email = ?', [email])
+
+  // First try captain email
+  let rows = db.exec('SELECT * FROM teams WHERE captain_email = ?', [email])
+  let isCaptain = true
+
+  // If not found by captain email, check members
+  if (rows.length === 0 || rows[0].values.length === 0) {
+    const allTeams = db.exec('SELECT * FROM teams')
+    if (allTeams.length > 0) {
+      for (const row of allTeams[0].values) {
+        const cols = allTeams[0].columns
+        const team: Record<string, any> = {}
+        cols.forEach((c, i) => (team[c] = row[i]))
+        try {
+          const members = JSON.parse(team.members || '[]')
+          const found = members.some((m: any) => m.email === email)
+          if (found) {
+            rows = allTeams
+            // Re-execute to get just this team
+            rows = db.exec('SELECT * FROM teams WHERE id = ?', [team.id])
+            isCaptain = false
+            break
+          }
+        } catch {}
+      }
+    }
+  }
+
   if (rows.length === 0 || rows[0].values.length === 0) {
     return res.status(401).json({ error: 'Invalid credentials' })
   }

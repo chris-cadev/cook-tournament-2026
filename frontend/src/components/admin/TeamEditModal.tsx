@@ -8,7 +8,7 @@ interface Team {
   captain_email: string
   status: string
   station: string | null
-  members?: string | string[]
+  members?: string | { name: string; email: string | null }[]
 }
 
 interface Props {
@@ -24,12 +24,12 @@ export default function TeamEditModal({ open, mode, team, onClose, onSaved }: Pr
   const [sandwichName, setSandwichName] = useState(team?.sandwich_name || '')
   const [captainEmail, setCaptainEmail] = useState(team?.captain_email || '')
   const [password, setPassword] = useState('')
-  const parsedMembers = Array.isArray(team?.members)
-    ? team.members
+  const parsedMembers: { name: string; email: string | null }[] = Array.isArray(team?.members)
+    ? team.members as { name: string; email: string | null }[]
     : team?.members
       ? JSON.parse(team.members)
       : []
-  const [members, setMembers] = useState(parsedMembers.join(', '))
+  const [membersText, setMembersText] = useState(parsedMembers.map(m => `${m.name}${m.email ? ` <${m.email}>` : ''}`).join(', '))
   const [equipmentNeeds, setEquipmentNeeds] = useState('')
   const [status, setStatus] = useState(team?.status || 'pending')
   const [station, setStation] = useState(team?.station || '')
@@ -49,7 +49,10 @@ export default function TeamEditModal({ open, mode, team, onClose, onSaved }: Pr
             sandwich_name: sandwichName.trim(),
             captain_email: captainEmail.trim(),
             password: password || undefined,
-            members: members ? members.split(',').map((m: string) => m.trim()).filter(Boolean) : [],
+            members: membersText ? membersText.split(',').map((m: string) => {
+              const match = m.trim().match(/^(.+?)(?:\s*<(.+?)>)?\s*$/)
+              return match ? { name: match[1].trim(), email: match[2] || null } : null
+            }).filter(Boolean) : [],
             equipment_needs: equipmentNeeds.trim() || null,
           }),
         })
@@ -85,7 +88,7 @@ export default function TeamEditModal({ open, mode, team, onClose, onSaved }: Pr
               className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
             <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña (dejar vacío para auto-generar)"
               className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-            <input type="text" value={members} onChange={(e) => setMembers(e.target.value)} placeholder="Miembros (separados por coma)"
+            <input type="text" value={membersText} onChange={(e) => setMembersText(e.target.value)} placeholder="Miembros: Nombre &lt;email&gt; (separados por coma)"
               className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
             <input type="text" value={equipmentNeeds} onChange={(e) => setEquipmentNeeds(e.target.value)} placeholder="Equipo necesario"
               className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
@@ -95,7 +98,7 @@ export default function TeamEditModal({ open, mode, team, onClose, onSaved }: Pr
             <p className="text-sm text-gray-500">Sándwich: {team?.sandwich_name}</p>
             <p className="text-sm text-gray-500">Capitán: {team?.captain_email}</p>
             {team?.members && parsedMembers.length > 0 && (
-              <p className="text-sm text-gray-500">Miembros: {parsedMembers.join(', ')}</p>
+              <p className="text-sm text-gray-500">Miembros: {parsedMembers.map(m => m.name).join(', ')}</p>
             )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>

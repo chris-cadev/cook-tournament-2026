@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
-import crypto from 'crypto'
 import { getDb, saveDb } from '../db.js'
-import { authMiddleware, requireRole } from '../middleware/auth.js'
+import { authMiddleware, requireRole, signToken, setSessionCookie } from '../middleware/auth.js'
 import { slugify, resolveTeamSlug } from '../team-utils.js'
 
 const router = Router()
@@ -42,33 +41,19 @@ router.post('/register', (req: Request, res: Response) => {
   }
 
   const hash = bcrypt.hashSync(password, 10)
-  const accessCode = crypto.randomBytes(4).toString('hex').toUpperCase()
   db.run(
-    `INSERT INTO teams (name, slug, sandwich_name, captain_email, password_hash, members, equipment_needs, access_code, open_to_join)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipment_needs || null, accessCode, open_to_join ? 1 : 0]
+    `INSERT INTO teams (name, slug, sandwich_name, captain_email, password_hash, members, equipment_needs, open_to_join)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipment_needs || null, open_to_join ? 1 : 0]
   )
   saveDb()
 
   const idRows = db.exec('SELECT last_insert_rowid() as id')
-  const id = idRows[0].values[0][0]
-  res.status(201).json({ id, slug, name, sandwich_name, status: 'pending', access_code: accessCode })
-})
+  const id = idRows[0].values[0][0] as number
 
-router.get('/validate-access-code', (req: Request, res: Response) => {
-  const { access_code } = req.query
-  if (!access_code || typeof access_code !== 'string') {
-    return res.json({ valid: false })
-  }
-
-  const db = getDb()
-  const rows = db.exec('SELECT name FROM teams WHERE access_code = ?', [access_code.trim().toUpperCase()])
-  if (rows.length === 0 || rows[0].values.length === 0) {
-    return res.json({ valid: false })
-  }
-
-  const name = rows[0].values[0][0] as string
-  res.json({ valid: true, name })
+  const token = signToken({ team_id: id, team_slug: slug, name, role: 'team' })
+  setSessionCookie(res, token)
+  res.status(201).json({ team: { id, slug, name, sandwich_name: sandwich_name || '', role: 'team' } })
 })
 
 router.get('/', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {

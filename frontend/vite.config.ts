@@ -17,6 +17,11 @@ const backendPort = Number(process.env.BACKEND_PORT) || 3001
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
   server: {
     port: frontendPort,
     proxy: {

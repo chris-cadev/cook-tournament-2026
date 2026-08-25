@@ -5,7 +5,7 @@ interface Team {
   name: string
   sandwich_name: string
   captain_email: string
-  members: string[]
+  members: { name: string; email: string | null }[]
   station: string | null
   registered_at: string
   scored?: boolean
@@ -167,7 +167,7 @@ export default function JudgePanel() {
                   <div className="text-xs text-gray-600 space-y-0.5">
                     <p><span className="font-medium text-gray-700">Capitán:</span> {team.captain_email}</p>
                     {team.members.length > 0 && (
-                      <p><span className="font-medium text-gray-700">Miembros:</span> {team.members.join(', ')}</p>
+                      <p><span className="font-medium text-gray-700">Miembros:</span> {team.members.map(m => m.name).join(', ')}</p>
                     )}
                     {team.station && (
                       <p><span className="font-medium text-gray-700">Estación:</span> {team.station}</p>

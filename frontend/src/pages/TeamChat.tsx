@@ -16,7 +16,7 @@ interface JoinRequest {
 interface TeamChatProps {
   teamSlug: string
   teamName: string
-  members?: string[]
+  members?: { name: string; email: string | null }[]
   isCaptain?: boolean
   embedded?: boolean
   joinRequests?: JoinRequest[]
@@ -114,7 +114,7 @@ export default function TeamChat({
     }
   }
 
-  const senderName = members[0] || teamName
+  const senderName = members.find(m => m.email === user?.email)?.name || user?.name || teamName
   const pendingRequests = joinRequests.filter(r => r.status === 'pending')
 
   const handleSend = async (content: string, attachment?: { url: string; type: string }) => {

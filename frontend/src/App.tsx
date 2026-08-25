@@ -23,6 +23,8 @@ import Umami from './components/Umami'
 import { ToastContainer } from './components/Toast'
 import { useAuthStore } from './stores/authStore'
 
+const ADMIN_ROUTE = import.meta.env.VITE_ADMIN_ROUTE || '/login/admin'
+
 export default function App() {
   const checkSession = useAuthStore((s) => s.checkSession)
   const loading = useAuthStore((s) => s.loading)
@@ -64,7 +66,7 @@ export default function App() {
 
         {/* Auth routes */}
         <Route path="/login" element={<LoginChooser />} />
-        <Route path="/login/admin" element={<LoginAdmin />} />
+        <Route path={ADMIN_ROUTE} element={<LoginAdmin />} />
         <Route path="/login/team" element={<LoginTeam />} />
         <Route path="/login/judge" element={<LoginJudge />} />
         <Route path="/login/guest" element={<LoginGuest />} />
@@ -146,11 +148,6 @@ function LoginChooser() {
     <div className="min-h-screen bg-surface flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-4">
         <h1 className="font-headline text-3xl font-black text-secondary text-center mb-6">Iniciar Sesión</h1>
-        <Link to="/login/admin" className="block bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow text-center">
-          <span className="material-symbols-outlined text-3xl text-primary mb-2 block">admin_panel_settings</span>
-          <span className="font-headline font-bold text-secondary block">Admin</span>
-          <span className="text-xs text-gray-500">Organizador del evento</span>
-        </Link>
         <Link to="/login/team" className="block bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow text-center">
           <span className="material-symbols-outlined text-3xl text-primary mb-2 block">group</span>
           <span className="font-headline font-bold text-secondary block">Equipo</span>

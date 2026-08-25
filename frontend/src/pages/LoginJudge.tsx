@@ -69,7 +69,6 @@ export default function LoginJudge() {
           </button>
         </form>
         <div className="text-center mt-4 text-sm text-gray-500 space-y-1">
-          <Link to="/login/admin" className="hover:text-primary block">Entrar como admin</Link>
           <Link to="/login/team" className="hover:text-primary block">Entrar como equipo</Link>
           <Link to="/" className="hover:text-primary block">← Volver al inicio</Link>
         </div>
