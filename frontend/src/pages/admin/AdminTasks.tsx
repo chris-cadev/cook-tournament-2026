@@ -12,13 +12,11 @@ interface Task {
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
-  in_progress: 'En progreso',
   completed: 'Completada',
 }
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
-  in_progress: 'bg-blue-100 text-blue-700',
   completed: 'bg-green-100 text-green-700',
 }
 
@@ -100,7 +98,7 @@ export default function AdminTasks() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {['all', 'pending', 'in_progress', 'completed'].map((f) => (
+        {['all', 'pending', 'completed'].map((f) => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filter === f ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
             {f === 'all' ? 'Todas' : STATUS_LABELS[f]}
@@ -129,12 +127,10 @@ export default function AdminTasks() {
                     {task.description && <div className="text-xs text-gray-500 mt-0.5">{task.description}</div>}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <select value={task.status} onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                      className={`text-xs font-bold px-2 py-1 rounded-full border-0 ${STATUS_COLORS[task.status] || ''}`}>
-                      <option value="pending">Pendiente</option>
-                      <option value="in_progress">En progreso</option>
-                      <option value="completed">Completada</option>
-                    </select>
+                    <button onClick={() => handleStatusChange(task.id, task.status === 'completed' ? 'pending' : 'completed')}
+                      className={`text-xs font-bold px-3 py-1 rounded-full transition-colors ${STATUS_COLORS[task.status] || ''}`}>
+                      {task.status === 'completed' ? '✓ Completada' : 'Pendiente'}
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs hidden md:table-cell">
                     {new Date(task.created_at).toLocaleDateString()}

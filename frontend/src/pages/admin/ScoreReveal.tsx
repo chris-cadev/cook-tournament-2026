@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react'
 
+interface ScoringCategory {
+  id: number
+  name: string
+  weight: number
+  max_points: number
+  description: string
+}
+
 interface CategoryStatus {
-  category: string
+  category: ScoringCategory
   revealed: boolean
 }
 
@@ -10,6 +18,8 @@ export default function ScoreReveal() {
   const [revealedCount, setRevealedCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [revealing, setRevealing] = useState<string | null>(null)
+  const [dramaticReveal, setDramaticReveal] = useState<string | null>(null)
+  const [countdown, setCountdown] = useState(0)
 
   useEffect(() => {
     fetchConfig()
@@ -17,12 +27,16 @@ export default function ScoreReveal() {
 
   async function fetchConfig() {
     try {
-      const res = await fetch('/api/config')
-      const config = await res.json()
-      const cats: string[] = config.scoring_categories || []
+      const [configRes, rubricRes] = await Promise.all([
+        fetch('/api/config'),
+        fetch('/api/judges/rubric'),
+      ])
+      const config = await configRes.json()
+      const rubric = await rubricRes.json()
       const revealed: string[] = config.revealed_categories || []
+      const cats: ScoringCategory[] = rubric.categories || []
 
-      setCategories(cats.map(c => ({ category: c, revealed: revealed.includes(c) })))
+      setCategories(cats.map(c => ({ category: c, revealed: revealed.includes(c.name) })))
       setRevealedCount(revealed.length)
     } catch (err) {
       console.error('Failed to fetch config:', err)
@@ -31,32 +45,49 @@ export default function ScoreReveal() {
     }
   }
 
-  async function handleReveal(category: string) {
-    setRevealing(category)
+  async function handleReveal(category: ScoringCategory) {
+    setDramaticReveal(category.name)
+    setCountdown(3)
+
+    // Countdown
+    for (let i = 3; i > 0; i--) {
+      setCountdown(i)
+      await new Promise(r => setTimeout(r, 800))
+    }
+
+    // Dramatic pause
+    setCountdown(0)
+    await new Promise(r => setTimeout(r, 500))
+
+    // Reveal
+    setRevealing(category.name)
     try {
       const res = await fetch('/api/scores/reveal', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ category }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category.name }),
       })
 
       if (!res.ok) {
         const err = await res.json()
-        alert(err.error || 'Failed to reveal category')
+        alert(err.error || 'Failed to reveal')
+        setDramaticReveal(null)
         return
       }
 
       setCategories(prev =>
-        prev.map(c => (c.category === category ? { ...c, revealed: true } : c))
+        prev.map(c => (c.category.name === category.name ? { ...c, revealed: true } : c))
       )
       setRevealedCount(prev => prev + 1)
+
+      // Hold the dramatic reveal for a moment
+      await new Promise(r => setTimeout(r, 1500))
     } catch (err) {
-      console.error('Failed to reveal category:', err)
+      console.error('Failed to reveal:', err)
       alert('Network error — try again')
     } finally {
       setRevealing(null)
+      setDramaticReveal(null)
     }
   }
 
@@ -73,18 +104,55 @@ export default function ScoreReveal() {
 
   return (
     <>
-      <div className="max-w-3xl">
-        <h1 className="font-headline text-3xl font-black text-secondary mb-2">
-          Score Reveal Control
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Reveal scoring categories one at a time. Connected clients see scores appear in real-time.
-        </p>
+      {/* Dramatic overlay */}
+      {dramaticReveal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="text-center space-y-4">
+            {countdown > 0 ? (
+              <div className="animate-pulse">
+                <span className="font-headline text-9xl font-black text-white">{countdown}</span>
+              </div>
+            ) : (
+              <div className="animate-bounce">
+                <span className="font-headline text-5xl font-black text-white block mb-4">
+                  🏆 {dramaticReveal}
+                </span>
+                <span className="font-headline text-2xl text-tertiary font-bold">
+                  {revealing ? '¡REVELANDO!' : '¡REVELADO!'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-        {/* Progress bar */}
-        <div className="mb-8">
+      <div className="max-w-3xl space-y-6">
+        <div>
+          <h1 className="font-headline text-3xl font-black text-secondary mb-2">
+            Control de Puntuación
+          </h1>
+          <p className="text-gray-600">
+            Categorías de puntuación definidas en organizacion.md. Revela una a una para generar tensión.
+          </p>
+        </div>
+
+        {/* Categories reference */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+          <h3 className="font-headline text-lg font-bold text-secondary">Categorías</h3>
+          {categories.map(({ category, revealed }) => (
+            <div key={category.name} className="flex items-center gap-3 text-sm">
+              <span className={`font-medium ${revealed ? 'text-tertiary' : 'text-gray-700'}`}>{category.name}</span>
+              <span className="text-gray-400">x{category.weight}</span>
+              <span className="text-gray-400">max {category.max_points}</span>
+              {revealed && <span className="text-tertiary text-xs font-bold">✓</span>}
+            </div>
+          ))}
+        </div>
+
+        {/* Progress */}
+        <div>
           <div className="flex justify-between text-sm font-medium mb-1">
-            <span>{revealedCount} of {total} categories revealed</span>
+            <span>{revealedCount} de {total} categorías reveladas</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -95,37 +163,36 @@ export default function ScoreReveal() {
           </div>
         </div>
 
-        {/* Category list */}
+        {/* Reveal buttons */}
         <div className="space-y-3">
           {categories.map(({ category, revealed }) => (
             <div
-              key={category}
-              className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-colors ${
+              key={category.name}
+              className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
                 revealed
                   ? 'bg-tertiary/10 border-tertiary/30'
-                  : 'bg-white border-gray-200'
+                  : 'bg-white border-gray-200 hover:border-primary/30'
               }`}
             >
               <div className="flex items-center gap-3">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    revealed ? 'bg-tertiary' : 'bg-gray-300'
-                  }`}
-                />
-                <span className="font-medium text-lg">{category}</span>
+                <div className={`w-3 h-3 rounded-full ${revealed ? 'bg-tertiary' : 'bg-gray-300'}`} />
+                <div>
+                  <span className="font-medium text-lg">{category.name}</span>
+                  <span className="text-gray-400 text-sm ml-2">x{category.weight}</span>
+                </div>
               </div>
 
               {revealed ? (
                 <span className="text-sm font-medium text-tertiary px-3 py-1 bg-tertiary/10 rounded-full">
-                  Revealed
+                  Revelado
                 </span>
               ) : (
                 <button
                   onClick={() => handleReveal(category)}
-                  disabled={revealing !== null}
-                  className="px-4 py-2 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={revealing !== null || dramaticReveal !== null}
+                  className="px-5 py-2.5 bg-primary text-white font-headline font-bold rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {revealing === category ? 'Revealing...' : `Reveal ${category}`}
+                  Revelar {category.name}
                 </button>
               )}
             </div>
@@ -134,7 +201,7 @@ export default function ScoreReveal() {
 
         {categories.length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            No scoring categories configured yet.
+            No hay categorías configuradas.
           </div>
         )}
       </div>

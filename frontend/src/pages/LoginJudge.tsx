@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 
 export default function LoginJudge() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,14 +25,14 @@ export default function LoginJudge() {
       const res = await fetch('/api/auth/judge/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'Login failed')
         return
       }
-      login({ anonymous_id: data.judge.anonymous_id, role: 'judge' })
+      login({ id: data.judge.id, email: data.judge.email, name: data.judge.name, anonymous_id: data.judge.anonymous_id, role: 'judge' })
       navigate('/judge/panel')
     } catch {
       setError('Network error')
@@ -49,12 +50,17 @@ export default function LoginJudge() {
       )}
       <div className="w-full max-w-sm">
         <h1 className="font-headline text-3xl font-black text-secondary text-center mb-2">Judge Access</h1>
-        <p className="text-gray-500 text-center mb-6 text-sm">Ingresa la contraseña de juez</p>
+        <p className="text-gray-500 text-center mb-6 text-sm">Ingresa con tu email y contraseña de juez</p>
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
           {error && <div className="bg-red-50 text-red-700 text-sm p-3 rounded-xl">{error}</div>}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña de juez</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoFocus
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
               className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
           </div>
           <button type="submit" disabled={loading}

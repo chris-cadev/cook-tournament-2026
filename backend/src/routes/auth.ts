@@ -68,45 +68,29 @@ router.post('/team/login', (req: Request, res: Response) => {
 })
 
 router.post('/judge/login', (req: Request, res: Response) => {
-  const { password } = req.body
-  if (!password) {
-    return res.status(400).json({ error: 'Password required' })
+  const { email, password } = req.body
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' })
   }
 
   const db = getDb()
-  const configRows = db.exec('SELECT judge_password FROM event_config WHERE id = 1')
-  if (configRows.length === 0 || configRows[0].values.length === 0) {
-    return res.status(401).json({ error: 'Invalid judge password' })
+  const rows = db.exec("SELECT * FROM users WHERE email = ? AND role = 'judge'", [email])
+  if (rows.length === 0 || rows[0].values.length === 0) {
+    return res.status(401).json({ error: 'Invalid credentials' })
   }
 
-  const judgePasswordHash = configRows[0].values[0][0] as string
-  if (!bcrypt.compareSync(password, judgePasswordHash)) {
-    return res.status(401).json({ error: 'Invalid judge password' })
+  const cols = rows[0].columns
+  const vals = rows[0].values[0]
+  const user: Record<string, any> = {}
+  cols.forEach((c, i) => (user[c] = vals[i]))
+
+  if (!bcrypt.compareSync(password, user.password_hash)) {
+    return res.status(401).json({ error: 'Invalid credentials' })
   }
 
-  const existingJudge = db.exec('SELECT anonymous_id FROM judges WHERE id IN (SELECT id FROM judges ORDER BY id DESC LIMIT 1)')
-  let anonymousId: string
-
-  if (existingJudge.length > 0 && existingJudge[0].values.length > 0) {
-    // Check if this IP/session already has a judge identity stored
-    // For simplicity, generate sequential IDs but reuse if we can find a pattern
-    const allJudges = db.exec('SELECT anonymous_id FROM judges ORDER BY id')
-    const usedNums = allJudges.length > 0
-      ? allJudges[0].values.map(r => parseInt((r[0] as string).split('_')[1]) || 0)
-      : []
-    let nextNum = 1
-    while (usedNums.includes(nextNum)) nextNum++
-    anonymousId = `judge_${nextNum}`
-  } else {
-    anonymousId = 'judge_1'
-  }
-
-  db.run('INSERT INTO judges (anonymous_id) VALUES (?)', [anonymousId])
-  saveDb()
-
-  const token = signToken({ anonymous_id: anonymousId, role: 'judge' })
+  const token = signToken({ id: user.id, email: user.email, anonymous_id: user.anonymous_id, role: 'judge' })
   setSessionCookie(res, token)
-  res.json({ judge: { anonymous_id: anonymousId, role: 'judge' } })
+  res.json({ judge: { id: user.id, email: user.email, name: user.name, anonymous_id: user.anonymous_id, role: 'judge' } })
 })
 
 router.get('/invite/:code', (req: Request, res: Response) => {
@@ -176,7 +160,10 @@ router.get('/me', (req: Request, res: Response) => {
         user = { team_id: rows[0].values[0][0], team_slug: rows[0].values[0][1], name: rows[0].values[0][2], sandwich_name: rows[0].values[0][3], role: 'team' }
       }
     } else if (payload.role === 'judge') {
-      user = { anonymous_id: payload.anonymous_id, role: 'judge' }
+      const rows = db.exec('SELECT id, email, name, anonymous_id FROM users WHERE id = ?', [payload.id])
+      if (rows.length > 0 && rows[0].values.length > 0) {
+        user = { id: rows[0].values[0][0], email: rows[0].values[0][1], name: rows[0].values[0][2], anonymous_id: rows[0].values[0][3], role: 'judge' }
+      }
     } else if (payload.role === 'guest') {
       user = { id: payload.id, name: payload.name, role: 'guest' }
     }

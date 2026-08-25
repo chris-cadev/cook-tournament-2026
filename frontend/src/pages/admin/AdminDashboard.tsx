@@ -1,27 +1,27 @@
 import { useState } from 'react'
-import Teams from './Teams'
 import EventSettings from './EventSettings'
-import ScoreReveal from './ScoreReveal'
-import ChatModeration from './ChatModeration'
-import AdminTasks from './AdminTasks'
+import Teams from './Teams'
 import Judges from './Judges'
+import ScoreReveal from './ScoreReveal'
+import AdminTasks from './AdminTasks'
 import EmailReminders from './EmailReminders'
 import Invites from './Invites'
+import ChatModeration from './ChatModeration'
 
-type Tab = 'teams' | 'settings' | 'scores' | 'chat' | 'todo' | 'judges' | 'email' | 'invites'
+type Tab = 'settings' | 'teams' | 'judges' | 'scores' | 'todo' | 'email' | 'invites' | 'chat'
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<Tab>('teams')
+  const [tab, setTab] = useState<Tab>('settings')
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
-    { key: 'teams', label: 'Equipos', icon: 'groups' },
     { key: 'settings', label: 'Configuración', icon: 'settings' },
-    { key: 'scores', label: 'Puntuaciones', icon: 'emoji_events' },
+    { key: 'teams', label: 'Equipos', icon: 'groups' },
     { key: 'judges', label: 'Jueces', icon: 'gavel' },
-    { key: 'chat', label: 'Chat', icon: 'chat' },
+    { key: 'scores', label: 'Puntuaciones', icon: 'emoji_events' },
     { key: 'todo', label: 'Tareas', icon: 'checklist' },
     { key: 'email', label: 'Email', icon: 'mail' },
     { key: 'invites', label: 'Invitaciones', icon: 'link' },
+    { key: 'chat', label: 'Chat', icon: 'chat' },
   ]
 
   return (
@@ -43,14 +43,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* Content */}
-        {tab === 'teams' && <Teams />}
         {tab === 'settings' && <EventSettings />}
-        {tab === 'scores' && <ScoreReveal />}
+        {tab === 'teams' && <Teams />}
         {tab === 'judges' && <Judges />}
-        {tab === 'chat' && <ChatModeration />}
+        {tab === 'scores' && <ScoreReveal />}
         {tab === 'todo' && <AdminTasks />}
         {tab === 'email' && <EmailReminders />}
         {tab === 'invites' && <Invites />}
+        {tab === 'chat' && <ChatModeration />}
       </div>
     </div>
   )
