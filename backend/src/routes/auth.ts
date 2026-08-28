@@ -9,8 +9,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret'
 
 const router = Router()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToObject(rows: any[]): Record<string, any> | null {
   if (rows.length === 0 || rows[0].values.length === 0) return null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const obj: Record<string, any> = {}
   rows[0].columns.forEach((c: string, i: number) => (obj[c] = rows[0].values[0][i]))
   return obj
@@ -31,6 +33,7 @@ router.post('/admin/login', adminIpWhitelist, adminRateLimit, (req: Request, res
 
   const cols = rows[0].columns
   const vals = rows[0].values[0]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const user: Record<string, any> = {}
   cols.forEach((c, i) => (user[c] = vals[i]))
 
@@ -55,24 +58,23 @@ router.post('/team/login', (req: Request, res: Response) => {
 
   // First try captain email
   let rows = db.exec('SELECT * FROM teams WHERE captain_email = ?', [email])
-  let isCaptain = true
-
   // If not found by captain email, check members
   if (rows.length === 0 || rows[0].values.length === 0) {
     const allTeams = db.exec('SELECT * FROM teams')
     if (allTeams.length > 0) {
       for (const row of allTeams[0].values) {
         const cols = allTeams[0].columns
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const team: Record<string, any> = {}
         cols.forEach((c, i) => (team[c] = row[i]))
         try {
           const members = JSON.parse(team.members || '[]')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const found = members.some((m: any) => m.email === email)
           if (found) {
             rows = allTeams
             // Re-execute to get just this team
             rows = db.exec('SELECT * FROM teams WHERE id = ?', [team.id])
-            isCaptain = false
             break
           }
         } catch {}
@@ -86,6 +88,7 @@ router.post('/team/login', (req: Request, res: Response) => {
 
   const cols = rows[0].columns
   const vals = rows[0].values[0]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const team: Record<string, any> = {}
   cols.forEach((c, i) => (team[c] = vals[i]))
 
@@ -112,6 +115,7 @@ router.post('/judge/login', (req: Request, res: Response) => {
 
   const cols = rows[0].columns
   const vals = rows[0].values[0]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const user: Record<string, any> = {}
   cols.forEach((c, i) => (user[c] = vals[i]))
 

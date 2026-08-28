@@ -5,9 +5,12 @@ import { authMiddleware, requireRole, signToken, setSessionCookie } from '../mid
 
 const router = Router()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToArray(rows: any[]): Record<string, any>[] {
   if (rows.length === 0) return []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return rows[0].values.map((vals: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj: Record<string, any> = {}
     rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
     return obj
@@ -70,6 +73,7 @@ router.post('/login', (req: Request, res: Response) => {
 
   const cols = rows[0].columns
   const vals = rows[0].values[0]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const guest: Record<string, any> = {}
   cols.forEach((c, i) => (guest[c] = vals[i]))
 

@@ -18,10 +18,12 @@ async function reset() {
   await initDb()
   runMigrations()
   seedAdmin()
+  // eslint-disable-next-line no-console
   console.log('Database reset complete.')
 }
 
 reset().catch((err) => {
+  // eslint-disable-next-line no-console
   console.error('Reset failed:', err)
   process.exit(1)
 })

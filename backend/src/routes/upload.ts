@@ -10,8 +10,16 @@ const ALLOWED_TYPES = new Set([
   'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4',
 ])
 
-function sanitizeFilename(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100)
+const MAX_SIZES: Record<string, number> = {
+  'image/jpeg': 5 * 1024 * 1024,
+  'image/png': 5 * 1024 * 1024,
+  'image/gif': 5 * 1024 * 1024,
+  'image/webp': 5 * 1024 * 1024,
+  'audio/mpeg': 2 * 1024 * 1024,
+  'audio/wav': 2 * 1024 * 1024,
+  'audio/ogg': 2 * 1024 * 1024,
+  'audio/webm': 2 * 1024 * 1024,
+  'audio/mp4': 2 * 1024 * 1024,
 }
 
 router.post('/presign', authMiddleware, async (req: Request, res: Response) => {
@@ -27,6 +35,11 @@ router.post('/presign', authMiddleware, async (req: Request, res: Response) => {
 
   if (!ALLOWED_TYPES.has(content_type)) {
     return res.status(400).json({ error: 'File type not allowed. Use image/* or audio/*.' })
+  }
+
+  const maxSize = MAX_SIZES[content_type] || 5 * 1024 * 1024
+  if (typeof req.body.size === 'number' && req.body.size > maxSize) {
+    return res.status(400).json({ error: `File too large. Max size: ${Math.round(maxSize / 1024 / 1024)}MB` })
   }
 
   if (!isMinioAvailable()) {
@@ -47,6 +60,7 @@ router.post('/presign', authMiddleware, async (req: Request, res: Response) => {
 
     res.json({ upload_url: uploadUrl, file_url: fileUrl })
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Presign error:', err)
     res.status(500).json({ error: 'Failed to generate upload URL' })
   }

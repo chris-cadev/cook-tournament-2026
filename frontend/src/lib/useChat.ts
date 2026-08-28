@@ -42,6 +42,7 @@ export function useChat(channel: string, options?: UseChatOptions) {
         setMessages(data.messages)
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch messages:', err)
     } finally {
       setLoading(false)
@@ -58,6 +59,7 @@ export function useChat(channel: string, options?: UseChatOptions) {
         }
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load older messages:', err)
     }
   }, [apiPath])

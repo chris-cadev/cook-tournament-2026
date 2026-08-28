@@ -38,6 +38,7 @@ export default function ChatModeration() {
         }
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch teams:', err)
     }
   }, [])
@@ -62,6 +63,7 @@ export default function ChatModeration() {
         }
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch messages:', err)
     } finally {
       setLoading(false)
@@ -97,6 +99,7 @@ export default function ChatModeration() {
         setMessages(prev => prev.filter(m => m.id !== messageId))
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete message:', err)
     }
   }

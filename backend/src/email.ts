@@ -33,6 +33,7 @@ export async function sendReminder(to: string, subject: string, html: string): P
     await t.sendMail({ from: process.env.SMTP_USER, to, subject, html })
     return true
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Email send error:', err)
     return false
   }
@@ -54,7 +55,9 @@ export async function sendEmail(
     }
     await t.sendMail({ from: process.env.SMTP_USER, to, subject, html: finalHtml })
     return { ok: true }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
+    // eslint-disable-next-line no-console
     console.error('Email send error:', err)
     return { ok: false, error: err?.message || 'Send failed' }
   }

@@ -6,9 +6,10 @@ export default function Registration() {
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
   const [form, setForm] = useState({
-    name: '', sandwich_name: '', captain_name: '', captain_email: '', password: '', password_confirm: '',
-    member2: '', member2_email: '', member3: '', member3_email: '',
-    equipment_needs: '', open_to_join: 'true',
+    name: '', sandwich_name: '', captain_name: '', captain_email: '', captain_phone: '', password: '', password_confirm: '',
+    member2: '', member2_email: '', member2_phone: '', member3: '', member3_email: '', member3_phone: '',
+    needs_outlet: false, needs_airfryer: false, own_grill: false,
+    open_to_join: 'true',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
@@ -28,6 +29,7 @@ export default function Registration() {
       else if (form.name.trim().length < 2) e.name = 'Mínimo 2 caracteres'
     }
     if (field === 'captain_name' && !form.captain_name.trim()) e.captain_name = '¿Cómo te llamas?'
+    if (field === 'captain_phone' && !form.captain_phone.trim()) e.captain_phone = 'Necesitamos tu teléfono'
     if (field === 'captain_email') {
       if (!form.captain_email.trim()) e.captain_email = 'Necesitamos tu email'
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.captain_email)) e.captain_email = 'Email inválido'
@@ -47,13 +49,14 @@ export default function Registration() {
     if (!form.name.trim()) e.name = 'Escribe el nombre de tu equipo'
     else if (form.name.trim().length < 2) e.name = 'Mínimo 2 caracteres'
     if (!form.captain_name.trim()) e.captain_name = '¿Cómo te llamas?'
+    if (!form.captain_phone.trim()) e.captain_phone = 'Necesitamos tu teléfono'
     if (!form.captain_email.trim()) e.captain_email = 'Necesitamos tu email'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.captain_email)) e.captain_email = 'Email inválido'
     if (!form.password) e.password = 'Elige una contraseña'
     else if (form.password.length < 4) e.password = 'Mínimo 4 caracteres'
     if (form.password !== form.password_confirm) e.password_confirm = 'Las contraseñas no coinciden'
     setErrors(e)
-    setTouched({ name: true, captain_name: true, captain_email: true, password: true, password_confirm: true })
+    setTouched({ name: true, captain_name: true, captain_phone: true, captain_email: true, password: true, password_confirm: true })
     return Object.keys(e).length === 0
   }
 
@@ -63,9 +66,9 @@ export default function Registration() {
     setLoading(true)
     try {
       const members = [
-        { name: form.captain_name.trim(), email: form.captain_email.trim() },
-        form.member2.trim() ? { name: form.member2.trim(), email: form.member2_email.trim() || null } : null,
-        form.member3.trim() ? { name: form.member3.trim(), email: form.member3_email.trim() || null } : null,
+        { name: form.captain_name.trim(), email: form.captain_email.trim(), phone: form.captain_phone.trim() },
+        form.member2.trim() ? { name: form.member2.trim(), email: form.member2_email.trim() || null, phone: form.member2_phone.trim() || null } : null,
+        form.member3.trim() ? { name: form.member3.trim(), email: form.member3_email.trim() || null, phone: form.member3_phone.trim() || null } : null,
       ].filter(Boolean)
       const res = await fetch('/api/teams/register', {
         method: 'POST',
@@ -76,7 +79,7 @@ export default function Registration() {
           captain_email: form.captain_email.trim(),
           password: form.password,
           members,
-          equipment_needs: form.equipment_needs.trim() || null,
+          equipment_needs: { needs_outlet: form.needs_outlet, needs_airfryer: form.needs_airfryer, own_grill: form.own_grill },
           open_to_join: form.open_to_join === 'true',
         }),
       })
@@ -159,6 +162,12 @@ export default function Registration() {
                     className={fieldClass('captain_email')} placeholder="maria@ejemplo.com" />
                   {errorMsg('captain_email')}
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tu teléfono *</label>
+                  <input type="tel" value={form.captain_phone} onChange={(e) => update('captain_phone', e.target.value)} onBlur={() => blur('captain_phone')}
+                    className={fieldClass('captain_phone')} placeholder="Tu teléfono *" />
+                  {errorMsg('captain_phone')}
+                </div>
               </div>
             </fieldset>
 
@@ -199,10 +208,18 @@ export default function Registration() {
                   <input type="email" placeholder="Miembro 2 — email (para poder entrar)" value={form.member2_email} onChange={(e) => update('member2_email', e.target.value)}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 )}
+                {form.member2 && (
+                  <input type="tel" placeholder="Miembro 2 — teléfono (opcional)" value={form.member2_phone} onChange={(e) => update('member2_phone', e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                )}
                 <input type="text" placeholder="Miembro 3 — nombre" value={form.member3} onChange={(e) => update('member3', e.target.value)} maxLength={50}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 {form.member3 && (
                   <input type="email" placeholder="Miembro 3 — email (para poder entrar)" value={form.member3_email} onChange={(e) => update('member3_email', e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                )}
+                {form.member3 && (
+                  <input type="tel" placeholder="Miembro 3 — teléfono (opcional)" value={form.member3_phone} onChange={(e) => update('member3_phone', e.target.value)}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 )}
               </div>
@@ -241,11 +258,22 @@ export default function Registration() {
                 <span className="bg-gray-300 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">6</span>
                 Necesidades <span className="text-gray-400 font-normal">(opcional)</span>
               </legend>
-              <div className="pl-8">
-                <textarea value={form.equipment_needs} onChange={(e) => update('equipment_needs', e.target.value)} rows={2} maxLength={200}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="Ej: Necesitamos extensión eléctrica..." />
-                <p className="text-xs text-gray-400 mt-0.5">{form.equipment_needs.length}/200</p>
+              <div className="pl-8 space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" checked={form.needs_outlet} onChange={(e) => update('needs_outlet', String(e.target.checked))}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/50 accent-primary" />
+                  <span className="text-sm text-gray-700 group-hover:text-secondary transition-colors">Necesito enchufe eléctrico</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" checked={form.needs_airfryer} onChange={(e) => update('needs_airfryer', String(e.target.checked))}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/50 accent-primary" />
+                  <span className="text-sm text-gray-700 group-hover:text-secondary transition-colors">Necesito freidora de aire</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" checked={form.own_grill} onChange={(e) => update('own_grill', String(e.target.checked))}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/50 accent-primary" />
+                  <span className="text-sm text-gray-700 group-hover:text-secondary transition-colors">Traigo mi propia plancha</span>
+                </label>
               </div>
             </fieldset>
 

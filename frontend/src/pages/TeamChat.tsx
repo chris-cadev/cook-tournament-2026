@@ -60,6 +60,7 @@ export default function TeamChat({
         setJoinRequests(data)
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch join requests:', err)
     }
   }, [teamSlug, setJoinRequests])

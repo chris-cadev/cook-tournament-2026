@@ -7,11 +7,31 @@ interface ChatInputProps {
 }
 
 const ACCEPT = 'image/jpeg,image/png,image/gif,image/webp,audio/mpeg,audio/wav,audio/ogg,audio/webm,audio/mp4'
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_AUDIO_SIZE = 2 * 1024 * 1024 // 2MB
+const MAX_AUDIO_DURATION = 120 // 2 minutes in seconds
+
+function getAudioDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio()
+    const url = URL.createObjectURL(file)
+    audio.src = url
+    audio.addEventListener('loadedmetadata', () => {
+      URL.revokeObjectURL(url)
+      resolve(audio.duration)
+    })
+    audio.addEventListener('error', () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('No se pudo leer la duración del audio'))
+    })
+  })
+}
 
 export default function ChatInput({ placeholder = 'Escribe un mensaje...', onSend, disabled }: ChatInputProps) {
   const [content, setContent] = useState('')
   const [sending, setSending] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [checkingDuration, setCheckingDuration] = useState(false)
   const [preview, setPreview] = useState<{ url: string; type: string; name: string } | null>(null)
   const [minioAvailable, setMinioAvailable] = useState(true)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -43,9 +63,28 @@ export default function ChatInput({ placeholder = 'Escribe un mensaje...', onSen
       return
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Archivo muy grande (máximo 10MB)')
+    const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_AUDIO_SIZE
+    if (file.size > maxSize) {
+      const maxMB = isImage ? '5MB' : '2MB'
+      alert(`Archivo muy grande (máximo ${maxMB})`)
       return
+    }
+
+    if (isAudio) {
+      setCheckingDuration(true)
+      try {
+        const duration = await getAudioDuration(file)
+        if (duration > MAX_AUDIO_DURATION) {
+          alert('El audio dura más de 2 minutos. Máximo permitido: 2 minutos.')
+          setCheckingDuration(false)
+          return
+        }
+      } catch {
+        alert('No se pudo verificar la duración del audio')
+        setCheckingDuration(false)
+        return
+      }
+      setCheckingDuration(false)
     }
 
     setUploading(true)
@@ -54,7 +93,7 @@ export default function ChatInput({ placeholder = 'Escribe un mensaje...', onSen
       const res = await fetch('/api/upload/presign', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ filename: file.name, content_type: file.type }),
+        body: JSON.stringify({ filename: file.name, content_type: file.type, size: file.size }),
       })
 
       if (!res.ok) {
@@ -78,6 +117,7 @@ export default function ChatInput({ placeholder = 'Escribe un mensaje...', onSen
 
       setPreview({ url: file_url, type: isImage ? 'image' : 'audio', name: file.name })
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Upload error:', err)
       alert('Error al subir')
     } finally {
@@ -134,11 +174,11 @@ export default function ChatInput({ placeholder = 'Escribe un mensaje...', onSen
         />
         <button
           onClick={() => fileRef.current?.click()}
-          disabled={disabled || sending || uploading || !minioAvailable}
+          disabled={disabled || sending || uploading || checkingDuration || !minioAvailable}
           className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title={!minioAvailable ? 'Subida de archivos no disponible' : 'Adjuntar imagen o audio'}
+          title={!minioAvailable ? 'Subida de archivos no disponible' : 'Adjuntar imagen (≤5MB) o audio (≤2MB, máx. 2 min)'}
         >
-          {uploading ? (
+          {uploading || checkingDuration ? (
             <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
           ) : (
             <span className="material-symbols-outlined text-sm">attach_file</span>

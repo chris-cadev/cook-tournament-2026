@@ -116,7 +116,7 @@ export default function EmailReminders() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ template_id: log.template_id, team_ids: [] }),
       })
-      const data = await res.json()
+      await res.json()
       if (res.ok) fetchData()
     } catch {
       // silent

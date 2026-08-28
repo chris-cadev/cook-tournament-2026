@@ -32,6 +32,7 @@ export default function Invites() {
         setInvites(data)
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch invites:', err)
     } finally {
       setLoading(false)
@@ -58,6 +59,7 @@ export default function Invites() {
         fetchInvites()
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to create invite:', err)
     } finally {
       setCreating(false)

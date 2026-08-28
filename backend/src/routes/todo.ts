@@ -4,8 +4,10 @@ import { getDb, saveDb } from '../db.js'
 
 const router = Router()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToObject(rows: any[]): Record<string, any> | null {
   if (rows.length === 0 || rows[0].values.length === 0) return null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const obj: Record<string, any> = {}
   rows[0].columns.forEach((c: string, i: number) => (obj[c] = rows[0].values[0][i]))
   return obj

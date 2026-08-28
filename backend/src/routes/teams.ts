@@ -2,24 +2,20 @@ import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { getDb, saveDb } from '../db.js'
 import { authMiddleware, requireRole, signToken, setSessionCookie } from '../middleware/auth.js'
-import { slugify, resolveTeamSlug } from '../team-utils.js'
+import { slugify } from '../team-utils.js'
 
 const router = Router()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToArray(rows: any[]): Record<string, any>[] {
   if (rows.length === 0) return []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return rows[0].values.map((vals: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj: Record<string, any> = {}
     rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
     return obj
   })
-}
-
-function rowsToObject(rows: any[]): Record<string, any> | null {
-  if (rows.length === 0 || rows[0].values.length === 0) return null
-  const obj: Record<string, any> = {}
-  rows[0].columns.forEach((c: string, i: number) => (obj[c] = rows[0].values[0][i]))
-  return obj
 }
 
 router.post('/register', (req: Request, res: Response) => {
@@ -41,10 +37,13 @@ router.post('/register', (req: Request, res: Response) => {
   }
 
   const hash = bcrypt.hashSync(password, 10)
+  const equipmentJson = typeof equipment_needs === 'object' && equipment_needs !== null
+    ? JSON.stringify(equipment_needs)
+    : equipment_needs || null
   db.run(
     `INSERT INTO teams (name, slug, sandwich_name, captain_email, password_hash, members, equipment_needs, open_to_join)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipment_needs || null, open_to_join ? 1 : 0]
+    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipmentJson, open_to_join ? 1 : 0]
   )
   saveDb()
 

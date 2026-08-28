@@ -11,7 +11,7 @@ export default function InvitePage() {
   const [rsvpNumPeople, setRsvpNumPeople] = useState('')
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
-  const [rsvpSuccess, setRsvpSuccess] = useState(false)
+  const [rsvpSuccess] = useState(false)
 
   useEffect(() => {
     if (!code) return

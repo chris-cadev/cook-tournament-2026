@@ -157,6 +157,14 @@ export default function Landing() {
 
         </section>
 
+        {/* ¿Qué es esto? */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 className="font-headline text-2xl font-black text-secondary mb-2">¿Qué es esto?</h2>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            El <strong>Sandwich Fest</strong> es una competencia de cocina en vivo donde los equipos se enfrentan para crear el mejor sándwich en 60 minutos. A la vez celebramos el cumpleaños de Cristian Camacho con una fiesta al aire libre en el Parque Morelos.
+          </p>
+        </section>
+
         {/* Regla #1 */}
         <section id="reglas" className="bg-error/10 border-2 border-error/30 rounded-2xl p-6 text-center">
           <p className="font-headline text-lg font-black text-error uppercase tracking-wide">
@@ -335,6 +343,30 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* FAQ */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h2 className="font-headline text-2xl font-black text-secondary">Preguntas Frecuentes</h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {[
+              { q: '¿Qué debo traer?', a: 'Todos tus ingredientes, utensilios y cocina portátil. El evento es al aire libre, así que trae todo lo que necesites para cocinar tu sándwich.' },
+              { q: '¿Cómo funciona la degustación?', a: '3 jueces prueban cada sándwich a ciegas y puntúan por categorías: sabor, presentación y creatividad. No saben qué equipo preparó qué.' },
+              { q: '¿Puedo traer ayuda?', a: 'Sí, cada equipo puede tener hasta 3 personas. ¡Forma tu squad y compite juntos!' },
+              { q: '¿Hay restricciones?', a: 'NO se permiten hamburguesas. Cualquier hamburguesa = descalificación inmediata. Todo lo demás es bienvenido.' },
+              { q: '¿Cuánto tiempo tengo?', a: '60 minutos de cocina en vivo. El cronograma incluye llegada, instalación y degustación, así que aprovecha cada minuto.' },
+            ].map((item) => (
+              <details key={item.q} className="group px-6 py-4">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <span className="text-sm font-bold text-gray-800">{item.q}</span>
+                  <span className="material-symbols-outlined text-gray-400 group-open:rotate-180 transition-transform text-xl">expand_more</span>
+                </summary>
+                <p className="text-sm text-gray-500 mt-2 leading-relaxed">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* Lugar */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <span className="text-4xl">📍</span>
@@ -350,6 +382,29 @@ export default function Landing() {
           >
             Ver en mapa
           </a>
+        </section>
+
+        {/* Chats */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center space-y-4">
+          <h2 className="font-headline text-2xl font-black text-secondary">Chatea en el evento</h2>
+          <p className="text-sm text-gray-500">Conecta con los demás participantes en tiempo real.</p>
+          <Link to="/chat"
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-headline font-bold px-8 py-3 rounded-2xl transition-colors">
+            <span className="material-symbols-outlined text-xl">chat</span>
+            Chat Global
+          </Link>
+          <div className="flex justify-center gap-3 flex-wrap pt-2">
+            <Link to="/login/team"
+              className="inline-flex items-center gap-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary font-semibold text-sm px-4 py-2 rounded-xl transition-colors">
+              <span className="material-symbols-outlined text-base">groups</span>
+              Chat de Equipos
+            </Link>
+            <Link to="/login/judge"
+              className="inline-flex items-center gap-1.5 bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-semibold text-sm px-4 py-2 rounded-xl transition-colors">
+              <span className="material-symbols-outlined text-base">gavel</span>
+              Chat de Jueces
+            </Link>
+          </div>
         </section>
 
         <footer className="text-center text-xs text-gray-400 pb-8">

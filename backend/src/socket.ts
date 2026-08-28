@@ -30,8 +30,10 @@ function parseCookies(header: string | undefined): Record<string, string> {
 
 let io: Server
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToObject(rows: any[]): Record<string, any> | null {
   if (rows.length === 0 || rows[0].values.length === 0) return null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const obj: Record<string, any> = {}
   rows[0].columns.forEach((c: string, i: number) => (obj[c] = rows[0].values[0][i]))
   return obj
@@ -56,9 +58,12 @@ function validateChannelAccess(user: AuthUser, channel: string): boolean {
   return false
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToArray(rows: any[]): Record<string, any>[] {
   if (rows.length === 0) return []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return rows[0].values.map((vals: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj: Record<string, any> = {}
     rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
     return obj
@@ -100,7 +105,6 @@ export function initSocket(httpServer: HttpServer) {
 
   io.on('connection', (socket) => {
     const user = socket.data.user as AuthUser
-    console.log(`Socket connected: ${user.role} (${user.anonymous_id || user.team_id || user.email || 'guest'})`)
 
     if (user.role === 'guest' && !user.id) {
       socket.emit('chat:guest-name', { name: generateGuestName() })
@@ -111,7 +115,6 @@ export function initSocket(httpServer: HttpServer) {
         socket.emit('chat:error', { error: 'Access denied to this channel' })
         return
       }
-      console.log(`Socket joining room: chat:${data.channel}`)
       socket.join(`chat:${data.channel}`)
       socket.emit('chat:joined', { channel: data.channel })
 
@@ -145,6 +148,9 @@ export function initSocket(httpServer: HttpServer) {
         return
       }
 
+      // Attachment validation: file size and audio duration are validated client-side
+      // (MinIO presigned URLs don't support server-side size limits easily)
+
       const db = getDb()
       const name = (data.sender_name && typeof data.sender_name === 'string' && data.sender_name.trim()) || user.name || user.email || user.anonymous_id || 'Unknown'
 
@@ -173,9 +179,7 @@ export function initSocket(httpServer: HttpServer) {
       }
     })
 
-    socket.on('disconnect', () => {
-      console.log(`Socket disconnected: ${user.role}`)
-    })
+    socket.on('disconnect', () => {}) 
   })
 
   return io

@@ -5,17 +5,22 @@ import { resolveTeamSlug } from '../team-utils.js'
 
 const router = Router()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToArray(rows: any[]): Record<string, any>[] {
   if (rows.length === 0) return []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return rows[0].values.map((vals: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj: Record<string, any> = {}
     rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
     return obj
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToObject(rows: any[]): Record<string, any> {
   if (rows.length === 0 || rows[0].values.length === 0) return {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const obj: Record<string, any> = {}
   rows[0].columns.forEach((c: string, i: number) => (obj[c] = rows[0].values[0][i]))
   return obj
@@ -38,7 +43,9 @@ router.get('/teams', authMiddleware, (req: Request, res: Response) => {
       'SELECT DISTINCT team_id FROM scores WHERE judge_anonymous_id = ?',
       [req.user!.anonymous_id]
     )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const scoredIds = new Set(scoreRows.length > 0 ? scoreRows[0].values.map((v: any[]) => v[0]) : [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     teams.forEach((t: any) => { t.scored = scoredIds.has(t.id) })
   }
 
@@ -102,6 +109,7 @@ router.post('/scores', authMiddleware, (req: Request, res: Response) => {
       )
     }
     db.run('COMMIT')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     db.run('ROLLBACK')
     if (e.message?.includes('UNIQUE constraint')) {

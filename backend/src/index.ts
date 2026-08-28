@@ -23,7 +23,6 @@ import adminRoutes from './routes/admin.js'
 import emailRoutes from './routes/email.js'
 import stationsRoutes from './routes/stations.js'
 import invitesRoutes from './routes/invites.js'
-import todosRoutes from './routes/todos.js'
 import todoRoutes from './routes/todo.js'
 import guestsRoutes from './routes/guests.js'
 import joinRequestsRoutes from './routes/join-requests.js'
@@ -70,11 +69,13 @@ async function start() {
 
   const PORT = process.env.BACKEND_PORT || 3001
   server.listen(PORT, () => {
+    // eslint-disable-next-line no-console
     console.log(`Server running on http://localhost:${PORT}`)
   })
 }
 
 start().catch((err) => {
+  // eslint-disable-next-line no-console
   console.error('Failed to start server:', err)
   process.exit(1)
 })
@@ -120,6 +121,7 @@ setInterval(async () => {
     }
     saveDb()
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Email scheduler error:', err)
   }
 }, 60_000)

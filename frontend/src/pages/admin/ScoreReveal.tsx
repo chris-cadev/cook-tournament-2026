@@ -20,6 +20,8 @@ export default function ScoreReveal() {
   const [revealing, setRevealing] = useState<string | null>(null)
   const [dramaticReveal, setDramaticReveal] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(0)
+  const [scoresPublic, setScoresPublic] = useState(false)
+  const [toggling, setToggling] = useState(false)
 
   useEffect(() => {
     fetchConfig()
@@ -38,10 +40,26 @@ export default function ScoreReveal() {
 
       setCategories(cats.map(c => ({ category: c, revealed: revealed.includes(c.name) })))
       setRevealedCount(revealed.length)
+      setScoresPublic(config.scores_public === true)
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch config:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleTogglePublic() {
+    setToggling(true)
+    try {
+      const res = await fetch('/api/scores/toggle-public', { method: 'POST' })
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      setScoresPublic(data.scores_public)
+    } catch {
+      alert('Error al cambiar visibilidad')
+    } finally {
+      setToggling(false)
     }
   }
 
@@ -83,6 +101,7 @@ export default function ScoreReveal() {
       // Hold the dramatic reveal for a moment
       await new Promise(r => setTimeout(r, 1500))
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to reveal:', err)
       alert('Network error — try again')
     } finally {
@@ -134,6 +153,32 @@ export default function ScoreReveal() {
           <p className="text-gray-600">
             Categorías de puntuación definidas en organizacion.md. Revela una a una para generar tensión.
           </p>
+        </div>
+
+        {/* Master toggle */}
+        <div className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${
+          scoresPublic ? 'bg-tertiary/10 border-tertiary/30' : 'bg-white border-gray-200'
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${scoresPublic ? 'bg-tertiary' : 'bg-gray-300'}`} />
+            <div>
+              <span className="font-medium text-lg">Puntuaciones públicas</span>
+              <span className={`ml-2 text-sm font-bold ${scoresPublic ? 'text-tertiary' : 'text-gray-400'}`}>
+                {scoresPublic ? 'ON' : 'OFF'}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={handleTogglePublic}
+            disabled={toggling}
+            className={`px-5 py-2.5 font-headline font-bold rounded-xl transition-colors disabled:opacity-50 ${
+              scoresPublic
+                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-primary text-white hover:bg-primary-dark'
+            }`}
+          >
+            {toggling ? '...' : scoresPublic ? 'Ocultar' : 'Mostrar'}
+          </button>
         </div>
 
         {/* Categories reference */}

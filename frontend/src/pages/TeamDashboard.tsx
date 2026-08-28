@@ -30,6 +30,7 @@ export default function TeamDashboard() {
         setTeam(await res.json())
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch team:', err)
     }
   }, [user?.team_slug])
@@ -42,6 +43,7 @@ export default function TeamDashboard() {
         setJoinRequests(await res.json())
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch join requests:', err)
     }
   }, [user?.team_slug])
@@ -164,6 +166,7 @@ function TeamNotes({ teamSlug, isCaptain }: { teamSlug: string; isCaptain: boole
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to save notes:', err)
     } finally {
       setSaving(false)

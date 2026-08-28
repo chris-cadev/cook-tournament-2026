@@ -26,11 +26,14 @@ router.post('/', authMiddleware, requireRole('admin'), (req: Request, res: Respo
   }
 
   const hash = bcrypt.hashSync(password, 10)
+  const equipmentJson = typeof equipment_needs === 'object' && equipment_needs !== null
+    ? JSON.stringify(equipment_needs)
+    : equipment_needs || null
 
   db.run(
     `INSERT INTO teams (name, slug, sandwich_name, captain_email, password_hash, members, equipment_needs, open_to_join, status)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
-    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipment_needs || null, open_to_join ? 1 : 0]
+    [name, slug, sandwich_name || '', captain_email, hash, JSON.stringify(members || []), equipmentJson, open_to_join ? 1 : 0]
   )
   saveDb()
 

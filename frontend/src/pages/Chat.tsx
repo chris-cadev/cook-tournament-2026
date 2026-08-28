@@ -35,7 +35,7 @@ export default function Chat() {
     return guestName || ''
   })
   const [editingName, setEditingName] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  const [hasMore] = useState(true)
 
   const handleSend = async (content: string, attachment?: { url: string; type: string }) => {
     if (!chatName.trim()) return

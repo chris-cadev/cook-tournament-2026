@@ -4,9 +4,12 @@ import { authMiddleware, requireRole } from '../middleware/auth.js'
 
 const router = Router()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToArray(rows: any[]): Record<string, any>[] {
   if (rows.length === 0) return []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return rows[0].values.map((vals: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj: Record<string, any> = {}
     rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
     return obj
@@ -41,6 +44,7 @@ router.put('/:id', authMiddleware, requireRole('admin'), (req: Request, res: Res
   }
 
   const updates: string[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const values: any[] = []
 
   if (title !== undefined) { updates.push('title = ?'); values.push(title) }

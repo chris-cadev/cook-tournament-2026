@@ -15,6 +15,7 @@ export function seedAdmin() {
     [email, hash, 'Admin', 'admin']
   )
   saveDb()
+  // eslint-disable-next-line no-console
   console.log(`Admin user seeded: ${email}`)
 }
 
@@ -25,6 +26,7 @@ export function seedEventConfig() {
   const hasDate = configRows.length > 0 && configRows[0].values[0][0]
   if (!hasDate) {
     db.run("UPDATE event_config SET event_date = '2026-10-10T14:00:00' WHERE id = 1")
+    // eslint-disable-next-line no-console
     console.log('Event date seeded: 2026-10-10T14:00:00')
   }
 
@@ -44,6 +46,7 @@ export function seedEventConfig() {
         [c.name, c.weight, c.max_points, c.description, c.sort_order]
       )
     }
+    // eslint-disable-next-line no-console
     console.log('Scoring categories seeded: 5 categories')
   }
 

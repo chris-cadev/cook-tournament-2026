@@ -35,8 +35,11 @@ export function runMigrations() {
     try {
       db.run(sql)
       db.run('INSERT INTO _migrations (filename) VALUES (?)', [file])
+      // eslint-disable-next-line no-console
       console.log(`Migration applied: ${file}`)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error(`Migration ${file} failed:`, err.message)
       // Continue to next migration instead of crashing
     }

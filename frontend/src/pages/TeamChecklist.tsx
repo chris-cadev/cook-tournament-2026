@@ -35,6 +35,7 @@ export default function TeamChecklist() {
         setItems(data.checklist || [])
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch checklist:', err)
     } finally {
       setLoading(false)
@@ -54,6 +55,7 @@ export default function TeamChecklist() {
         body: JSON.stringify({ checklist: newItems }),
       })
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to save checklist:', err)
     }
   }, [teamId])

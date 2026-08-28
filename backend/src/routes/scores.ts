@@ -5,16 +5,21 @@ import { getIO } from '../socket.js'
 
 const router = Router()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToObject(rows: any[]): Record<string, any> {
   if (rows.length === 0 || rows[0].values.length === 0) return {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const obj: Record<string, any> = {}
   rows[0].columns.forEach((c: string, i: number) => (obj[c] = rows[0].values[0][i]))
   return obj
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowsToArray(rows: any[]): Record<string, any>[] {
   if (rows.length === 0) return []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return rows[0].values.map((vals: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj: Record<string, any> = {}
     rows[0].columns.forEach((c: string, i: number) => (obj[c] = vals[i]))
     return obj
@@ -24,10 +29,20 @@ function rowsToArray(rows: any[]): Record<string, any>[] {
 router.get('/leaderboard', (_req: Request, res: Response) => {
   const db = getDb()
 
-  const configRows = db.exec('SELECT scoring_categories, revealed_categories FROM event_config WHERE id = 1')
+  const configRows = db.exec('SELECT scoring_categories, revealed_categories, scores_public FROM event_config WHERE id = 1')
   const config = rowsToObject(configRows)
   const categories: string[] = config.scoring_categories ? JSON.parse(config.scoring_categories as string) : []
   const revealed: string[] = config.revealed_categories ? JSON.parse(config.revealed_categories as string) : []
+  const scoresPublic = config.scores_public === 1
+
+  if (!scoresPublic) {
+    return res.json({
+      scores_public: false,
+      leaderboard: [],
+      categories,
+      revealed,
+    })
+  }
 
   const teamRows = db.exec("SELECT id, name, sandwich_name FROM teams WHERE status != 'disqualified' ORDER BY name")
   const teams = rowsToArray(teamRows)
@@ -63,13 +78,31 @@ router.get('/leaderboard', (_req: Request, res: Response) => {
     }
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   leaderboard.sort((a: any, b: any) => b.total_score - a.total_score)
 
   res.json({
+    scores_public: true,
     leaderboard,
     categories,
     revealed,
   })
+})
+
+router.post('/toggle-public', authMiddleware, requireRole('admin'), (_req: Request, res: Response) => {
+  const db = getDb()
+  const configRows = db.exec('SELECT scores_public FROM event_config WHERE id = 1')
+  const config = rowsToObject(configRows)
+  const current = config.scores_public === 1
+  const newValue = current ? 0 : 1
+
+  db.run('UPDATE event_config SET scores_public = ? WHERE id = 1', [newValue])
+  saveDb()
+
+  const io = getIO()
+  io.emit('scores:status', { scores_public: !!newValue })
+
+  res.json({ scores_public: !!newValue })
 })
 
 router.post('/reveal', authMiddleware, requireRole('admin'), (req: Request, res: Response) => {
